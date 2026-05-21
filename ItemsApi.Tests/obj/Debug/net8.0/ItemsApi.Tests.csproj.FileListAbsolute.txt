@@ -411,3 +411,6 @@ C:\Users\jamie\code\radar-practice\ItemsApi.Tests\obj\Debug\net8.0\refint\ItemsA
 C:\Users\jamie\code\radar-practice\ItemsApi.Tests\obj\Debug\net8.0\ItemsApi.Tests.pdb
 C:\Users\jamie\code\radar-practice\ItemsApi.Tests\obj\Debug\net8.0\ItemsApi.Tests.genruntimeconfig.cache
 C:\Users\jamie\code\radar-practice\ItemsApi.Tests\obj\Debug\net8.0\ref\ItemsApi.Tests.dll
+C:\Users\jamie\code\radar-practice\ItemsApi.Tests\obj\Debug\net8.0\ItemsApi.Tests.sourcelink.json
+C:\Users\jamie\code\radar-practice\ItemsApi.Tests\bin\Debug\net8.0\Castle.Core.dll
+C:\Users\jamie\code\radar-practice\ItemsApi.Tests\bin\Debug\net8.0\NSubstitute.dll

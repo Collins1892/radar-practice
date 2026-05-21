@@ -10,7 +10,7 @@
         "projectUniqueName": "C:\\Users\\jamie\\code\\radar-practice\\ItemsApi.Tests\\ItemsApi.Tests.csproj",
         "projectName": "ItemsApi.Tests",
         "projectPath": "C:\\Users\\jamie\\code\\radar-practice\\ItemsApi.Tests\\ItemsApi.Tests.csproj",
-        "packagesPath": "C:\\Users\\jamie\\AppData\\Local\\Temp\\cursor-sandbox-cache\\6e3f7dcfba620d8ee9d93465b1260794\\nuget",
+        "packagesPath": "C:\\Users\\jamie\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jamie\\code\\radar-practice\\ItemsApi.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
@@ -55,6 +55,10 @@
               "target": "Package",
               "version": "[17.8.0, )"
             },
+            "NSubstitute": {
+              "target": "Package",
+              "version": "[5.1.0, )"
+            },
             "coverlet.collector": {
               "target": "Package",
               "version": "[6.0.0, )"
@@ -94,7 +98,7 @@
         "projectUniqueName": "C:\\Users\\jamie\\code\\radar-practice\\ItemsApi\\ItemsApi.csproj",
         "projectName": "ItemsApi",
         "projectPath": "C:\\Users\\jamie\\code\\radar-practice\\ItemsApi\\ItemsApi.csproj",
-        "packagesPath": "C:\\Users\\jamie\\AppData\\Local\\Temp\\cursor-sandbox-cache\\6e3f7dcfba620d8ee9d93465b1260794\\nuget",
+        "packagesPath": "C:\\Users\\jamie\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jamie\\code\\radar-practice\\ItemsApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [

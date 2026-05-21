@@ -78,3 +78,61 @@ Cursor went well beyond the brief both times. Asked for a React frontend, it add
 The frontend was built in under 10 minutes — Cursor's own logs show ~1.5 minutes for the Vite scaffold and npm install, with the full wiring of the API layer, TypeScript types, CORS and proxy on top of that. Manually this would have been 2-3 hours of setup, configuration and debugging.
 
 This is a whole new world for development, and especially scaffolding projects. I do need to review the code tomorrow with a clear head to better understand what it has created.
+
+## ## Day 3 — 21 May 2026
+
+### Code review findings
+
+- Claude gave a good account of what to look for and why it made smart choices, specifically the guards confirming the front and backend data typings matching.
+
+- Strongly typed types in TypeScript is good for preventing shipping bugs
+
+- The CSS patterns are a good base for a starting point
+
+- The media queries for dark mode was a welcome surprise
+- We did not check media queries for responsive design, make a note to prompt and check
+
+### London keynote observations
+
+- Followed on from the San Fransisco talk
+
+- Mostly the same speakers with the same message
+
+- The product discussion did add some additional points about new beta features including tunnelling 
+- Boris echoing the message that this is all available now, go and do it
+
+### Prompt chaining observations
+
+- One focused prompt beats one large prompt every time
+- Agent stalled on 3+ tests in one go, succeeded on one at a time
+- Agent made architectural decisions unprompted — promoted nextId 
+  to public static to enable testability, then removed it entirely 
+  when the repository pattern made it unnecessary
+- Agent explained its reasoning on every non-obvious decision
+- 9 tests total, all passing
+
+### Repository pattern refactor
+
+- Completed in 3m 5s, all 9 tests passing
+- Agent removed its own previous static hacks unprompted
+- Recognised NSubstitute as the right mocking library
+- No intervention needed — got it right first time
+- Estimated manual time: 2-3 hours
+
+### Where the agent hit its limits
+
+- Stalled on multiple test generation in one prompt
+- Solution: one focused prompt at a time
+
+### What I would not trust it to do unsupervised
+
+- I am still at the beginning and learning so much! I enjoyed the terminal choices to be in control (accept changes or discard etc) so I can see the stack trace of events. 
+
+- I did not particularly like the code the agent produced before we added DI and SOLID principles including for testing. Claude admitting this was a hack.
+- I would not let claude do much unsupervised until I am more confident in my agentic AI capabilities.
+
+### Time saved today
+
+- Approximately 4-6 hours of manual 
+  development compressed into under an hour of agent-directed work
+
