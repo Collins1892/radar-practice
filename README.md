@@ -44,6 +44,8 @@ radar-practice/
 | Frontend | React 19, TypeScript, Vite |
 | CI | GitHub Actions — `dotnet test` on push to `main` |
 
+> **Note:** Items are stored in-memory via `InMemoryItemsRepository` and are lost when the API restarts. SQLite persistence is planned for a future session.
+
 ## AI tooling observations
 
 These are practical lessons from building this project with Claude Code (terminal) and Cursor (IDE):
