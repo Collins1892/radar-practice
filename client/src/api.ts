@@ -1,52 +1,52 @@
-import { ApiClientError } from './errors';
-import { isApiErrorBody, isItem, isItemArray } from './guards';
-import type { CreateItemRequest, Item } from './types';
+import { ApiClientError } from './errors'
+import { isApiErrorBody, isItem, isItemArray } from './guards'
+import type { CreateItemRequest, Item } from './types'
 
-const base = import.meta.env.VITE_API_URL ?? '';
+const base = import.meta.env.VITE_API_URL ?? ''
 
 async function request(path: string, init?: RequestInit): Promise<Response> {
   try {
-    return await fetch(`${base}${path}`, init);
+    return await fetch(`${base}${path}`, init)
   } catch {
-    throw new ApiClientError('Network request failed', 'network');
+    throw new ApiClientError('Network request failed', 'network')
   }
 }
 
 async function parseErrorMessage(response: Response): Promise<string> {
   try {
-    const body: unknown = await response.json();
-    if (isApiErrorBody(body)) return body.error;
+    const body: unknown = await response.json()
+    if (isApiErrorBody(body)) return body.error
   } catch {
     /* ignore non-JSON bodies */
   }
-  return response.statusText || `Request failed (${response.status})`;
+  return response.statusText || `Request failed (${response.status})`
 }
 
 async function parseJson(response: Response): Promise<unknown> {
   try {
-    return await response.json();
+    return await response.json()
   } catch {
-    throw new ApiClientError('Invalid response from server', 'parse');
+    throw new ApiClientError('Invalid response from server', 'parse')
   }
 }
 
 export async function fetchItems(): Promise<Item[]> {
-  const response = await request('/items');
+  const response = await request('/items')
 
   if (!response.ok) {
     throw new ApiClientError(
       await parseErrorMessage(response),
       'http',
       response.status,
-    );
+    )
   }
 
-  const body = await parseJson(response);
+  const body = await parseJson(response)
   if (!isItemArray(body)) {
-    throw new ApiClientError('Unexpected response format from server', 'parse');
+    throw new ApiClientError('Unexpected response format from server', 'parse')
   }
 
-  return body;
+  return body
 }
 
 export async function createItem(data: CreateItemRequest): Promise<Item> {
@@ -54,20 +54,20 @@ export async function createItem(data: CreateItemRequest): Promise<Item> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  });
+  })
 
   if (!response.ok) {
     throw new ApiClientError(
       await parseErrorMessage(response),
       'http',
       response.status,
-    );
+    )
   }
 
-  const body = await parseJson(response);
+  const body = await parseJson(response)
   if (!isItem(body)) {
-    throw new ApiClientError('Unexpected response format from server', 'parse');
+    throw new ApiClientError('Unexpected response format from server', 'parse')
   }
 
-  return body;
+  return body
 }

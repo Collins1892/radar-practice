@@ -1,15 +1,15 @@
-import type { JSX } from 'react';
-import type { Item } from '../types';
-import './ItemsList.css';
+import type { JSX } from 'react'
+import type { Item } from '../types'
+import './ItemsList.css'
 
-export type ItemsListStatus = 'loading' | 'error' | 'empty' | 'ready';
+export type ItemsListStatus = 'loading' | 'error' | 'empty' | 'ready'
 
 interface ItemsListProps {
-  items: Item[];
-  status: ItemsListStatus;
-  errorMessage: string | null;
-  onRetry: () => void;
-  formatPrice: (price: number) => string;
+  items: Item[]
+  status: ItemsListStatus
+  errorMessage: string | null
+  onRetry: () => void
+  formatPrice: (price: number) => string
 }
 
 export function ItemsList({
@@ -25,7 +25,7 @@ export function ItemsList({
         <div className="items-list-spinner" aria-hidden="true" />
         <p>Loading items…</p>
       </div>
-    );
+    )
   }
 
   if (status === 'error' && errorMessage) {
@@ -37,7 +37,7 @@ export function ItemsList({
           Try again
         </button>
       </div>
-    );
+    )
   }
 
   if (status === 'empty') {
@@ -45,7 +45,7 @@ export function ItemsList({
       <p className="items-list-state items-list-empty" role="status">
         No items yet. Add one above to get started.
       </p>
-    );
+    )
   }
 
   return (
@@ -57,5 +57,5 @@ export function ItemsList({
         </li>
       ))}
     </ul>
-  );
+  )
 }

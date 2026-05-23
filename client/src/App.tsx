@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { FormEvent, JSX } from 'react';
-import { createItem, fetchItems } from './api';
-import { ItemsList } from './components/ItemsList';
-import type { ItemsListStatus } from './components/ItemsList';
-import { toUserMessage } from './errors';
-import type { Item } from './types';
-import './App.css';
+import { useCallback, useEffect, useState } from 'react'
+import type { FormEvent, JSX } from 'react'
+import { createItem, fetchItems } from './api'
+import { ItemsList } from './components/ItemsList'
+import type { ItemsListStatus } from './components/ItemsList'
+import { toUserMessage } from './errors'
+import type { Item } from './types'
+import './App.css'
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat(undefined, {
     style: 'currency',
     currency: 'USD',
-  }).format(price);
+  }).format(price)
 }
 
 function listStatus(
@@ -19,69 +19,69 @@ function listStatus(
   listError: string | null,
   items: Item[],
 ): ItemsListStatus {
-  if (loading) return 'loading';
-  if (listError) return 'error';
-  if (items.length === 0) return 'empty';
-  return 'ready';
+  if (loading) return 'loading'
+  if (listError) return 'error'
+  if (items.length === 0) return 'empty'
+  return 'ready'
 }
 
 function App(): JSX.Element {
-  const [items, setItems] = useState<Item[]>([]);
-  const [listLoading, setListLoading] = useState(true);
-  const [listError, setListError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [items, setItems] = useState<Item[]>([])
+  const [listLoading, setListLoading] = useState(true)
+  const [listError, setListError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [name, setName] = useState('')
+  const [price, setPrice] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const loadItems = useCallback(async (): Promise<void> => {
-    setListError(null);
-    setListLoading(true);
+    setListError(null)
+    setListLoading(true)
     try {
-      setItems(await fetchItems());
+      setItems(await fetchItems())
     } catch (err) {
-      setListError(toUserMessage(err, 'load'));
-      setItems([]);
+      setListError(toUserMessage(err, 'load'))
+      setItems([])
     } finally {
-      setListLoading(false);
+      setListLoading(false)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    void loadItems();
-  }, [loadItems]);
+    void loadItems()
+  }, [loadItems])
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
   ): Promise<void> {
-    event.preventDefault();
-    const trimmedName = name.trim();
-    const parsedPrice = Number.parseFloat(price);
+    event.preventDefault()
+    const trimmedName = name.trim()
+    const parsedPrice = Number.parseFloat(price)
 
     if (!trimmedName) {
-      setFormError('Name is required.');
-      return;
+      setFormError('Name is required.')
+      return
     }
     if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
-      setFormError('Enter a valid price.');
-      return;
+      setFormError('Enter a valid price.')
+      return
     }
 
-    setSubmitting(true);
-    setFormError(null);
+    setSubmitting(true)
+    setFormError(null)
     try {
-      await createItem({ name: trimmedName, price: parsedPrice });
-      setName('');
-      setPrice('');
-      await loadItems();
+      await createItem({ name: trimmedName, price: parsedPrice })
+      setName('')
+      setPrice('')
+      await loadItems()
     } catch (err) {
-      setFormError(toUserMessage(err, 'create'));
+      setFormError(toUserMessage(err, 'create'))
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
   }
 
-  const status = listStatus(listLoading, listError, items);
+  const status = listStatus(listLoading, listError, items)
 
   return (
     <main className="app">
@@ -149,7 +149,7 @@ function App(): JSX.Element {
         />
       </section>
     </main>
-  );
+  )
 }
 
-export default App;
+export default App
