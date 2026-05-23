@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import type { Item } from '../types'
 import './ItemsList.css'
 
@@ -17,7 +18,7 @@ export function ItemsList({
   errorMessage,
   onRetry,
   formatPrice,
-}: ItemsListProps) {
+}: ItemsListProps): JSX.Element {
   if (status === 'loading') {
     return (
       <div className="items-list-state" role="status" aria-live="polite">

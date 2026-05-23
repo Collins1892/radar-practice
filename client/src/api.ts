@@ -8,10 +8,7 @@ async function request(path: string, init?: RequestInit): Promise<Response> {
   try {
     return await fetch(`${base}${path}`, init)
   } catch {
-    throw new ApiClientError(
-      'Network request failed',
-      'network',
-    )
+    throw new ApiClientError('Network request failed', 'network')
   }
 }
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, JSX } from 'react'
 import { createItem, fetchItems } from './api'
 import { ItemsList } from './components/ItemsList'
 import type { ItemsListStatus } from './components/ItemsList'
@@ -25,7 +25,7 @@ function listStatus(
   return 'ready'
 }
 
-function App() {
+function App(): JSX.Element {
   const [items, setItems] = useState<Item[]>([])
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
@@ -34,7 +34,7 @@ function App() {
   const [price, setPrice] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const loadItems = useCallback(async () => {
+  const loadItems = useCallback(async (): Promise<void> => {
     setListError(null)
     setListLoading(true)
     try {
@@ -51,7 +51,9 @@ function App() {
     void loadItems()
   }, [loadItems])
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
     event.preventDefault()
     const trimmedName = name.trim()
     const parsedPrice = Number.parseFloat(price)

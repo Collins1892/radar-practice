@@ -12,7 +12,10 @@ export class ApiClientError extends Error {
   }
 }
 
-export function toUserMessage(error: unknown, context: 'load' | 'create'): string {
+export function toUserMessage(
+  error: unknown,
+  context: 'load' | 'create',
+): string {
   if (error instanceof ApiClientError) {
     if (error.kind === 'network') {
       return 'Cannot reach the server. Start the API with dotnet run in ItemsApi, then try again.'
