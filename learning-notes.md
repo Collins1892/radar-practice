@@ -1,3 +1,65 @@
+## Day 5 — 23 May 2026
+
+### Code review findings
+
+- Assembly files were being tracked in git — fixed with .gitignore cleanup
+- xUnit integration tests are more expensive than unit tests — 
+  deliberate balance needed at scale
+- Testing pyramid: lots of unit tests, fewer integration, fewer e2e
+- Agent defaulted to integration tests — correct for an API but 
+  doesn't scale without a unit test layer underneath
+
+### GitHub Actions CI pipeline
+
+- First time seeing GitHub Actions in practice
+- Pipeline runs on every push to main — dotnet test on ubuntu-latest
+- Green in 39 seconds — 9 tests passing in the cloud automatically
+- CI badge live on GitHub README — visible proof of passing tests
+- Every push now verified without manual intervention
+
+### Pre-commit hooks
+
+- Husky installed with lint-staged — only checks staged files, keeps it fast
+- Blocks on: no-explicit-any, unused imports, unused vars, 
+  no-non-null-assertion, explicit return types, react hooks rules,
+  no-console, no-debugger, no-secrets
+- Deliberate decision not to run tests in the hook — tests belong in CI
+- Pre-commit hooks should be fast — milliseconds not seconds
+- Tested with deliberate any type — blocked with two specific errors
+- Semicolons added back to Prettier config — personal preference, 
+  consistent with C# background
+
+### Responsive design
+
+- Agent found real issues — iOS zoom bug on inputs under 16px, 
+  cramped content width on mobile
+- Fixed with media queries and proper flex layout
+- PostCSS breakpoint variables explored then reverted — clever solution 
+  but unnecessary complexity for project size
+- Fluid responsive design with proper breakpoint tiers planned for week 3
+
+### Working with Claude
+
+- Screenshots more effective than pasting text for validating visual outcomes
+- Use screenshots for: CI badges, GitHub repo state, terminal output
+- Use pasted text for: code and terminal output that needs actioning
+
+### Ideas and decisions
+
+- Incident reporting module to be added in week 3 — Radar-relevant domain
+- Playwright e2e tests — week 3
+- Vitest unit tests for React — week 3
+- Fluid responsive design with breakpoint tiers — week 3
+- xUnit deep dive — week 3 or 4
+- GDPR and AI session — week 2 or 3
+- Daily AI digest email — GitHub Actions, week 5
+
+### Time saved today
+
+- CI pipeline set up in under 10 minutes — manually would take an hour
+- Pre-commit hooks configured with 8 rules — manually would take 2-3 hours
+- Responsive fixes applied and tested in minutes — manually 1-2 hours
+
 ## Day 4 — 22 May 2026
 
 ### Code review findings
