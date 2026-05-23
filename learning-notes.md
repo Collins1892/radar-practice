@@ -1,12 +1,14 @@
 ## Day 4 — 22 May 2026
 
 ### Code review findings
-- Record record is new to me — modern .NET shorthand for immutable data classes
+
+- The Record type is new to me — modern .NET shorthand for immutable data classes
 - In-memory repo with hardcoded nextId starting at 4 — fragile, goes away when we add SQLite in week 3
 - Program.cs minimal API pattern is different to controller pattern I'm used to — not legacy thinking, just a different approach, will encounter both at Radar
 - Responsive design not checked — flagged for next frontend session
 
 ### Anthropic engineering blog observations
+
 - Long running agents lose context between sessions — like a developer with no handover notes
 - Solution: initialiser agent sets up environment once, coding agent picks up each session using progress file and git history
 - One feature at a time is critical — agent tries to do too much otherwise
@@ -15,6 +17,7 @@
 - Descriptive git commits are part of the agent workflow, not just good practice
 
 ### Healthcare scenarios
+
 - Never debug against live production data — reproduce locally, check logs first
 - Never connect Claude Code to a production database — queries leave your environment via the API
 - Patient IDs and names are personal data under GDPR — sanitise before pasting anything
@@ -22,17 +25,20 @@
 - Non-production databases should always have PII redacted — agents safe on dev/staging, never production
 
 ### Prompt sanitisation
+
 - Only include what the agent needs to solve the technical problem
 - Strip names, IDs, NHS numbers, hospital names — irrelevant to fixing bugs
 - Check code snippets for hardcoded sensitive values before pasting
 
 ### Code review as safety layer
+
 - Does it do what I asked? — test and verify, don't assume
 - Does it do anything I didn't ask for? — check the diff before committing
 - Can I explain every line? — if not, ask the agent to explain first
 - Read every changed line in GitLens before committing — not skim, read
 
 ### Safety position statement
+
 "In a healthcare environment, AI agents must never consume identifiable patient data — names, NHS numbers, dates of birth, or any other personal identifiers. The consequences are severe: ICO fines, client trust destroyed, reputational damage, and potential criminal liability under the Data Protection Act.
 
 Claude Code sends prompts to Anthropic's API over the internet — anything in a prompt leaves your environment. Non-production databases should always have PII redacted which helps, but sanitising prompts must be consistent regardless of environment.
@@ -42,12 +48,14 @@ The practical habit is simple — only give the agent what it needs. When debugg
 Staff training matters too. The biggest risk isn't malicious intent — it's a developer pasting a stack trace without thinking. Building safe prompt habits across the whole team is as important as any technical control."
 
 ### Ideas noted today
+
 - Build a daily AI digest — GitHub Actions, Anthropic API, email delivery
 - Morning coffee format: title, date, link, paragraph summary, no subscription articles
 - Build in week 5 as the routines and loops exercise
 - Estimated cost: ~$1-2/month
 
 ### Time saved today
+
 - No coding today by design — thinking and safety work
 - Safety position statement drafted, polished and ready for interviews and conversations
 
@@ -56,20 +64,15 @@ Staff training matters too. The biggest risk isn't malicious intent — it's a d
 ### Code review findings
 
 - Claude gave a good account of what to look for and why it made smart choices, specifically the guards confirming the front and backend data typings matching.
-
 - Strongly typed types in TypeScript is good for preventing shipping bugs
-
 - The CSS patterns are a good base for a starting point
-
 - The media queries for dark mode was a welcome surprise
 - We did not check media queries for responsive design, make a note to prompt and check
 
 ### London keynote observations
 
 - Followed on from the San Fransisco talk
-
 - Mostly the same speakers with the same message
-
 - The product discussion did add some additional points about new beta features including tunnelling 
 - Boris echoing the message that this is all available now, go and do it
 
@@ -78,8 +81,8 @@ Staff training matters too. The biggest risk isn't malicious intent — it's a d
 - One focused prompt beats one large prompt every time
 - Agent stalled on 3+ tests in one go, succeeded on one at a time
 - Agent made architectural decisions unprompted — promoted nextId 
-  to public static to enable testability, then removed it entirely 
-  when the repository pattern made it unnecessary
+to public static to enable testability, then removed it entirely 
+when the repository pattern made it unnecessary
 - Agent explained its reasoning on every non-obvious decision
 - 9 tests total, all passing
 
@@ -99,14 +102,13 @@ Staff training matters too. The biggest risk isn't malicious intent — it's a d
 ### What I would not trust it to do unsupervised
 
 - I am still at the beginning and learning so much! I enjoyed the terminal choices to be in control (accept changes or discard etc) so I can see the stack trace of events. 
-
 - I did not particularly like the code the agent produced before we added DI and SOLID principles including for testing. Claude admitting this was a hack.
 - I would not let claude do much unsupervised until I am more confident in my agentic AI capabilities.
 
 ### Time saved today
 
 - Approximately 4-6 hours of manual 
-  development compressed into under an hour of agent-directed work
+development compressed into under an hour of agent-directed work
 
 ## Day 2 — 20 May 2026
 
@@ -188,4 +190,3 @@ Two issues came up during the build:
 The code itself compiled and all tests passed on the first attempt — both 
 issues were environment/tooling problems rather than code errors, and both 
 were resolved by the agent without manual intervention.
-
