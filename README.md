@@ -1,0 +1,111 @@
+# radar-practice
+
+[![CI](https://github.com/Collins1892/radar-practice/actions/workflows/ci.yml/badge.svg)](https://github.com/Collins1892/radar-practice/actions/workflows/ci.yml)
+
+A full-stack practice project built to explore **agentic AI development** — using AI coding agents (Claude Code and Cursor) to scaffold, extend, test, and maintain a real application under human direction.
+
+This is not a production system. It is a deliberately small codebase that demonstrates how AI-assisted workflows behave in practice: what agents do well, where they stall, and why human review remains essential.
+
+## What this project demonstrates
+
+### Agent-directed development over multiple sessions
+
+The application was built incrementally across several days, mirroring how real agentic workflows unfold:
+
+1. **Scaffolding** — An agent generated the .NET 8 minimal API, initial endpoints, and xUnit test project.
+2. **Frontend wiring** — A separate session connected a React + TypeScript + Vite client to the API, including CORS and a dev proxy.
+3. **Refactoring** — The agent introduced the repository pattern and dependency injection, replacing earlier testability hacks with proper abstractions.
+4. **Test-driven iteration** — Integration tests were added one focused prompt at a time; the agent stalled when asked for too many tests at once.
+5. **CI and hygiene** — `.gitignore`, build-artifact cleanup, and a GitHub Actions pipeline were added to keep the repo maintainable.
+
+### Human-in-the-loop as a feature, not a bug
+
+Every stage followed the same principle: the agent proposes and implements, the developer reviews, tests, and decides what to commit. Agents made useful architectural decisions unprompted (typed API layer, runtime type guards, NSubstitute for mocking) but also produced shortcuts that needed correction before the repository pattern refactor.
+
+### A realistic but safe codebase
+
+The domain is a simple **items catalogue** — no patient data, no production dependencies. That keeps the focus on tooling and workflow rather than healthcare-specific complexity, while still reflecting habits that matter in regulated environments (prompt sanitisation, never pasting PII, reviewing every diff before commit).
+
+## Architecture
+
+```
+radar-practice/
+├── ItemsApi/              # .NET 8 minimal API (GET/POST /items)
+├── ItemsApi.Tests/        # xUnit integration tests (9 tests)
+├── client/                # React + TypeScript + Vite frontend
+├── .github/workflows/     # GitHub Actions CI
+└── learning-notes.md      # Daily observations from the build
+```
+
+| Layer | Stack |
+|-------|-------|
+| API | .NET 8, minimal APIs, in-memory repository |
+| Tests | xUnit, `WebApplicationFactory`, NSubstitute |
+| Frontend | React 19, TypeScript, Vite |
+| CI | GitHub Actions — `dotnet test` on push to `main` |
+
+## AI tooling observations
+
+These are practical lessons from building this project with Claude Code (terminal) and Cursor (IDE):
+
+**What agents do well**
+- Rapid scaffolding of boilerplate — API, tests, and frontend setup in minutes rather than hours.
+- Fixing environment issues autonomously (locked binaries, path mangling, CORS).
+- Making sensible architectural choices when given clear, focused prompts.
+- Explaining non-obvious decisions when asked.
+
+**Where agents hit limits**
+- Overly long prompts that ask for too much at once (e.g. generating several tests in one go) cause stalls; one focused task per prompt works reliably.
+- Early code before DI/refactoring included shortcuts the agent itself later acknowledged as hacks.
+- Agents should not be left unsupervised on unfamiliar or high-stakes codebases without review.
+
+**Cursor vs Claude Code**
+- **Cursor** excels when full workspace context matters — wiring the frontend to the backend, adding typed error handling, and verifying changes in-editor.
+- **Claude Code** suits terminal-driven workflows — generating projects, running tests, and iterating on backend logic with explicit accept/reject control.
+- Both benefit from the same discipline: small prompts, verify output, read the diff before committing.
+
+**Safety habits (especially relevant to healthcare work)**
+- Never paste identifiable patient data into prompts — anything in a prompt leaves your environment via the API.
+- Strip names, IDs, and NHS numbers from stack traces and code snippets before sharing with an agent.
+- Use synthetic test data (e.g. Bogus for .NET) rather than real records.
+- Treat code review as a safety layer: does it do what you asked, does it do anything extra, and can you explain every changed line?
+
+See [`learning-notes.md`](learning-notes.md) for the full daily log.
+
+## Setup
+
+### Prerequisites
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Node.js](https://nodejs.org/) (LTS recommended)
+
+### Run the API
+
+```bash
+cd ItemsApi
+dotnet run
+```
+
+The API listens on `http://localhost:5133`.
+
+### Run the tests
+
+```bash
+dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj
+```
+
+### Run the frontend
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`. Vite proxies `/items` requests to the API on port 5133.
+
+To call the API directly from the browser (without the proxy), copy `client/.env.example` to `client/.env` and uncomment `VITE_API_URL`. The API already allows CORS from `http://localhost:5173`.
+
+### CI
+
+Pushes to `main` trigger the [CI workflow](.github/workflows/ci.yml), which runs all .NET tests on Ubuntu. The workflow fails if any test fails.
