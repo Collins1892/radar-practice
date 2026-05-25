@@ -27,14 +27,17 @@ healthcare domain context relevant to the target production environment.
 ## Tech stack
 
 **Backend:**
-- .NET 8 minimal API
+- .NET 8.0 minimal API
 - C# with repository pattern and dependency injection
-- xUnit for integration tests using WebApplicationFactory
-- NSubstitute for mocking
+- xUnit 2.5.3 for integration tests using WebApplicationFactory
+- NSubstitute 5.1.0 for mocking
+- Microsoft.AspNetCore.Mvc.Testing 8.0.0
 
 **Frontend:**
-- React 19 with TypeScript
-- Vite for bundling
+- React 19.2.6 with TypeScript 6.0.2
+- Vite 8.0.12 for bundling
+- ESLint 10.3.0 with typescript-eslint
+- Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
 - CSS with custom properties and breakpoint variables
 - Vitest for unit tests (coming in week 3)
 - Playwright for e2e tests (coming in week 3)
@@ -44,6 +47,13 @@ healthcare domain context relevant to the target production environment.
 - GitHub Actions CI — dotnet test on every push and PR to main
 - Branch protection — all changes via PR, CI must pass before merge
 - Prettier with semicolons enabled, single quotes, trailing commas
+
+**Tooling:**
+- Node.js 24 (LTS)
+- Husky 9.1.7 pre-commit hooks — ESLint, Prettier, TypeScript check
+- lint-staged 17.0.5 — only checks staged files
+- GitHub Actions CI — dotnet test on every push and PR to main
+- Branch protection — all changes via PR, CI must pass before merge
 
 **AI tools used:**
 - Claude Code for terminal-based agentic tasks
