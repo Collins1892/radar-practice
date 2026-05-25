@@ -1,13 +1,71 @@
+## Day 6 — 26 May 2026
+
+### Code review findings
+
+- 
+
+### Prettier auto-fix
+
+- Switched from prettier --check to prettier --write on staged files
+
+- Auto-fix is better for developer experience — no blocked commits for formatting
+
+- CI still uses prettier --check — correct, should fail if formatting wrong in pipeline
+
+- lint-staged.config.js updated — runs prettier --write on all staged file types
+
+### Branch protection and PR workflow
+
+- Repo made public — rulesets only enforced on public repos on free GitHub plan
+
+- main-protection ruleset created with:
+
+  - Restrict deletions
+
+  - Require pull request before merging
+
+  - Require .NET Tests CI check to pass
+
+  - Block force pushes
+
+- React tests check to be added in week 3 when Vitest is in CI
+
+- No bypass list — solo project, always go through PR process
+
+### [CLAUDE.md](http://CLAUDE.md) multi-repo observation
+
+- [CLAUDE.md](http://CLAUDE.md) is powerful but gets complex across multiple repos
+
+- Conflicting conventions between teams is a real unsolved problem
+
+- Different squads may have different styles — one [CLAUDE.md](http://CLAUDE.md) can't serve all
+
+- Industry hasn't fully solved this yet
+
+- Opportunity to propose a thoughtful approach when back at Radar
+
+### What I would not trust the agent to do unsupervised
+
+- 
+
+### Time saved today
+
+- 
+
+### Ideas and observations
+
+-
+
 ## Day 5 — 23 May 2026
 
 ### Code review findings
 
 - Assembly files were being tracked in git — fixed with .gitignore cleanup
 - xUnit integration tests are more expensive than unit tests — 
-  deliberate balance needed at scale
+deliberate balance needed at scale
 - Testing pyramid: lots of unit tests, fewer integration, fewer e2e
 - Agent defaulted to integration tests — correct for an API but 
-  doesn't scale without a unit test layer underneath
+doesn't scale without a unit test layer underneath
 
 ### GitHub Actions CI pipeline
 
@@ -21,21 +79,21 @@
 
 - Husky installed with lint-staged — only checks staged files, keeps it fast
 - Blocks on: no-explicit-any, unused imports, unused vars, 
-  no-non-null-assertion, explicit return types, react hooks rules,
-  no-console, no-debugger, no-secrets
+no-non-null-assertion, explicit return types, react hooks rules,
+no-console, no-debugger, no-secrets
 - Deliberate decision not to run tests in the hook — tests belong in CI
 - Pre-commit hooks should be fast — milliseconds not seconds
 - Tested with deliberate any type — blocked with two specific errors
 - Semicolons added back to Prettier config — personal preference, 
-  consistent with C# background
+consistent with C# background
 
 ### Responsive design
 
 - Agent found real issues — iOS zoom bug on inputs under 16px, 
-  cramped content width on mobile
+cramped content width on mobile
 - Fixed with media queries and proper flex layout
 - PostCSS breakpoint variables explored then reverted — clever solution 
-  but unnecessary complexity for project size
+but unnecessary complexity for project size
 - Fluid responsive design with proper breakpoint tiers planned for week 3
 
 ### Working with Claude
