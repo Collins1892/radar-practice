@@ -31,9 +31,9 @@ export default {
     }
 
     commands.push(`eslint --max-warnings 0 ${files.join(' ')}`)
-    commands.push(`prettier --check ${files.join(' ')}`)
+    commands.push(`prettier --write ${files.join(' ')}`)
 
     return commands
   },
-  '*.{css,json,html,md}': 'prettier --check',
+  '*.{css,json,html,md}': 'prettier --write',
 }
