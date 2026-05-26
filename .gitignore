@@ -84,3 +84,6 @@ Desktop.ini
 *.pid
 *.seed
 *.pid.lock
+
+# Private working notes (not committed)
+private/
