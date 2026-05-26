@@ -1,4 +1,147 @@
-## Day 6 — 26 May 2026
+## Day 7 — 26 May 2026
+
+### Code review findings
+
+- No significant code changes today — process, tooling, and planning day
+- Repo clean — 0 open PRs, 25 commits, CI green on main
+- README solid — reads clearly as a learning project with intent
+
+### Seven-week plan consolidated
+
+- Original plan recovered from screenshots and transcribed
+- Drift analysis completed — original vs current trajectory
+- Weeks 3–5 have re-themed significantly — build happened early
+- Phase 3 intent unchanged — articulate impact, demonstrate to director of engineering
+- WCAG reclaimed from original plan into Week 3 — accessibility is non-optional in healthcare
+- Weekly outcome statements added — the question at end of each week is did I deliver the outcome, not did I finish the tasks
+- Model selection guidance added to `private/seven-week-plan.md` — Sonnet for pattern work, Opus for novel reasoning and synthesis
+
+### Private folder convention established
+
+- Three-tier file model for agentic projects:
+  - Public, committed — README, CLAUDE.md, code. The demonstration.
+  - Private, on disk — plans, scratch notes, raw observations. `.gitignore`d but agent-readable. Lives in `private/`
+  - Outside the repo — anything sensitive or unrelated
+- The middle tier is the one most workflows skip — most valuable for agent-augmented work
+- `private/seven-week-plan.md` saved — agent-readable, never committed
+- `.gitignore` updated via PR to enforce the convention
+
+### File location should follow purpose
+
+- Before deciding where something lives, ask: what is this file actually for?
+- Continuity and discipline — `private/` on disk
+- Demonstration — public, committed
+- The location follows the purpose, not the other way around
+
+### When to delegate to an agent vs do it yourself
+
+- Useful test before reaching for an agent:
+  - Is the work more than ~10 lines or files?
+  - Would verification be non-trivial?
+  - Is it repetitive or does it require synthesis across files?
+- If no to all three — just do it yourself
+- Editing a `.gitignore` entry is not an agent task — auditing `.gitignore` across five repos is
+- Knowing the threshold is the skill
+
+### Model selection discipline
+
+- Default to Sonnet 4.6 for pattern-following work — code reviews, tests, mechanical tasks, notes
+- Switch to Opus 4.7 for novel reasoning, synthesis, high-stakes articulation
+- Decision rule: am I asking Claude to follow a pattern or reason about something novel?
+- Opus-recommended moments: Wk 4 prompting deep-dive, Wk 5 modernisation refactor, Wk 6 AI impact story, Wk 7 portfolio polish, Plan mode plan-generation step
+- Front-loading a comprehensive handover note on Opus burns quota fast — reserve for recovery or weekend regeneration sessions
+
+### Weekend regeneration ritual
+
+- Once per week on a weekend, start a fresh Opus session with `learning-notes.md`, `private/seven-week-plan.md`, and repo state
+- Opus produces a comprehensive handover note for the coming week
+- Full context, full depth, costs the weekend budget not the weekday budget
+
+### Claude desktop app orientation
+
+- Three surfaces: Chat, Cowork, Code
+- Code surface has a Mode selector — Ask permissions, Accept edits, Plan mode, Auto mode
+- Plan mode is in the Mode selector, not a slash command — `/plan` is not available in this environment
+- Sonnet 4.6 is the default model in Code sessions — different from Chat which can default to Opus
+- Model selector visible bottom right of Code surface — change per session as needed
+
+### Slash commands in Claude Code
+
+- Full list visible by typing `/` in the Code surface input
+- Key commands for this project: `/review`, `/code-review`, `/security-review`, `/skill-creator`, `/init`, `/verify`, `/compact`, `/loop` (Week 4), `/remote-control` (Week 4)
+- `/context7-mcp` confirmed in the list — Context7 installed correctly
+- `/compact` useful for long sessions to free context without starting fresh
+- `/loop` is the Ralph Loop pattern — noted for Week 4, not yet
+
+### Context7 MCP setup
+
+- Remote URL approach via desktop app Connectors UI failed with auth error
+- Working method is the terminal wizard: `npx ctx7 setup`
+- Installs at user level via `~/.claude.json` — available across all Claude Code sessions
+- Connectors UI will not show it — expected, different config path
+- `/context7-mcp` in slash command list confirms it is installed
+- Usage: append `use context7` to any prompt to fetch live library docs
+- To verify: confirm tools visible at session start and that a prompt with `use context7` fetches live docs
+
+### Plan mode — first real use
+
+- Task: add Context7 MCP badge and tooling note to README
+- Agent read CLAUDE.md and README before producing the plan — no assumptions made
+- Plan showed exact file, exact line, exact content before touching anything
+- Approved the plan, agent executed — `+3 -0` diff, exactly as planned
+- Sub-agent model selection: Haiku 4.5 used automatically for file exploration — intelligent token management
+- Plan mode is the correct default for any non-trivial agent task
+
+### Skills — personal vs team vs repo
+
+- Skills in `~/.claude/skills/` are personal — machine only, not available to others
+- Skills in `.claude/skills/` in the repo are team-level — available to any agent on the project
+- CLAUDE.md is the current team-facing convention layer — skills folder makes it more structured
+- `dotnet-test-writer` built today lives in `~/.claude/` — to be moved into `.claude/skills/` in the repo tomorrow
+- `react-test-writer` skill to be built in Week 3 after Vitest is set up — build directly into `.claude/skills/` in the repo
+- Repo should showcase the full agentic workflow — skills, evals, and benchmark results visible to anyone browsing
+
+### dotnet-test-writer skill
+
+- Built using `/skill-creator` slash command
+- Skill explored existing test patterns before writing anything — matched actual conventions
+- Benchmarked with 6 parallel agents — 3 with skill, 3 without (baseline)
+- Results: WITH skill 100% pass rate, WITHOUT skill 83% pass rate, delta +17%
+- Sole differentiator: Arrange/Act/Assert comments — skill enforces them every time, baseline never writes them
+- Skill overhead: +777 tokens and +2 seconds per use — worth it for consistency
+- Skill creator adapted to three obstacles without prompting: no Python, wrong directory structure, Write tool sandboxing
+- Python 3.14.5 installed today — will improve future skill creator runs
+
+### GitHub Actions CI issue
+
+- PR #7 (Context7 README badge) triggered no CI runs across multiple pushes
+- Workflow file correct, ruleset correct, Actions enabled, repo public — no config problem found
+- GitHub Actions had 10 incidents in May 2026 — transient runner availability issue most likely cause
+- PR left open overnight — will merge first thing Wednesday once CI triggers
+- Lesson: CI issues on markdown-only PRs are frustrating but do not bypass branch protection
+
+### Git observations
+
+- `git branch -m old-name new-name` renames a local unpushed branch — free operation
+- Auto-delete-on-merge means `git branch -d` is only needed if the local branch still exists after `git pull`
+- Branch naming matters as documentation — `feature/gitignore-plan` is clearer than `feature/seven-week-plan` for a `.gitignore` change
+
+### Ideas and observations
+
+- Python on the machine reduces agentic token consumption — agents reach for Python for scripting tasks, without it they work harder
+- Skills should be visible in the repo alongside CLAUDE.md — part of the portfolio story
+- `react-test-writer` skill to build in Week 3 after Vitest setup — add to `.claude/skills/` in repo directly
+- Move `dotnet-test-writer` into `.claude/skills/` in repo — first task Wednesday before code review
+- Weekend task: regenerate and update handover note using Opus with full context
+
+### Time saved today
+
+- Seven-week plan consolidated and drift-analysed in under an hour — manually would have taken most of a morning
+- Context7 MCP set up in minutes once correct method found — desktop UI approach wasted time, terminal wizard was the answer
+- Plan mode README update: planned, executed, and verified in one approved flow — no back and forth
+- dotnet-test-writer skill built and benchmarked with 6 parallel agents — manually writing and testing this skill would have taken hours
+
+## Day 6 — 25 May 2026
 
 ### Code review findings
 
