@@ -114,4 +114,3 @@ To call the API directly from the browser (without the proxy), copy `client/.env
 ### CI
 
 Pushes to `main` trigger the [CI workflow](.github/workflows/ci.yml), which runs all .NET tests on Ubuntu. The workflow fails if any test fails.
-
