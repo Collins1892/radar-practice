@@ -22,6 +22,7 @@ healthcare domain context relevant to the target production environment.
 - `ItemsApi.Tests/` — xUnit integration tests
 - `client/` — React TypeScript Vite frontend
 - `.github/workflows/` — GitHub Actions CI
+- `.claude/skills/` — repo-level agent skills
 - `learning-notes.md` — daily observations from the build
 
 ## Tech stack
@@ -43,12 +44,6 @@ healthcare domain context relevant to the target production environment.
 - Playwright for e2e tests (coming in week 3)
 
 **Tooling:**
-- Husky pre-commit hooks — ESLint, Prettier, TypeScript check
-- GitHub Actions CI — dotnet test on every push and PR to main
-- Branch protection — all changes via PR, CI must pass before merge
-- Prettier with semicolons enabled, single quotes, trailing commas
-
-**Tooling:**
 - Node.js 24 (LTS)
 - Husky 9.1.7 pre-commit hooks — ESLint, Prettier, TypeScript check
 - lint-staged 17.0.5 — only checks staged files
@@ -58,6 +53,13 @@ healthcare domain context relevant to the target production environment.
 **AI tools used:**
 - Claude Code for terminal-based agentic tasks
 - Cursor for editor-based agentic work
+- Context7 MCP for live library documentation
+
+**Version discipline:**
+The versions listed above must stay in sync with `package.json` and
+`.csproj` at all times. When upgrading any package, update this file
+and any affected skill files in `.claude/skills/` as part of the same
+task. Stale versions here cause agents to use wrong API assumptions.
 
 ## Code conventions
 
@@ -126,6 +128,7 @@ healthcare domain context relevant to the target production environment.
 - Ask for clarification if a task is ambiguous rather than guessing
 - Use descriptive commit messages when asked to commit
 - Follow the TypeScript conventions defined above — no any, explicit return types
+- Check `.claude/skills/` for relevant skills before starting a task
 
 ## What the agent should not do
 
@@ -140,3 +143,6 @@ healthcare domain context relevant to the target production environment.
 - Never use `any` types, non-null assertions, or disable ESLint rules
 - Never over-engineer — only add what is directly requested
 - Never assume a task is complete without verifying the build and tests pass
+- Never translate AngularJS patterns directly to React — rewrite using
+  idiomatic React (hooks, component composition, separation of concerns).
+  Legacy code is a reference for *what* to build, not *how* to build it.
