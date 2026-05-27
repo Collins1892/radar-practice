@@ -60,6 +60,9 @@ The versions listed above must stay in sync with `package.json` and
 `.csproj` at all times. When upgrading any package, update this file
 and any affected skill files in `.claude/skills/` as part of the same
 task. Stale versions here cause agents to use wrong API assumptions.
+When updating a skill file, update any version strings in the
+description frontmatter and any code examples that reference the
+changed library API.
 
 ## Code conventions
 
@@ -146,3 +149,7 @@ task. Stale versions here cause agents to use wrong API assumptions.
 - Never translate AngularJS patterns directly to React — rewrite using
   idiomatic React (hooks, component composition, separation of concerns).
   Legacy code is a reference for *what* to build, not *how* to build it.
+  - Never translate AngularJS patterns directly to React — rewrite using
+  idiomatic React (hooks, component composition, separation of concerns).
+  Legacy code is a reference for *what* to build, not *how* to build it.
+  
