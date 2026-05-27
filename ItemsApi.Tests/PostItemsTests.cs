@@ -119,6 +119,41 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Post_WhitespaceOnlyName_Returns400WithError()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+
+        // Act
+        var response = await client.PostAsJsonAsync("/items", new { name = "   ", price = 1.00m });
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Name is required.", body.Error);
+    }
+
+    [Fact]
+    public async Task Post_NameExactly100Chars_Returns201WithItem()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+        var name = new string('x', 100);
+
+        // Act
+        var response = await client.PostAsJsonAsync("/items", new { name, price = 1.00m });
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var item = await response.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(item);
+        Assert.Equal(100, item.Name.Length);
+        Assert.Equal(1.00m, item.Price);
+        Assert.True(item.Id > 0);
+    }
+
     private record ItemResponse(int Id, string Name, decimal Price);
     private record ErrorResponse(string Error);
 }
