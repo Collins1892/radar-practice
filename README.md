@@ -1,6 +1,7 @@
 # radar-practice
 
 [![CI](https://github.com/Collins1892/radar-practice/actions/workflows/ci.yml/badge.svg)](https://github.com/Collins1892/radar-practice/actions/workflows/ci.yml)
+[![Docs: Context7](https://img.shields.io/badge/docs-Context7-blue)](https://context7.com)
 
 A full-stack practice project built to explore **agentic AI development** — using AI coding agents (Claude Code and Cursor) to scaffold, extend, test, and maintain a real application under human direction.
 
@@ -65,6 +66,9 @@ These are practical lessons from building this project with Claude Code (termina
 - **Cursor** excels when full workspace context matters — wiring the frontend to the backend, adding typed error handling, and verifying changes in-editor.
 - **Claude Code** suits terminal-driven workflows — generating projects, running tests, and iterating on backend logic with explicit accept/reject control.
 - Both benefit from the same discipline: small prompts, verify output, read the diff before committing.
+
+**Context7 MCP**
+— fetches live library documentation into agent context so agents work from current API references rather than training-data snapshots.
 
 **Safety habits (especially relevant to healthcare work)**
 - Never paste identifiable patient data into prompts — anything in a prompt leaves your environment via the API.
