@@ -108,18 +108,6 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task Get_WhenRepositoryThrows_Returns500()
-    {
-        var repo = Substitute.For<IItemsRepository>();
-        repo.GetAll().Throws(new Exception("Simulated failure"));
-        var client = CreateClientWithRepo(repo);
-
-        var response = await client.GetAsync("/items");
-
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Post_WhitespaceOnlyName_Returns400WithError()
     {
         // Arrange

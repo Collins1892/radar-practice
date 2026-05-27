@@ -62,4 +62,19 @@ public class GetItemsTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Contains(items, i => i.Name == "Widget" && i.Price == 9.99m);
         Assert.Contains(items, i => i.Name == "Sprocket" && i.Price == 4.50m);
     }
+
+    [Fact]
+    public async Task Get_WhenRepositoryThrows_Returns500()
+    {
+        // Arrange
+        var repo = Substitute.For<IItemsRepository>();
+        repo.GetAll().Throws(new InvalidOperationException("Simulated failure"));
+        var client = CreateClientWithRepo(repo);
+
+        // Act
+        var response = await client.GetAsync("/items");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+    }
 }
