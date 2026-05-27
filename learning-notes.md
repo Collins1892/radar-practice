@@ -1,3 +1,134 @@
+## Day 8 — 28 May 2026
+
+### Code review findings
+
+- No code issues on main — clean start to the day
+- `/review` slash command in Claude Code runs structured review automatically
+- First real use of `/review` caught two issues in CLAUDE.md PR: missing
+  trailing newline and under-specified version discipline scope in skill files
+- Both fixed in a follow-up PR same day — AI review more consistent than
+  manual eyeballing
+- Daily `/review` added to the daily structure going forward
+- Note for tomorrow: verify code-reviewer skill triggers correctly on
+  first `/review` run — confirm output follows structured findings template
+
+### PR #7 — Context7 README badge finally merged
+
+- CI not triggering across two days and multiple pushes on the original branch
+- Root cause: accumulated messy commits from trigger attempts made the branch
+  unclean
+- Fix: close PR, fresh branch, single clean commit — CI triggered immediately
+- Lesson: when CI is not triggering, start with a clean single-commit branch
+  before debugging infrastructure
+
+### CLAUDE.md updated — two PRs
+
+- Duplicate Tooling section removed
+- Version discipline added — versions must stay in sync with package.json,
+  .csproj, and affected skill files including description frontmatter and
+  code examples
+- Idiomatic React migration rule added — never translate AngularJS patterns
+  directly to React, rewrite using hooks and component composition. Based on
+  real production experience at Radar where ModelCode.IO produced working
+  but wrong-pattern code shipped past deadline
+- Skills folder added to repo layout and agent guidance
+- Context7 MCP added to AI tools list
+- Trailing newline and version discipline scope fixed in follow-up PR
+
+### dotnet-test-writer skill — rebuilt and shipped to repo
+
+- Rebuilt from scratch with Python 3.14.5 installed and Context7 MCP active
+- Saved directly to `.claude/skills/dotnet-test-writer/SKILL.md` in the repo
+- Context7 fetched live xUnit and NSubstitute docs before writing
+- Four new integration tests generated using the skill — all passing
+- Skill self-corrected after a real failure: shared-state warning for
+  `CreateDefaultClient` added to SKILL.md after `Get_NoItems` test failed
+  due to seeded repository data from other tests
+- Final test count: 13/13 passing
+
+### code-reviewer skill — built and shipped to repo
+
+- Created at `.claude/skills/code-reviewer/SKILL.md`
+- Full-stack — three sections: universal rules, backend rules, frontend rules
+- Review-only — never edits files, one file or diff at a time
+- Uses Context7 for uncertain library or WCAG guidance
+- Structured findings output: Blocker, Major, Minor, Suggestion severity levels
+- Includes Mermaid review flow diagram — renders on GitHub
+- Built manually in Cursor using dotnet-test-writer as a template — no skill
+  creator needed for a documentation-only skill
+- Self-reviewed before committing — two issues caught and fixed
+
+### GET /items 500 test — relocated and fixed
+
+- `Get_WhenRepositoryThrows_Returns500` already existed in PostItemsTests.cs
+  — wrong file, missing Arrange/Act/Assert comments
+- Plan mode in Cursor caught this before writing any new code
+- Test relocated to GetItemsTests.cs with proper A/A/A comments
+- Duplicate removed from PostItemsTests.cs — coverage unchanged
+- 13/13 tests still passing
+- First real Plan mode use in Cursor — worked identically to Claude Code
+
+### Context7 MCP — fixed in Cursor
+
+- Cursor MCP config file was empty — caused JSON syntax error
+- Fixed by adding correct mcpServers config with npx command
+- Context7 now active in both Claude Code and Cursor
+
+### GitHub CLI installed
+
+- `gh` CLI installed — `gh version 2.92.0`
+- Future Cursor sessions can create PRs without leaving the editor
+
+### Usage limit observations
+
+- Two session lockouts in two days — all surfaces share the same limit
+- Chat and Claude Code compete for the same Pro quota
+- Fix: Sonnet for all working chat sessions, Opus for Sunday regeneration
+- Check `claude.ai/settings/usage` at start of each session
+- 5-hour rolling window starts when first message is sent
+- Weekly limit: resets Sunday 8:00 PM — 36% used at end of Day 8
+- Claude Project from Week 3 will significantly reduce token consumption
+  via RAG — no more pasting context into every session
+
+### Tool selection going forward
+
+- Cursor for coding tasks Monday to Wednesday — separate token budget
+- Claude Code reserved for Thursday and Friday — skill creator, Plan mode,
+  heavier agentic sessions
+- Exception: Plan mode in Cursor works well for focused coding tasks
+
+### What I would not trust the agent to do unsupervised
+
+- Start a skill creator task without confirming output location first —
+  defaults to `~/.claude/` not the repo, wasted work if not redirected
+- Use `CreateDefaultClient()` for tests asserting on data shape — shared
+  repository singleton causes order-dependent failures
+
+### Time saved today
+
+- CLAUDE.md structured review caught two real issues before they caused
+  agent confusion in future sessions
+- dotnet-test-writer skill generated four passing tests and self-corrected
+  — manually writing with correct conventions would have taken an hour
+- Plan mode in Cursor caught a misplaced duplicate test before writing
+  any new code — saved writing a duplicate and debugging the confusion
+- Private notes rebuilt comprehensively — single source of truth for
+  strategic context saves significant context-setting time every session
+
+### Ideas and observations
+
+- Claude Project with RAG is the right architecture for Week 3 onwards
+- Weekly `week-N-summary.md` files as Project knowledge — efficient
+  growing record without full notes file token cost
+- Mermaid diagrams in skill files render on GitHub — good portfolio signal
+- Morning standup structure transfers directly to team standup at Radar
+- ModelCode.IO failure at Radar (working but wrong patterns, inferior
+  visual quality, shipped past deadline) is a concrete AI impact story
+  for Week 6 — know what good looks like and where AI fell short
+- Two lockouts and CI trigger issue this week are stronger portfolio
+  stories than a smooth week — real experience, real lessons, real
+  discipline put in place to prevent recurrence
+
 ## Day 7 — 26 May 2026
 
 ### Code review findings
