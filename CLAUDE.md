@@ -152,4 +152,42 @@ changed library API.
   - Never translate AngularJS patterns directly to React — rewrite using
   idiomatic React (hooks, component composition, separation of concerns).
   Legacy code is a reference for *what* to build, not *how* to build it.
+
+  ## GDPR and data protection
+
+This project operates in a healthcare context. GDPR and HIPAA apply to
+any system handling personal data about patients, staff, or clients.
+
+**Key principles for AI-assisted development:**
+
+- **Lawfulness** — there is no lawful basis for using real patient data
+  in development. Use synthetic or redacted data only.
+- **Data minimisation** — only include what is strictly necessary in
+  prompts. Strip everything that isn't needed to solve the technical
+  problem.
+- **Privacy by design** — controls are built into the workflow, not
+  added afterwards. Redacted databases, no production access, and
+  prompt hygiene are the controls.
+
+**Prompt hygiene checklist — before sending any prompt:**
+- No NHS numbers, patient IDs, or dates of birth
+- No real client or organisation names
+- No stack traces or logs containing identifiable information
+- No test fixtures with realistic-looking personal data
+
+**International context:**
+Radar Healthcare is expanding to the US and Middle East. HIPAA (US)
+applies alongside GDPR. Key addition: Protected Health Information (PHI)
+has specific technical safeguard requirements — encryption at rest and
+in transit, audit logs, minimum necessary access. Prompt hygiene rules
+apply equally under both frameworks.
+
+**Consequences of getting this wrong:**
+ICO fines up to £17.5 million or 4% of global turnover. HIPAA
+penalties up to $1.9 million per violation category per year. Client
+trust destroyed. Reputational damage. Potential criminal liability
+under the Data Protection Act 2018.
+
+**The practical rule:** 
+If in doubt, leave it out.
   
