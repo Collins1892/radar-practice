@@ -27,15 +27,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/items", (IItemsRepository repo) =>
 {
-    try
-    {
-        return Results.Ok(repo.GetAll());
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "Failed to retrieve items.");
-        return Results.Problem("Failed to retrieve items.");
-    }
+    return Results.Ok(repo.GetAll());
 });
 
 app.MapPost("/items", (ItemRequest req, IItemsRepository repo) =>
@@ -49,16 +41,8 @@ app.MapPost("/items", (ItemRequest req, IItemsRepository repo) =>
     if (req.Price <= 0)
         return Results.BadRequest(new { error = "Price must be greater than zero." });
 
-    try
-    {
-        var item = repo.Add(req.Name, req.Price);
-        return Results.Created($"/items/{item.Id}", item);
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "Failed to create item.");
-        return Results.Problem("Failed to create item.");
-    }
+    var item = repo.Add(req.Name, req.Price);
+    return Results.Created((string?)null, item);
 });
 
 app.Run();
