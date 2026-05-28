@@ -82,8 +82,9 @@ changed library API.
 **C#:**
 - Repository pattern — controllers depend on interfaces, not concrete classes
 - Dependency injection via .NET built-in DI container
-- Explicit error handling with try/catch on all endpoints
-- Global exception handler middleware — never expose stack traces to client
+- Global exception handler covers unhandled exceptions — do not add
+  per-endpoint try/catch; the handler returns a consistent
+  `{ error: "..." }` shape and never exposes stack traces to the client
 
 **General:**
 - Small focused commits with descriptive messages
@@ -176,11 +177,13 @@ any system handling personal data about patients, staff, or clients.
 - No test fixtures with realistic-looking personal data
 
 **International context:**
-Radar Healthcare is expanding to the US and Middle East. HIPAA (US)
-applies alongside GDPR. Key addition: Protected Health Information (PHI)
+Radar Healthcare is expanding to the US and Middle East. HIPAA applies
+to US operations. Middle East jurisdictions will have their own
+requirements — confirm with legal before any data handling decisions
+in those markets. Key HIPAA addition: Protected Health Information (PHI)
 has specific technical safeguard requirements — encryption at rest and
 in transit, audit logs, minimum necessary access. Prompt hygiene rules
-apply equally under both frameworks.
+apply equally under GDPR and HIPAA.
 
 **Consequences of getting this wrong:**
 ICO fines up to £17.5 million or 4% of global turnover. HIPAA
