@@ -1,4 +1,92 @@
-## Day 8 — 28 May 2026
+## Day 9 — 28 May 2026
+
+### Code review findings
+
+- `/review` command now working correctly with code-reviewer skill
+- HIPAA jurisdiction error caught by `/review` — HIPAA applies to US
+  operations only, not Middle East
+- Duplicate "never expose stack traces" rule caught and merged
+- Redundant step 5 in review.md caught and removed
+- Running `/review <PR number>` before merging is now part of the workflow
+- Automated PR review via GitHub Actions planned for Week 5
+
+### GDPR and AI session
+
+- GDPR principles for AI development: lawfulness, data minimisation,
+  privacy by design
+- Prompt hygiene is the practical control — strip everything not needed
+  to solve the technical problem before sending to an agent
+- HIPAA adds PHI-specific technical safeguards — encryption at rest
+  and in transit, audit logs, minimum necessary access
+- HIPAA training is a personal strength relevant to Radar's US expansion
+- GDPR and HIPAA section added to CLAUDE.md — legal framework behind
+  the existing no-PII rules now explicit
+- Key addition: HIPAA applies to US operations only — Middle East
+  jurisdictions have their own requirements
+
+### Program.cs — error handling fixes
+
+- Redundant per-endpoint try/catch blocks removed — global exception
+  handler already covers unhandled exceptions
+- `Results.Created((string?)null, item)` — fixed RFC 9110 violation,
+  Location header was pointing to non-existent `/items/{id}` endpoint
+- `(string?)null` cast required to resolve C# overload ambiguity
+- CLAUDE.md C# convention updated — global exception handler is the
+  pattern, do not add per-endpoint try/catch
+- 13/13 tests passing after changes
+
+### Custom /review command
+
+- Created `.claude/commands/review.md` — custom command that loads
+  the code-reviewer skill and enforces the structured findings template
+- Fixes the issue where `/review` used built-in behaviour instead of
+  the skill
+- Output now follows exact template: Blocker/Major/Minor/Suggestion
+  severity levels, Where/Rule/Issue/Suggested fix structure, closes
+  with "I have not made any code changes."
+- `/review <PR number>` before merging is now the workflow
+- Automated version planned for Week 5 via GitHub Actions
+
+### Claude Project setup
+
+- Project created: "Radar Practice — Agentic Learning"
+- Files: `seven-week-plan.md`, `jd.md`, `cv.md`, `learning-notes.md`,
+  `cto-emails.md`
+- RAG verified — correctly reads context from attached files
+- From Day 10 onwards, daily sessions run inside the Project
+- End of day pattern: notes PR merged, update Project files, verify,
+  delete chat
+
+### .claude folder — capabilities noted
+
+- `.claude/commands/` — custom slash commands, Week 4 plan item
+- `.claude/rules/` — always-on instructions, not needed yet
+- `.claude/settings.json` — repo-level settings, not needed yet
+- `.cursorrules` — Cursor equivalent of CLAUDE.md, deferred to Week 3
+
+### GitHub CLI authenticated
+
+- `gh auth login` required after install — Claude Code uses gh for
+  PR status in `/review`
+- Verify with `gh auth status`
+
+### What I would not trust the agent to do unsupervised
+
+- Follow the /review template without a custom command — built-in
+  behaviour overrides the skill without explicit instruction
+- Get HIPAA jurisdiction right without a legal prompt — assumed HIPAA
+  applied to Middle East, it does not
+
+### Ideas and observations
+
+- `/review before merge` is a discipline that catches real issues —
+  three findings in today's PRs that improved the codebase
+- Automated PR review via GitHub Actions + Anthropic API is a natural
+  Week 5 task alongside the daily digest
+- Claude Project RAG is significantly more token-efficient than long
+  chat sessions — confirmed by today's usage patterns
+
+## Day 8 — 27 May 2026
 
 ### Code review findings
 
