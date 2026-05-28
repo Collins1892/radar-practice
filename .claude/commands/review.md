@@ -28,5 +28,3 @@ Load and follow `.claude/skills/code-reviewer/SKILL.md` exactly.
 <what is done well>
 
 **I have not made any code changes.**
-
-5. Close with the exact line: **I have not made any code changes.**
