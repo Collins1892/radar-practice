@@ -21,7 +21,7 @@ healthcare domain context relevant to the target production environment.
 - `ItemsApi/` — .NET 8 minimal API
 - `ItemsApi.Tests/` — xUnit integration tests
 - `client/` — React TypeScript Vite frontend
-- `client/src/**/*.test.tsx` — Vitest tests (component and App integration)
+- `client/src/**/*.test.{ts,tsx}` — Vitest tests (component and App integration)
 - `client/src/test/setup.ts` — Vitest setup (jest-dom matchers, RTL cleanup)
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
@@ -118,6 +118,11 @@ changed library API.
 - Render full `App` and mock `./api` with `vi.mock` — do not mock presentational children
 - Exercise mount → fetch → list states, form validation, submit, and refresh through the real component tree
 - Use `vi.mocked(...).mockReset()` in `beforeEach` and `findBy*` for async UI
+
+**Frontend — unit tests** (e.g. `client/src/guards.test.ts`):
+- Pure functions; no RTL; no `vi.mock('./api')`
+- Same Arrange / Act / Assert comments and explicit `(): void` return types as other Vitest tests
+- When changing `api.ts` parsing or `guards.ts`, add or update tests in `client/src/guards.test.ts`
 
 **End-to-end — Playwright (coming week 3):**
 - Key user journeys — view items, add item, error state
