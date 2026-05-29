@@ -26,7 +26,8 @@ healthcare domain context relevant to the target production environment.
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
 - `learning-notes.md` — daily observations from the build
-- `private/original-plan.md` — original seven-week plan shared with the tech lead at the start of the programme (private file: agent-readable, not committed)
+- `private/seven-week-plan.md` — seven-week programme plan (private file: agent-readable, not committed)
+- `private/original-plan.md` also exists as the original plan shared with the tech lead
 
 ## Tech stack
 
@@ -172,7 +173,7 @@ changed library API.
   idiomatic React (hooks, component composition, separation of concerns).
   Legacy code is a reference for *what* to build, not *how* to build it.
 
-  ## GDPR and data protection
+## GDPR and data protection
 
 This project operates in a healthcare context. GDPR and HIPAA apply to
 any system handling personal data about patients, staff, or clients.
