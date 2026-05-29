@@ -40,14 +40,14 @@ healthcare domain context relevant to the target production environment.
 - ESLint 10.3.0 with typescript-eslint
 - Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
 - CSS with custom properties and breakpoint variables
-- Vitest for unit tests (coming in week 3)
+- Vitest 4.1.7 for unit tests with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
 - Playwright for e2e tests (coming in week 3)
 
 **Tooling:**
 - Node.js 24 (LTS)
 - Husky 9.1.7 pre-commit hooks — ESLint, Prettier, TypeScript check
 - lint-staged 17.0.5 — only checks staged files
-- GitHub Actions CI — dotnet test on every push and PR to main
+- GitHub Actions CI — `dotnet test` and `npm test` (Vitest) on every push and PR to main
 - Branch protection — all changes via PR, CI must pass before merge
 
 **AI tools used:**
@@ -101,7 +101,10 @@ changed library API.
 - Use NSubstitute for mocking repository dependencies
 - Run tests with: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`
 
-**Frontend — Vitest unit tests (coming week 3):**
+**Frontend — Vitest unit tests:**
+- Vitest is the React test runner; run from `client/` with `npm test` (`vitest run`)
+- Test setup file: `client/src/test/setup.ts` — registers jest-dom matchers and `afterEach(cleanup)` from React Testing Library
+- Vitest config lives in `client/vite.config.ts` — `pool: 'threads'` is required on Windows (the default forks pool times out)
 - Component tests for key UI states — loading, error, empty, populated
 - Test behaviour not implementation details
 
@@ -110,8 +113,8 @@ changed library API.
 - Runs nightly via GitHub Actions cron schedule
 
 **CI:**
-- .NET tests run on every push and PR to main
-- Vitest and Playwright to be added in week 3
+- .NET tests and Vitest run on every push and PR to main
+- Playwright to be added in week 3
 - PR cannot merge until all checks pass
 
 **Agent guidance:**

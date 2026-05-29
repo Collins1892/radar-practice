@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: .NET Tests
+    name: Backend and Frontend Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -20,5 +20,20 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
       - name: Run tests
         run: dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj --verbosity normal
+
+      - name: Run client tests
+        working-directory: client
+        run: npm test
