@@ -21,6 +21,8 @@ healthcare domain context relevant to the target production environment.
 - `ItemsApi/` — .NET 8 minimal API
 - `ItemsApi.Tests/` — xUnit integration tests
 - `client/` — React TypeScript Vite frontend
+- `client/src/**/*.test.tsx` — Vitest tests (component and App integration)
+- `client/src/test/setup.ts` — Vitest setup (jest-dom matchers, RTL cleanup)
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
 - `learning-notes.md` — daily observations from the build
@@ -40,7 +42,7 @@ healthcare domain context relevant to the target production environment.
 - ESLint 10.3.0 with typescript-eslint
 - Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
 - CSS with custom properties and breakpoint variables
-- Vitest 4.1.7 for unit tests with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
+- Vitest 4.1.7 for component and App integration tests with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
 - Playwright for e2e tests (coming in week 3)
 
 **Tooling:**
@@ -101,12 +103,21 @@ changed library API.
 - Use NSubstitute for mocking repository dependencies
 - Run tests with: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`
 
-**Frontend — Vitest unit tests:**
+**Frontend — Vitest:**
 - Vitest is the React test runner; run from `client/` with `npm test` (`vitest run`)
 - Test setup file: `client/src/test/setup.ts` — registers jest-dom matchers and `afterEach(cleanup)` from React Testing Library
 - Vitest config lives in `client/vite.config.ts` — `pool: 'threads'` is required on Windows (the default forks pool times out)
-- Component tests for key UI states — loading, error, empty, populated
 - Test behaviour not implementation details
+
+**Frontend — component tests** (e.g. `client/src/components/ItemsList.test.tsx`):
+- Render the component in isolation with props; no API calls
+- Cover key UI states — loading, error, empty, populated
+- Use a small render helper when the same props recur
+
+**Frontend — App integration tests** (e.g. `client/src/App.test.tsx`):
+- Render full `App` and mock `./api` with `vi.mock` — do not mock presentational children
+- Exercise mount → fetch → list states, form validation, submit, and refresh through the real component tree
+- Use `vi.mocked(...).mockReset()` in `beforeEach` and `findBy*` for async UI
 
 **End-to-end — Playwright (coming week 3):**
 - Key user journeys — view items, add item, error state
@@ -119,14 +130,14 @@ changed library API.
 
 **Agent guidance:**
 - Generate one test at a time — stalling occurs with multiple test requests
-- Always verify tests pass after generation with `dotnet test`
+- Always verify tests pass after generation — run `dotnet test` for API changes, `npm test` in `client/` for frontend changes
 - Integration tests are preferred for API endpoints
 - Do not remove or edit existing tests without explicit instruction
 
 ## What the agent should do
 
 - Make small, focused changes — one task at a time
-- Run tests after every change and confirm they pass
+- Run tests after every change and confirm they pass — `dotnet test` for API changes, `npm test` in `client/` for frontend changes
 - Match existing code style and patterns — repository pattern, typed responses, explicit return types
 - Explain non-obvious architectural decisions unprompted
 - Use the repository pattern for all new data access
