@@ -17,6 +17,7 @@ public class GlobalExceptionHandlerTests : IClassFixture<WebApplicationFactory<P
     [Fact]
     public async Task UnhandledException_Returns500WithGenericError()
     {
+        // Arrange
         var client = _factory.WithWebHostBuilder(builder =>
             builder.Configure(app =>
             {
@@ -32,8 +33,10 @@ public class GlobalExceptionHandlerTests : IClassFixture<WebApplicationFactory<P
             }))
             .CreateClient();
 
+        // Act
         var response = await client.GetAsync("/throw");
 
+        // Assert
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();

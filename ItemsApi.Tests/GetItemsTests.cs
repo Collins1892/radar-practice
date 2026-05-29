@@ -76,5 +76,12 @@ public class GetItemsTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("An unexpected error occurred.", body.Error);
+        Assert.DoesNotContain("Simulated failure", body.Error);
     }
+
+    private record ErrorResponse(string Error);
 }
