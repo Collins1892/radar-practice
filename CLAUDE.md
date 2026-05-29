@@ -26,6 +26,7 @@ healthcare domain context relevant to the target production environment.
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
 - `learning-notes.md` — daily observations from the build
+- `private/original-plan.md` — original seven-week plan shared with the tech lead at the start of the programme (private file: agent-readable, not committed)
 
 ## Tech stack
 
@@ -168,9 +169,6 @@ changed library API.
 - Never over-engineer — only add what is directly requested
 - Never assume a task is complete without verifying the build and tests pass
 - Never translate AngularJS patterns directly to React — rewrite using
-  idiomatic React (hooks, component composition, separation of concerns).
-  Legacy code is a reference for *what* to build, not *how* to build it.
-  - Never translate AngularJS patterns directly to React — rewrite using
   idiomatic React (hooks, component composition, separation of concerns).
   Legacy code is a reference for *what* to build, not *how* to build it.
 
