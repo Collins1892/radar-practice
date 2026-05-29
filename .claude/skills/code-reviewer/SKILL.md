@@ -69,7 +69,10 @@ ItemsApi.Tests/
 
 client/
   src/App.tsx, main.tsx
-  src/components/             — React components
+  src/App.test.tsx              — App integration tests (mock api.ts)
+  src/components/               — React components
+  src/components/ItemsList.test.tsx
+  src/test/setup.ts             — Vitest setup
   src/api.ts, errors.ts, types.ts, guards.ts
 ```
 
@@ -97,7 +100,7 @@ Applies under `ItemsApi/` and `ItemsApi.Tests/`.
 - **Tests for new endpoints** — new or changed endpoints should have integration tests under `ItemsApi.Tests/` covering happy path and failure cases.
 - **Test structure** — `[Fact]` methods; **Arrange / Act / Assert** comment markers; naming `Verb_Scenario_ExpectedResult` (e.g. `Post_ValidItem_Returns201WithItem`).
 - **NSubstitute** — mock `IItemsRepository` with `CreateClientWithRepo(repo)` when tests depend on repository data or isolation. Avoid `CreateDefaultClient()` when asserting repository contents or emptiness — the shared factory singleton makes those tests order-dependent. See [.claude/skills/dotnet-test-writer/SKILL.md](../dotnet-test-writer/SKILL.md) (mocking section) for rationale.
-- **Repo test-generation convention** — new tests are normally added one at a time per user request; if a diff adds many tests at once, note it as a process/convention observation where relevant.
+- **Repo test-generation convention** — new xUnit and Vitest tests are normally added one at a time per user request; if a diff adds many tests at once, note it as a process/convention observation where relevant.
 
 **Positive references:** [`ItemsApi/Program.cs`](../../../ItemsApi/Program.cs), [`ItemsApi.Tests/PostItemsTests.cs`](../../../ItemsApi.Tests/PostItemsTests.cs).
 
@@ -111,7 +114,9 @@ Applies under `client/`. Aligns with `CLAUDE.md` and [`client/eslint.config.js`]
 - **React hooks** — `react-hooks/rules-of-hooks` and `react-hooks/exhaustive-deps`; no conditional hooks; dependency arrays must be correct or intentionally stable with a short comment when the linter exception is justified.
 - **No `console.log` or `debugger`** — `no-console`, `no-debugger`.
 - **Formatting** — Prettier: semicolons, single quotes, trailing commas.
-- **Component tests** — new UI should have Vitest tests for loading, error, empty, and populated states; behaviour over implementation detail. Flag missing coverage on high-risk UI changes.
+- **Component tests** — new presentational UI should have Vitest tests for loading, error, empty, and populated states. **App integration tests** (mock `api.ts`) cover full-page flows — reference [`client/src/App.test.tsx`](../../../client/src/App.test.tsx). Behaviour over implementation detail; flag missing coverage on high-risk UI changes.
+
+**Positive references:** [`client/src/App.test.tsx`](../../../client/src/App.test.tsx), [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx).
 
 ### WCAG considerations (manual checklist)
 
