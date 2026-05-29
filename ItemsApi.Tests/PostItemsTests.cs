@@ -24,10 +24,13 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Post_ValidItem_Returns201WithItem()
     {
+        // Arrange
         var client = CreateDefaultClient();
 
+        // Act
         var response = await client.PostAsJsonAsync("/items", new { name = "Sprocket", price = 7.50m });
 
+        // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         var item = await response.Content.ReadFromJsonAsync<ItemResponse>();
@@ -40,10 +43,13 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Post_EmptyName_Returns400WithError()
     {
+        // Arrange
         var client = CreateDefaultClient();
 
+        // Act
         var response = await client.PostAsJsonAsync("/items", new { name = "", price = 1.00m });
 
+        // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
@@ -54,11 +60,14 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Post_NameOver100Chars_Returns400WithError()
     {
+        // Arrange
         var client = CreateDefaultClient();
         var longName = new string('x', 101);
 
+        // Act
         var response = await client.PostAsJsonAsync("/items", new { name = longName, price = 1.00m });
 
+        // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
@@ -69,10 +78,13 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Post_ZeroPrice_Returns400WithError()
     {
+        // Arrange
         var client = CreateDefaultClient();
 
+        // Act
         var response = await client.PostAsJsonAsync("/items", new { name = "Widget", price = 0.00m });
 
+        // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
@@ -83,10 +95,13 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Post_NegativePrice_Returns400WithError()
     {
+        // Arrange
         var client = CreateDefaultClient();
 
+        // Act
         var response = await client.PostAsJsonAsync("/items", new { name = "Widget", price = -1.00m });
 
+        // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
@@ -97,14 +112,22 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Post_WhenRepositoryThrows_Returns500()
     {
+        // Arrange
         var repo = Substitute.For<IItemsRepository>();
         repo.Add(Arg.Any<string>(), Arg.Any<decimal>())
             .Throws(new InvalidOperationException("Item limit reached."));
         var client = CreateClientWithRepo(repo);
 
+        // Act
         var response = await client.PostAsJsonAsync("/items", new { name = "Widget", price = 1.00m });
 
+        // Assert
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("An unexpected error occurred.", body.Error);
+        Assert.DoesNotContain("Item limit reached.", body.Error);
     }
 
     [Fact]
