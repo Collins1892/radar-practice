@@ -1,3 +1,108 @@
+## Day 10 — 29 May 2026
+
+### Summary
+
+Last day of Week 2. Full day using the Claude Project for the first time 
+— no context-pasting overhead, straight into productive work. Session 
+tokens held up well throughout the day.
+
+### xUnit deep dive
+
+- Walked through all 12 existing tests with the agent in Ask mode
+- Deleted empty UnitTest1 scaffold — noise with no coverage value
+- Closed two high-value gaps: 500 response body assertions on GET and POST
+- Added Content-Type assertion and DoesNotContain for leaked exception messages
+- AAA comments now consistent across all 12 tests
+- Branching discipline failure caught — committed to main before creating branch. Reset and rebuilt correctly.
+- `/review` before merge discipline broke on first PR — Cursor review was done but Claude Code step skipped. Documented as distinction: Cursor review is a valid substitute when changes have already been through structured review
+
+### Vitest setup
+
+- Installed Vitest 4.1.7, @testing-library/react, @testing-library/jest-dom, jsdom
+- Context7 fetched live Vitest docs and caught Windows forks pool timeout — fixed with `pool: 'threads'` in vite.config.ts
+- First test: ItemsList loading state
+- All four ItemsList states covered: loading, error, empty, ready
+- Edge case: status="error" with errorMessage={null} falls through to empty list — documented by test
+- renderItemsList helper extracted to remove boilerplate
+- afterEach(cleanup) added to setup.ts — fixed DOM pollution between tests
+- within(container) was a workaround; screen queries correct once cleanup in place
+
+### App integration tests
+
+- 8 tests covering all main App flows
+- vi.mock('./api') at module level, mockReset in beforeEach
+- findBy* for async assertions after mount
+- toUserMessage network message asserted — not just alert visibility
+- type="number" inputs return null when empty in jsdom, not '' — real testing gotcha
+- Mock isolation: vi.mockReset() preferred over vi.clearAllMocks() — resets implementations not just call history
+
+### guards.ts unit tests
+
+- 33 tests covering isRecord, isItem, isItemArray, isApiErrorBody
+- JavaScript edge cases documented: NaN as number, arrays as objects, extra properties
+- isItem/isRecord array interaction documented
+- Pure unit tests — no RTL, no vi.mock
+
+### errors.ts unit tests
+
+- 9 tests covering ApiClientError constructor and all toUserMessage branches
+- SERVER_UNREACHABLE_MSG constant to avoid string duplication
+- Context independence documented — network errors ignore context
+- All branches covered including unknown load/create fallbacks
+
+### Documentation discipline established
+
+- After every significant PR: review README, CLAUDE.md, code-reviewer skill
+- One fix at a time in Agent mode
+- Caught real issues every time — stale counts, missing paths, incorrect guidance
+- client/README.md replaced — Vite boilerplate removed, project-specific content
+
+### Claude Project — first full day
+
+- RAG approach working — no context overhead, full day productive
+- Pain points to watch: does daily structure run cleanly from cold start?
+- Project description updated with working conventions
+- CLAUDE.md and README.md added to Project knowledge
+- Sunday regeneration ritual simplified — Project handles context, Sunday is planning
+
+### Cursor modes
+
+- Ask — exploration, read-only, no file changes
+- Plan — non-trivial tasks, see plan before approving
+- Agent — active coding, multi-file changes
+- Debug — errors and failures
+- Factor right mode into task planning each week
+
+### Private folder updates
+
+- seven-week-plan.md updated — Week 2 complete, Week 3 reordered, new decisions
+- pr-workflow.md created — team-adoptable agentic PR workflow
+- original-plan.md — historical, no changes needed
+
+### Seven-week plan updates
+
+- Week 2 marked complete
+- Sunday regeneration simplified
+- Model updated to Opus 4.8
+- Week 3 reordered: responsive rules → WCAG principles → SQLite → component library → incident module → skills → tests → Playwright → WCAG pass
+- Reusable component library as named Week 3 deliverable
+- WCAG skill added to Week 3
+- Evals added to Week 4
+- AI impact story framing captured
+
+### What I would not trust the agent to do unsupervised
+
+- Run /review without the custom command — built-in behaviour overrides the skill
+- Merge without running /review — discipline broke on first PR of the day
+- Chain git commands — individual commands only, each step intentional
+
+### Ideas and observations
+
+- Only 10 working days in — 54 tests, CI pipeline, custom skills, structured PR workflow, CLAUDE.md driving agent behaviour. The acceleration is the story for Week 6.
+- pr-workflow.md is proposable as a Radar team standard from day one
+- AI evals identified as a gap — added to Week 4
+- Week 3 is ambitious at ~34 hours — if pressure builds, slip from the bottom not the top
+
 ## Day 9 — 28 May 2026
 
 ### Code review findings
