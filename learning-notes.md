@@ -6,6 +6,11 @@ Last day of Week 2. Full day using the Claude Project for the first time
 — no context-pasting overhead, straight into productive work. Session 
 tokens held up well throughout the day.
 
+### Code review findings
+
+- No open PRs at start of day — clean repo after Week 2
+- /review discipline broke on first PR — Cursor review substituted, documented as valid alternative
+
 ### xUnit deep dive
 
 - Walked through all 12 existing tests with the agent in Ask mode
@@ -38,7 +43,7 @@ tokens held up well throughout the day.
 
 ### guards.ts unit tests
 
-- 33 tests covering isRecord, isItem, isItemArray, isApiErrorBody
+- 20 tests covering isRecord, isItem, isItemArray, isApiErrorBody
 - JavaScript edge cases documented: NaN as number, arrays as objects, extra properties
 - isItem/isRecord array interaction documented
 - Pure unit tests — no RTL, no vi.mock
