@@ -32,7 +32,7 @@ The domain is a simple **items catalogue** — no patient data, no production de
 ```
 radar-practice/
 ├── ItemsApi/              # .NET 8 minimal API (GET/POST /items)
-├── ItemsApi.Tests/        # xUnit integration tests (9 tests)
+├── ItemsApi.Tests/        # xUnit integration tests (12 tests)
 ├── client/                # React + TypeScript + Vite frontend
 ├── .github/workflows/     # GitHub Actions CI
 └── learning-notes.md      # Daily observations from the build
@@ -43,7 +43,7 @@ radar-practice/
 | API | .NET 8, minimal APIs, in-memory repository |
 | Tests | xUnit, `WebApplicationFactory`, NSubstitute |
 | Frontend | React 19, TypeScript, Vite |
-| CI | GitHub Actions — `dotnet test` on push to `main` |
+| CI | GitHub Actions — `dotnet test` and `npm test` (Vitest) on push/PR to `main` |
 
 > **Note:** Items are stored in-memory via `InMemoryItemsRepository` and are lost when the API restarts. SQLite persistence is planned for a future session.
 
@@ -83,7 +83,7 @@ See [`learning-notes.md`](learning-notes.md) for the full daily log.
 ### Prerequisites
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Node.js](https://nodejs.org/) (LTS recommended)
+- [Node.js 24](https://nodejs.org/)
 
 ### Run the API
 
@@ -100,6 +100,13 @@ The API listens on `http://localhost:5133`.
 dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj
 ```
 
+From `client/`:
+
+```bash
+cd client
+npm test
+```
+
 ### Run the frontend
 
 ```bash
@@ -114,4 +121,4 @@ To call the API directly from the browser (without the proxy), copy `client/.env
 
 ### CI
 
-Pushes to `main` trigger the [CI workflow](.github/workflows/ci.yml), which runs all .NET tests on Ubuntu. The workflow fails if any test fails.
+Pushes and pull requests targeting `main` trigger the [CI workflow](.github/workflows/ci.yml), which runs `dotnet test` and `npm test` (Vitest) on Ubuntu. The workflow fails if any test fails.

@@ -52,7 +52,7 @@ Keep these aligned with [CLAUDE.md](../../../CLAUDE.md), `package.json`, and `.c
 |------|----------|
 | Backend | .NET 8.0, xUnit 2.5.3, NSubstitute 5.1.0, Microsoft.AspNetCore.Mvc.Testing 8.0.0 |
 | Frontend | React 19.2.6, TypeScript 6.0.2, Vite 8.0.12, ESLint 10.3.0 |
-| Frontend tests | Vitest and Playwright (planned week 3) |
+| Frontend tests | Vitest 4.1.7 with @testing-library/react; Playwright (planned week 3) |
 
 ## Project layout
 
@@ -92,7 +92,7 @@ client/
 Applies under `ItemsApi/` and `ItemsApi.Tests/`.
 
 - **Repository pattern** — HTTP layer depends on abstractions (e.g. `IItemsRepository`), not concrete repository classes; use built-in DI.
-- **Explicit error handling** — endpoints use explicit error handling (e.g. try/catch) where the project pattern requires it; failures map to appropriate status codes.
+- **Global exception handler** — do not add per-endpoint try/catch; the global handler covers unhandled exceptions and returns a consistent `{ error: "..." }` shape; failures map to appropriate status codes.
 - **No stack traces to the client** — global exception handler returns generic errors only; never leak stack traces or internal details (see `Program.cs` and related middleware).
 - **Tests for new endpoints** — new or changed endpoints should have integration tests under `ItemsApi.Tests/` covering happy path and failure cases.
 - **Test structure** — `[Fact]` methods; **Arrange / Act / Assert** comment markers; naming `Verb_Scenario_ExpectedResult` (e.g. `Post_ValidItem_Returns201WithItem`).
@@ -111,7 +111,7 @@ Applies under `client/`. Aligns with `CLAUDE.md` and [`client/eslint.config.js`]
 - **React hooks** — `react-hooks/rules-of-hooks` and `react-hooks/exhaustive-deps`; no conditional hooks; dependency arrays must be correct or intentionally stable with a short comment when the linter exception is justified.
 - **No `console.log` or `debugger`** — `no-console`, `no-debugger`.
 - **Formatting** — Prettier: semicolons, single quotes, trailing commas.
-- **Component tests** — when Vitest is available (week 3), new UI should have tests for loading, error, empty, and populated states; behaviour over implementation detail. Until then, **recommend** missing coverage without treating it as a hard merge blocker unless the change is high-risk.
+- **Component tests** — new UI should have Vitest tests for loading, error, empty, and populated states; behaviour over implementation detail. Flag missing coverage on high-risk UI changes.
 
 ### WCAG considerations (manual checklist)
 
