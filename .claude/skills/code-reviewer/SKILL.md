@@ -73,7 +73,9 @@ client/
   src/components/               — React components
   src/components/ItemsList.test.tsx
   src/test/setup.ts             — Vitest setup
-  src/api.ts, errors.ts, types.ts
+  src/api.ts, types.ts
+  src/errors.ts
+  src/errors.test.ts              — Vitest unit tests for error mapping (toUserMessage, ApiClientError)
   src/guards.ts                   — runtime type guards
   src/guards.test.ts              — Vitest unit tests for runtime type guards
 ```
@@ -117,11 +119,11 @@ Applies under `client/`. Aligns with `CLAUDE.md` and [`client/eslint.config.js`]
 - **No `console.log` or `debugger`** — `no-console`, `no-debugger`.
 - **Formatting** — Prettier: semicolons, single quotes, trailing commas.
 - **Component tests** — new presentational UI should have Vitest tests for loading, error, empty, and populated states. **App integration tests** (mock `api.ts`) cover full-page flows — reference [`client/src/App.test.tsx`](../../../client/src/App.test.tsx). Behaviour over implementation detail; flag missing coverage on high-risk UI changes.
-- **Unit tests** — runtime type guards in `guards.ts`; Arrange / Act / Assert, explicit `(): void`, no RTL, behaviour-focused guard cases — reference [`client/src/guards.test.ts`](../../../client/src/guards.test.ts)
+- **Unit tests** — pure modules (`guards.ts`, `errors.ts`); Arrange / Act / Assert, explicit `(): void`, no RTL, behaviour-focused cases — reference [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts)
 
-**Positive references:** [`client/src/App.test.tsx`](../../../client/src/App.test.tsx), [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx), [`client/src/guards.test.ts`](../../../client/src/guards.test.ts).
+**Positive references:** [`client/src/App.test.tsx`](../../../client/src/App.test.tsx), [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx), [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts).
 
-**Note:** `guards.test.ts`-style unit test files use universal and TypeScript/Vitest conventions only — WCAG checks and component loading/error/empty/populated rules do not apply to pure function unit tests.
+**Note:** `guards.test.ts` / `errors.test.ts`-style unit test files use universal and TypeScript/Vitest conventions only — WCAG checks and component loading/error/empty/populated rules do not apply to pure function unit tests.
 
 ### WCAG considerations (manual checklist)
 

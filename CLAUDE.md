@@ -21,7 +21,7 @@ healthcare domain context relevant to the target production environment.
 - `ItemsApi/` — .NET 8 minimal API
 - `ItemsApi.Tests/` — xUnit integration tests
 - `client/` — React TypeScript Vite frontend
-- `client/src/**/*.test.{ts,tsx}` — Vitest tests (component and App integration)
+- `client/src/**/*.test.{ts,tsx}` — Vitest tests (component, App integration, and pure unit tests)
 - `client/src/test/setup.ts` — Vitest setup (jest-dom matchers, RTL cleanup)
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
@@ -42,7 +42,7 @@ healthcare domain context relevant to the target production environment.
 - ESLint 10.3.0 with typescript-eslint
 - Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
 - CSS with custom properties and breakpoint variables
-- Vitest 4.1.7 for component and App integration tests with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
+- Vitest 4.1.7 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
 - Playwright for e2e tests (coming in week 3)
 
 **Tooling:**
@@ -119,10 +119,11 @@ changed library API.
 - Exercise mount → fetch → list states, form validation, submit, and refresh through the real component tree
 - Use `vi.mocked(...).mockReset()` in `beforeEach` and `findBy*` for async UI
 
-**Frontend — unit tests** (e.g. `client/src/guards.test.ts`):
+**Frontend — unit tests** (e.g. `client/src/guards.test.ts`, `client/src/errors.test.ts`):
 - Pure functions; no RTL; no `vi.mock('./api')`
 - Same Arrange / Act / Assert comments and explicit `(): void` return types as other Vitest tests
 - When changing `api.ts` parsing or `guards.ts`, add or update tests in `client/src/guards.test.ts`
+- When changing `errors.ts`, add or update tests in `client/src/errors.test.ts` using the same style as guards — one test per prompt, AAA, no RTL
 
 **End-to-end — Playwright (coming week 3):**
 - Key user journeys — view items, add item, error state
