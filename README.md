@@ -16,7 +16,7 @@ The application was built incrementally across several days, mirroring how real 
 1. **Scaffolding** — An agent generated the .NET 8 minimal API, initial endpoints, and xUnit test project.
 2. **Frontend wiring** — A separate session connected a React + TypeScript + Vite client to the API, including CORS and a dev proxy.
 3. **Refactoring** — The agent introduced the repository pattern and dependency injection, replacing earlier testability hacks with proper abstractions.
-4. **Test-driven iteration** — Integration tests were added one focused prompt at a time; the agent stalled when asked for too many tests at once. Frontend Vitest tests followed the same pattern — component tests for `ItemsList`, guard unit tests for `guards.ts`, and App integration tests mocking `api.ts`, built one test per prompt.
+4. **Test-driven iteration** — Integration tests were added one focused prompt at a time; the agent stalled when asked for too many tests at once. Frontend Vitest tests followed the same pattern — component tests for `ItemsList`, guard unit tests for `guards.ts`, error-mapping unit tests in `errors.test.ts`, and App integration tests mocking `api.ts`, built one test per prompt.
 5. **CI and hygiene** — `.gitignore`, build-artifact cleanup, and a GitHub Actions pipeline were added to keep the repo maintainable.
 
 ### Human-in-the-loop as a feature, not a bug
@@ -37,6 +37,7 @@ radar-practice/
 │   ├── src/App.test.tsx              # Vitest App integration tests — 8 tests
 │   ├── src/components/ItemsList.test.tsx  # Vitest component tests — 5 tests
 │   ├── src/guards.test.ts              # Vitest unit tests — 20 tests
+│   ├── src/errors.test.ts              # Vitest unit tests — 9 tests
 │   └── src/test/setup.ts             # Vitest setup
 ├── .github/workflows/     # GitHub Actions CI
 └── learning-notes.md      # Daily observations from the build
@@ -47,7 +48,7 @@ radar-practice/
 | API | .NET 8, minimal APIs, in-memory repository |
 | Backend tests | xUnit, `WebApplicationFactory`, NSubstitute (12 tests) |
 | Frontend | React 19, TypeScript, Vite |
-| Frontend tests | Vitest, `@testing-library/react` — `client/src/App.test.tsx`, `client/src/components/ItemsList.test.tsx`, `client/src/guards.test.ts`, `client/src/test/setup.ts` (33 tests) |
+| Frontend tests | Vitest, `@testing-library/react` — `client/src/App.test.tsx`, `client/src/components/ItemsList.test.tsx`, `client/src/guards.test.ts`, `client/src/test/setup.ts` (42 tests) |
 | CI | GitHub Actions — `dotnet test` and `npm test` (Vitest) on push/PR to `main` |
 
 > **Note:** Items are stored in-memory via `InMemoryItemsRepository` and are lost when the API restarts. SQLite persistence is planned for a future session.
