@@ -31,8 +31,8 @@ The domain is a simple **items catalogue** — no patient data, no production de
 
 ```
 radar-practice/
-├── ItemsApi/              # .NET 8 minimal API (GET/POST /items)
-├── ItemsApi.Tests/        # xUnit integration tests (12 tests)
+├── ItemsApi/              # .NET 8 minimal API (GET/POST /items), EF Core + SQLite
+├── ItemsApi.Tests/        # xUnit integration tests (13 tests)
 ├── client/                # React + TypeScript + Vite frontend
 │   ├── src/App.test.tsx              # Vitest App integration tests — 8 tests
 │   ├── src/components/ItemsList.test.tsx  # Vitest component tests — 5 tests
@@ -45,13 +45,14 @@ radar-practice/
 
 | Layer | Stack |
 |-------|-------|
-| API | .NET 8, minimal APIs, in-memory repository |
-| Backend tests | xUnit, `WebApplicationFactory`, NSubstitute (12 tests) |
-| Frontend | React 19, TypeScript, Vite |
-| Frontend tests | Vitest, `@testing-library/react` — `client/src/App.test.tsx`, `client/src/components/ItemsList.test.tsx`, `client/src/guards.test.ts`, `client/src/test/setup.ts` (42 tests) |
+| API | .NET 8, minimal APIs, repository pattern |
+| Persistence | Entity Framework Core 8 with SQLite (`app.db`) |
+| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite), NSubstitute (13 tests) |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui |
+| Frontend tests | Vitest, `@testing-library/react` — `client/src/App.test.tsx`, `client/src/components/ItemsList.test.tsx`, `client/src/guards.test.ts`, `client/src/errors.test.ts`, `client/src/test/setup.ts` (42 tests) |
 | CI | GitHub Actions — `dotnet test` and `npm test` (Vitest) on push/PR to `main` |
 
-> **Note:** Items are stored in-memory via `InMemoryItemsRepository` and are lost when the API restarts. SQLite persistence is planned for a future session.
+> **Note:** Items are persisted via Entity Framework Core to a local SQLite database (`app.db`), so they survive API restarts. The database file is local only and is not committed.
 
 ## AI tooling observations
 
