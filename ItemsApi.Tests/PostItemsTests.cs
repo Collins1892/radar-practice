@@ -165,6 +165,27 @@ public class PostItemsTests : IClassFixture<TestWebApplicationFactory>
         Assert.True(item.Id > 0);
     }
 
+    [Fact]
+    public async Task Get_AfterPostingItem_ReturnsExactDecimalPrice()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+
+        // Act
+        var postResponse = await client.PostAsJsonAsync("/items", new { name = "RoundTrip", price = 9.99m });
+        var created = await postResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        var getResponse = await client.GetAsync("/items");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+        var items = await getResponse.Content.ReadFromJsonAsync<ItemResponse[]>();
+        Assert.NotNull(items);
+        var persisted = Assert.Single(items, i => i.Id == created.Id);
+        Assert.Equal(9.99m, persisted.Price);
+    }
+
     private record ItemResponse(int Id, string Name, decimal Price);
     private record ErrorResponse(string Error);
 }

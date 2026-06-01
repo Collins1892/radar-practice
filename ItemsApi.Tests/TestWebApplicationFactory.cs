@@ -10,9 +10,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    public TestWebApplicationFactory()
     {
         _connection.Open();
+    }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
         builder.ConfigureServices(services =>
         {
             var descriptor = services.SingleOrDefault(

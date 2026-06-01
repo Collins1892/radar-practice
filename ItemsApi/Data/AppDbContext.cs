@@ -13,5 +13,9 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Item>()
             .Property(i => i.Price)
             .HasColumnType("REAL");
+
+        modelBuilder.Entity<Item>()
+            .Property(i => i.Name)
+            .HasMaxLength(100);
     }
 }
