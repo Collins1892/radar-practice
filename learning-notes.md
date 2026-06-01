@@ -62,7 +62,7 @@ the week.
 ### SQLite + EF Core persistence (Item 3)
 
 - `AppDbContext` in `Data/` — shared context for all modules. `DbSet<Item>` now,
-  `DbSet<Incident>` follows Day 2. One context, one database, no refactoring needed
+  `DbSet<Incident>` follows later this week. One context, one database, no refactoring needed
   when incidents land
 - `EfItemsRepository` implements `IItemsRepository` — interface unchanged, endpoints
   untouched, scoped lifetime with `AsNoTracking()` reads
