@@ -30,7 +30,7 @@ export default {
       commands.push(`tsc-files --noEmit -p ${nodeTsconfig} ${node.join(' ')}`);
     }
 
-    commands.push(`eslint --max-warnings 0 ${files.join(' ')}`);
+    commands.push(`eslint --max-warnings 0 --no-warn-ignored ${files.join(' ')}`);
     commands.push(`prettier --write ${files.join(' ')}`);
 
     return commands;
