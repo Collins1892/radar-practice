@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ItemsApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260601041024_UseTextForDecimalPrice")]
-    partial class UseTextForDecimalPrice
+    [Migration("20260601041641_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
