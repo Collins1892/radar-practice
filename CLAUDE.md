@@ -34,7 +34,8 @@ healthcare domain context relevant to the target production environment.
 - `.claude/skills/` — repo-level agent skills
 - `.cursor/rules/` — Cursor agent conventions (mirrors CLAUDE.md)
 - `learning-notes.md` — daily observations from the build
-- `private/seven-week-plan.md` — seven-week programme plan
+- `private/seven-week-plan.md` — seven-week programme plan (private file: agent-readable, not committed)
+- `private/original-plan.md` — original plan shared with the tech lead (private file: agent-readable, not committed)
 
 ## Tech stack
 

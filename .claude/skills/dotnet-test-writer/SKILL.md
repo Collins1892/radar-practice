@@ -24,7 +24,7 @@ Guides writing integration tests for the `ItemsApi` .NET 8 minimal API.
 | Microsoft.AspNetCore.Mvc.Testing | 8.0.0 |
 | Microsoft.EntityFrameworkCore.Sqlite | 8.0.27 |
 | Microsoft.EntityFrameworkCore.Design | 8.0.27 (ItemsApi only) |
-| Microsoft.Data.Sqlite | 8.0.27 |
+| Microsoft.Data.Sqlite | 8.0.27 (transitive via EFCore.Sqlite; used directly in TestWebApplicationFactory) |
 | Target framework | .NET 8.0 |
 
 The test project references `Microsoft.EntityFrameworkCore.Sqlite` (8.0.27), and `TestWebApplicationFactory` uses `Microsoft.Data.Sqlite` directly (`SqliteConnection`) for its in-memory database.

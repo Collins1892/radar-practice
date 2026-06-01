@@ -52,7 +52,7 @@ Keep these aligned with [CLAUDE.md](../../../CLAUDE.md), `package.json`, and `.c
 
 | Area | Versions |
 |------|----------|
-| Backend | .NET 8.0, xUnit 2.5.3, NSubstitute 5.1.0, Microsoft.AspNetCore.Mvc.Testing 8.0.0, Microsoft.EntityFrameworkCore.Sqlite 8.0.27, Microsoft.EntityFrameworkCore.Design 8.0.27, Microsoft.Data.Sqlite 8.0.27 |
+| Backend | .NET 8.0, xUnit 2.5.3, NSubstitute 5.1.0, Microsoft.AspNetCore.Mvc.Testing 8.0.0, Microsoft.EntityFrameworkCore.Sqlite 8.0.27, Microsoft.EntityFrameworkCore.Design 8.0.27 (ItemsApi only), Microsoft.Data.Sqlite 8.0.27 |
 | Frontend | React 19.2.6, TypeScript 6.0.2, Vite 8.0.12, ESLint 10.3.0, Tailwind CSS 4.3.0, shadcn/ui (Nova), radix-ui 1.4.3, @radix-ui/react-slot 1.2.4, class-variance-authority 0.7.1, clsx 2.1.1, tailwind-merge 3.6.0, lucide-react 1.17.0 |
 | Frontend tests | Vitest 4.1.7 with @testing-library/react; Playwright (planned week 3) |
 
