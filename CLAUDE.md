@@ -121,7 +121,7 @@ changed library API.
 ## Testing approach
 
 **Backend — xUnit integration tests:**
-- Use WebApplicationFactory to spin up real in-process API
+- Use TestWebApplicationFactory to spin up real in-process API
 - One focused prompt per test generation — never ask for multiple tests at once
 - Tests should cover happy path and all failure cases
 - Use NSubstitute for mocking repository dependencies

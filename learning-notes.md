@@ -1,3 +1,152 @@
+## Day 11 — 1 June 2026
+
+### Summary
+
+First day of Week 3. New week, new chat, Claude Project cold start tested and
+passed — no context overhead, straight into productive work. Three PRs raised,
+reviewed, iterated, and merged. shadcn/ui setup took longer than the 1h estimate
+due to environment friction. End-of-day documentation block was heavier than
+expected with a full stack change day. Strong foundation laid for the rest of
+the week.
+
+### Code review findings
+
+- No open PRs at start of day — clean repo after merging Week 2 work
+- `/review` skipped — shell not returning output in Claude Code. Clean repo,
+  no diff to review. Documented as acceptable when repo is known clean
+
+### Claude Project — cold start
+
+- New week, new chat — RAG handled all background context automatically
+- Picked up immediately with full awareness of plan, stack, decisions, and relationships
+- No context pasting, no handover overhead — strongest evidence yet the approach is right
+- Cold start discipline confirmed: project is ready for a new developer to pick up
+
+### shadcn/ui and Tailwind v4 setup (Item 1)
+
+- Decision confirmed: shadcn + Tailwind v4. Real decision was "are we adopting
+  Tailwind" — shadcn follows from that. Radix primitives handle WCAG heavy lifting
+- Ran `npx shadcn@latest init` from the repo root instead of `client/` — created
+  a nested `radar-practice/` folder inside the repo. Lesson: always verify working
+  directory before running CLI tools
+- Config files lost in lint-staged CRLF revert — `vite.config.ts`, `tsconfig.json`,
+  `tsconfig.app.json`, `src/index.css`, `package.json` all wiped from the commit.
+  Had to re-apply all four manually. Lesson: after any lint-staged failure, run
+  `git show HEAD --stat` to verify what actually landed before pushing
+- ESLint pre-commit failures on shadcn-generated files — fixed by excluding
+  `src/components/ui/**` and `src/lib/utils.ts` from linting. Vendor-generated
+  files should not be held to project lint conventions
+- `--no-warn-ignored` flag needed in lint-staged to suppress `--max-warnings 0`
+  failure on ignored files. Not disabling a rule — suppressing a noise message
+- `radix-ui` umbrella package vs `@radix-ui/react-slot` individual package —
+  shadcn 4.9.0 imports from the umbrella. Only the individual package was installed.
+  TypeScript would have failed in CI without the fix
+- shadcn theme tokens missing from `index.css` — lost in the lint-staged revert.
+  Added manually using OKLCH Nova preset values
+- Duplicate CSS variable conflict — `--border`, `--accent`, `--muted` existed in
+  both the shadcn token block and original project CSS. Renamed original vars to
+  `--app-border`, `--app-accent`, `--app-muted` and updated all usages across
+  `App.css` and `ItemsList.css`
+
+### Responsive rules and WCAG principles (Item 2)
+
+- Responsive rules drafted in chat and applied to CLAUDE.md — mobile-first,
+  three breakpoints (none/md/lg), container, grid, table overflow, form conventions
+- WCAG 2.1 AA principles documented — semantic HTML, form labels, colour contrast,
+  focus rings, motion, touch targets
+- Mobile accessibility section added specifically — Google mobile usability signals,
+  viewport meta, 16px minimum font size, touch target spacing, no zoom disabling
+- `.cursorrules` task deferred — modern Cursor convention is `.cursor/rules/project.mdc`.
+  Moved to end of day after CLAUDE.md is updated so the file reflects the final stack
+
+### SQLite + EF Core persistence (Item 3)
+
+- `AppDbContext` in `Data/` — shared context for all modules. `DbSet<Item>` now,
+  `DbSet<Incident>` follows later this week. One context, one database, no refactoring needed
+  when incidents land
+- `EfItemsRepository` implements `IItemsRepository` — interface unchanged, endpoints
+  untouched, scoped lifetime with `AsNoTracking()` reads
+- Database starts empty — seed data was a development convenience, not a requirement.
+  EmptyState component handles the empty list view
+- `Price` stored as TEXT via `HasConversion<string>()` — exact decimal precision.
+  `REAL` silences the EF warning but loses precision. SQLite TEXT sorts
+  lexicographically so avoid DB-side price ordering — sort in memory instead
+- `TestWebApplicationFactory` — per-class isolated in-memory SQLite DB. Data
+  persists within a class fixture, not across classes. Schema applied via
+  `Database.Migrate()`
+- Migration churn: three migrations landed in quick succession. Squashed to a
+  single clean `InitialCreate` with `Price TEXT` from the start — unreleased
+  schema, free operation
+
+### Two independent reviews caught a real precision bug
+
+- Both Cursor and Claude Code Opus 4.8 independently flagged `Price` as `REAL`
+  as a [Major] finding
+- Round-trip test gave false confidence — `Add()` returns the in-memory tracked
+  entity, not a DB re-read. POST response price is never lossy. `9.99m` surviving
+  was coincidence, not proof
+- Fixed to `HasConversion<string>()` and strengthened test to use `0.1m + 0.2m`
+  asserting `0.3m` — a value that fails under IEEE-754 double, proving TEXT
+  conversion is genuinely lossless
+- Two independent reviewers agreeing on a finding is a strong signal. Trust it
+- Key "what the AI gets wrong" observation: agent suggested `HasColumnType("REAL")`
+  to silence the EF decimal warning without flagging the precision trade-off.
+  The warning exists for a reason
+
+### Skill reviews
+
+- `dotnet-test-writer` — updated for `TestWebApplicationFactory`, EF Core patterns,
+  corrected `CreateDefaultClient()` guidance (now valid for persistence tests, not
+  just validation errors), new SQLite isolation gotchas
+- `code-reviewer` — updated for Tailwind v4, shadcn/ui, Radix, EF Core rules,
+  vendor file exemption for `src/components/ui/**`
+- Both skills' version tables updated to reflect full new stack
+
+### End-of-day documentation — heavier than expected
+
+- Full stack change day means full documentation pass — CLAUDE.md, README.md,
+  both skills, seven-week-plan decisions log, and `.cursor/rules/project.mdc`
+- Lesson: documentation volume scales with stack change volume. On a day that
+  adds Tailwind, shadcn, EF Core, and SQLite, budget extra time at close of day
+- Task reordering cost time — `.cursorrules` was on the morning list, deferred
+  to end of day once the modern `.cursor/rules/` convention was identified.
+  Deferring was correct but added a late context switch
+- Four decisions log entries added to seven-week-plan.md — shadcn adoption,
+  AppDbContext shared context, precision bug catch, `.cursor/rules/` convention
+- README corrected — test count 12 → 13, in-memory references removed,
+  architecture table updated for EF Core
+- CLAUDE.md line 124 corrected — `WebApplicationFactory` → `TestWebApplicationFactory`
+  in the testing approach section. Last pre-existing stale reference resolved
+
+### .cursor/rules/project.mdc
+
+- Created at end of day after CLAUDE.md was finalised — correct order
+- `alwaysApply: true` — loads every Cursor session like CLAUDE.md
+- Condensed version of CLAUDE.md: same rules, ~80 lines vs 236
+- Modern format `.cursor/rules/` over deprecated `.cursorrules`
+
+### What I would not trust the agent to do unsupervised
+
+- Run `npx` CLI tools without confirming the working directory — wrong directory
+  cost significant time today
+- Commit after a lint-staged failure without checking `git show HEAD --stat` —
+  config files can silently disappear from the commit
+- Choose `HasColumnType("REAL")` for decimal without flagging the precision
+  trade-off — the warning exists for a reason
+
+### Ideas and observations
+
+- 55 tests (13 xUnit, 42 Vitest), 3 PRs, full stack addition, two skill updates,
+  documentation pass, and `.cursor/rules/` created — all in one day. Week 3 is
+  moving
+- Two independent reviews (different models, different tools, different sessions)
+  agreeing on a finding = strong signal. Run both when the change matters
+- The precision bug story is Week 6 material — the AI suggested a fix that
+  silenced a warning by trading away correctness, the tests passed, and only
+  independent review caught it
+- Documentation load at end of a big stack change day is a planning observation
+  for future weeks — factor it into the estimate
+  
 ## Day 10 — 29 May 2026
 
 ### Summary
