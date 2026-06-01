@@ -1,6 +1,6 @@
 ---
 name: dotnet-test-writer
-description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use this skill whenever the user asks to write, add, generate, or create a test for the .NET API — even if they just say "write a test for GET /items" or "add a failing case for invalid price". Always write exactly one test at a time. Uses xUnit 2.5.3, WebApplicationFactory, NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments.
+description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use this skill whenever the user asks to write, add, generate, or create a test for the .NET API — even if they just say "write a test for GET /items" or "add a failing case for invalid price". Always write exactly one test at a time. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments.
 ---
 
 # .NET Test Writer
@@ -22,7 +22,11 @@ Guides writing integration tests for the `ItemsApi` .NET 8 minimal API.
 | xUnit | 2.5.3 |
 | NSubstitute | 5.1.0 |
 | Microsoft.AspNetCore.Mvc.Testing | 8.0.0 |
+| Microsoft.EntityFrameworkCore.Sqlite | 8.0.27 |
+| Microsoft.EntityFrameworkCore.Design | 8.0.27 (ItemsApi only) |
 | Target framework | .NET 8.0 |
+
+The test project references `Microsoft.EntityFrameworkCore.Sqlite` (8.0.27), and `TestWebApplicationFactory` uses `Microsoft.Data.Sqlite` directly (`SqliteConnection`) for its in-memory database.
 
 The `Xunit` namespace is globally imported (via `<Using Include="Xunit" />` in the csproj) — no `using Xunit;` needed.
 
@@ -30,12 +34,21 @@ The `Xunit` namespace is globally imported (via `<Using Include="Xunit" />` in t
 
 ```
 ItemsApi/
-  Program.cs                  — GET /items and POST /items endpoints
-  IItemsRepository.cs         — interface: GetAll(), Add(string name, decimal price)
-  Item.cs                     — record Item(int Id, string Name, decimal Price)
+  Program.cs                  — GET /items and POST /items endpoints; registers CORS,
+                                AddDbContext<AppDbContext> (SQLite "app.db"),
+                                AddScoped<IItemsRepository, EfItemsRepository>, and
+                                runs Database.Migrate() on startup
+  IItemsRepository.cs         — interface: GetAll(), Add(string name, decimal price) returns Item
+  Item.cs                     — record Item(int Id, string Name, decimal Price); EF-mapped entity
+                                (DbSet<Item>), Price persisted via HasConversion<string>(),
+                                Name capped at HasMaxLength(100) in AppDbContext.OnModelCreating
   ItemRequest.cs              — record ItemRequest(string Name, decimal Price)
+  Data/AppDbContext.cs        — DbContext with DbSet<Item> and model configuration
+  Repositories/EfItemsRepository.cs — EF Core implementation of IItemsRepository
+  Migrations/                 — EF migrations (initial: 20260601041641_InitialCreate)
 
 ItemsApi.Tests/
+  TestWebApplicationFactory.cs — custom factory; per-class in-memory SQLite DB
   PostItemsTests.cs           — POST /items tests (file already exists)
   GlobalExceptionHandlerTests.cs
   GetItemsTests.cs            — create this if writing GET /items tests
@@ -53,11 +66,11 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-public class <FeatureName>Tests : IClassFixture<WebApplicationFactory<Program>>
+public class <FeatureName>Tests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TestWebApplicationFactory _factory;
 
-    public <FeatureName>Tests(WebApplicationFactory<Program> factory)
+    public <FeatureName>Tests(TestWebApplicationFactory factory)
     {
         _factory = factory;
     }
@@ -127,13 +140,13 @@ public async Task Get_NoItems_ReturnsEmptyArray()
 
 ## Mocking with NSubstitute
 
-**Always use `CreateClientWithRepo` with a mock — never `CreateDefaultClient` — when the test cares about the shape or contents of the repository data.**
+**Use `CreateClientWithRepo(mock)` when the test needs to force specific `GetAll()` contents or simulate a repository exception. Use `CreateDefaultClient()` when the test exercises real persistence (create, round-trip read).**
 
-`IClassFixture` gives the whole test class a single shared `WebApplicationFactory` instance, which means a single shared `InMemoryItemsRepository` singleton. Items added by one test (or leaked from another class that ran first in the same process) persist for the lifetime of that factory. A test that calls `CreateDefaultClient()` and then asserts the repo is empty, or contains exactly N items, will be fragile and order-dependent.
+`IClassFixture` gives the whole test class a single shared `TestWebApplicationFactory` instance. The real repository is now `EfItemsRepository` (registered **scoped**), backed by an in-memory SQLite database that the factory creates per test class — a `SqliteConnection("DataSource=:memory:")` opened in the fixture constructor, kept open for the fixture's lifetime, migrated on host creation, and disposed at the end. Each test class therefore gets its own isolated database; data does **not** leak across classes. Data added within a class *does* persist across that class's `[Fact]`s (shared fixture), so a test that asserts the repo is empty or contains exactly N items via `CreateDefaultClient()` can be fragile within the class unless it owns the state.
 
-`CreateClientWithRepo(repo)` replaces the singleton with a fresh mock for that one client, so the test owns its data completely and runs correctly regardless of execution order.
+`CreateClientWithRepo(repo)` overrides the EF repository with a fresh mock for that one client, so the test owns its data completely and runs correctly regardless of execution order.
 
-`CreateDefaultClient()` is safe only when the test makes no assumptions about repository state — for example, a test that only checks a validation error (400) before the repo is ever reached.
+`CreateDefaultClient()` now runs against the real, isolated, migrated in-memory database — it is the right choice for persistence and round-trip behaviour (for example, posting an item and reading it back), as well as for validation errors (400) that never reach the repository.
 
 ```csharp
 // Arrange — mock controls exactly what GetAll returns
@@ -156,11 +169,17 @@ repo.Add(Arg.Any<string>(), Arg.Any<decimal>())
 - **500** — repository throws
 
 ### POST /items
-- **201** — valid input; returns `{ id, name, price }`
+- **201** — valid input; returns `{ id, name, price }`. The `id` is DB-generated (auto-increment), so assert `Id > 0` rather than a specific value. Decimal price precision is preserved on round-trip because `Price` is mapped via `HasConversion<string>()`.
 - **400** `"Name is required."` — empty or whitespace name
 - **400** `"Name must be under 100 characters."` — name > 100 chars
 - **400** `"Price must be greater than zero."` — price ≤ 0
 - **500** — repository throws
+
+## Database and isolation gotchas
+
+- Each test class gets one fresh in-memory SQLite database via `TestWebApplicationFactory`. Data survives across `[Fact]`s in the same class but never leaks across classes.
+- Schema changes require a new EF migration — the factory applies the committed migrations through `Database.Migrate()` on host creation.
+- `Microsoft.Data.Sqlite` in-memory databases are destroyed when the connection closes, which is why the factory holds the `SqliteConnection` open for the fixture's lifetime.
 
 ## Which file to write to
 
