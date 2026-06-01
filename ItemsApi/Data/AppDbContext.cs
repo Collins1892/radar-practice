@@ -12,7 +12,7 @@ public class AppDbContext : DbContext
     {
         modelBuilder.Entity<Item>()
             .Property(i => i.Price)
-            .HasColumnType("REAL");
+            .HasConversion<string>();
 
         modelBuilder.Entity<Item>()
             .Property(i => i.Name)

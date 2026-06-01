@@ -172,7 +172,7 @@ public class PostItemsTests : IClassFixture<TestWebApplicationFactory>
         var client = CreateDefaultClient();
 
         // Act
-        var postResponse = await client.PostAsJsonAsync("/items", new { name = "RoundTrip", price = 9.99m });
+        var postResponse = await client.PostAsJsonAsync("/items", new { name = "RoundTrip", price = 0.1m + 0.2m });
         var created = await postResponse.Content.ReadFromJsonAsync<ItemResponse>();
         Assert.NotNull(created);
 
@@ -183,7 +183,7 @@ public class PostItemsTests : IClassFixture<TestWebApplicationFactory>
         var items = await getResponse.Content.ReadFromJsonAsync<ItemResponse[]>();
         Assert.NotNull(items);
         var persisted = Assert.Single(items, i => i.Id == created.Id);
-        Assert.Equal(9.99m, persisted.Price);
+        Assert.Equal(0.3m, persisted.Price);
     }
 
     private record ItemResponse(int Id, string Name, decimal Price);
