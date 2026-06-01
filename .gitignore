@@ -85,5 +85,10 @@ Desktop.ini
 *.seed
 *.pid.lock
 
+# SQLite local database files
+*.db
+*.db-shm
+*.db-wal
+
 # Private working notes (not committed)
 private/

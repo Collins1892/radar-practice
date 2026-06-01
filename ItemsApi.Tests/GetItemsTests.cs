@@ -5,11 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-public class GetItemsTests : IClassFixture<WebApplicationFactory<Program>>
+public class GetItemsTests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TestWebApplicationFactory _factory;
 
-    public GetItemsTests(WebApplicationFactory<Program> factory)
+    public GetItemsTests(TestWebApplicationFactory factory)
     {
         _factory = factory;
     }
