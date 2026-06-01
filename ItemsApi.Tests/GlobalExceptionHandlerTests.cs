@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-public class GlobalExceptionHandlerTests : IClassFixture<WebApplicationFactory<Program>>
+public class GlobalExceptionHandlerTests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TestWebApplicationFactory _factory;
 
-    public GlobalExceptionHandlerTests(WebApplicationFactory<Program> factory)
+    public GlobalExceptionHandlerTests(TestWebApplicationFactory factory)
     {
         _factory = factory;
     }

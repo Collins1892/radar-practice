@@ -5,11 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
+public class PostItemsTests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TestWebApplicationFactory _factory;
 
-    public PostItemsTests(WebApplicationFactory<Program> factory)
+    public PostItemsTests(TestWebApplicationFactory factory)
     {
         _factory = factory;
     }
@@ -163,6 +163,27 @@ public class PostItemsTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(100, item.Name.Length);
         Assert.Equal(1.00m, item.Price);
         Assert.True(item.Id > 0);
+    }
+
+    [Fact]
+    public async Task Get_AfterPostingItem_ReturnsExactDecimalPrice()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+
+        // Act
+        var postResponse = await client.PostAsJsonAsync("/items", new { name = "RoundTrip", price = 0.1m + 0.2m });
+        var created = await postResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        var getResponse = await client.GetAsync("/items");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+        var items = await getResponse.Content.ReadFromJsonAsync<ItemResponse[]>();
+        Assert.NotNull(items);
+        var persisted = Assert.Single(items, i => i.Id == created.Id);
+        Assert.Equal(0.3m, persisted.Price);
     }
 
     private record ItemResponse(int Id, string Name, decimal Price);
