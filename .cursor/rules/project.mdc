@@ -1,0 +1,82 @@
+---
+description: Core project conventions (condensed from CLAUDE.md)
+alwaysApply: true
+---
+
+# Project conventions (radar-practice)
+
+## Project overview
+
+Full-stack learning project demonstrating agentic AI development — not production.
+Domain: Items catalogue (`ItemsApi/` .NET 8 minimal API + `client/` React/TS/Vite client).
+No patient data, no production dependencies.
+
+## Tech stack — Backend
+
+- .NET 8.0 minimal API; repository pattern + built-in DI.
+- Entity Framework Core 8.0.27 with SQLite (`Microsoft.EntityFrameworkCore.Sqlite`).
+- `AppDbContext` in `Data/` — shared context (`DbSet<Item>` now, `DbSet<Incident>` in Week 3).
+- `EfItemsRepository` implements `IItemsRepository` — scoped lifetime, `AsNoTracking()` for reads.
+- `Price` stored as TEXT via `HasConversion<string>()` for exact decimal precision.
+- `Name` has `HasMaxLength(100)` in `OnModelCreating`.
+- Database file `app.db` — local only, never committed.
+- xUnit 2.5.3 with `TestWebApplicationFactory`; NSubstitute 5.1.0; Microsoft.AspNetCore.Mvc.Testing 8.0.0.
+- Node.js 24 (LTS).
+
+## Tech stack — Frontend
+
+- React 19.2.6, TypeScript 6.0.2, Vite 8.0.12.
+- Tailwind CSS 4.3.0 via `@tailwindcss/vite` 4.3.0.
+- shadcn/ui (Nova preset) with Radix: `radix-ui` 1.4.3, `@radix-ui/react-slot` 1.2.4.
+- `class-variance-authority` 0.7.1, `clsx` 2.1.1, `tailwind-merge` 3.6.0, `lucide-react` 1.17.0.
+- ESLint 10.3.0 (typescript-eslint); Prettier 3.8.3 (semicolons, single quotes, trailing commas).
+- Vitest 4.1.7 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1; Playwright (Week 3).
+- CSS: OKLCH theme tokens in `src/index.css` under `@theme inline`; compose classes with `cn()`; no new legacy CSS.
+
+## TypeScript conventions
+
+- No explicit `any`; no unused imports or variables.
+- Explicit function return types required.
+- No non-null assertion operator (`!`).
+- Semicolons on, single quotes, trailing commas.
+
+## React conventions
+
+- React hooks rules — no conditional hooks; exhaustive `useEffect` dependencies.
+- No `console.log` in committed code; no `debugger` statements.
+
+### Vendor files exempt from lint rules
+
+`client/src/components/ui/**` (shadcn generated components) and `client/src/lib/utils.ts` (the `cn()` helper) are vendor-generated and ESLint-ignored. Do NOT apply the strict TypeScript/React conventions above (no `any`, explicit return types, no non-null assertions, etc.) to these files. Treat them as vendored — review their usage, not their internal style, and avoid hand-editing them to satisfy project lint rules.
+
+## C# conventions
+
+- Repository pattern — controllers depend on interfaces, not concrete classes.
+- Dependency injection via the built-in .NET DI container.
+- Global exception handler covers unhandled exceptions — do not add per-endpoint try/catch; it returns a consistent `{ error: "..." }` shape and never exposes stack traces.
+
+## Testing approach
+
+- Backend: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`. Frontend: `npm test` in `client/`.
+- Generate one test per prompt; integration tests preferred for endpoints.
+- Test behaviour, not implementation details; do not edit or remove existing tests without instruction.
+- Gotchas: Vitest requires `pool: 'threads'` on Windows; `TestWebApplicationFactory` gives each test class its own in-memory SQLite database.
+
+## Workflow
+
+Do:
+- Make small, focused changes; run tests after every change and confirm they pass.
+- Match existing patterns; use the repository pattern for all new data access.
+- Add tests for any new endpoint or business logic; verify the build before declaring done.
+- Ask for clarification when ambiguous; check `.claude/skills/` for relevant skills.
+- All changes via feature branch and PR.
+
+Don't:
+- Commit or push unless explicitly asked; run destructive operations without confirmation.
+- Make large unsupervised refactors; generate multiple tests in one prompt; skip the test run.
+- Expose stack traces or internal errors to the client; use `any`, non-null assertions, or disable ESLint rules.
+- Over-engineer; translate AngularJS patterns directly — rewrite idiomatically in React (legacy is a reference for *what*, not *how*).
+
+## Data protection
+
+No real patient data, PII, or NHS numbers in prompts, code, tests, or fixtures — use synthetic or redacted data only. No production database access. Strip identifiers from logs and stack traces before sharing. If in doubt, leave it out.

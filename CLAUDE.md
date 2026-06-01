@@ -19,33 +19,55 @@ healthcare domain context relevant to the target production environment.
 
 **Repo layout:**
 - `ItemsApi/` — .NET 8 minimal API
+- `ItemsApi/Data/AppDbContext.cs` — shared EF Core DbContext
+- `ItemsApi/Repositories/EfItemsRepository.cs` — EF Core repository implementation
+- `ItemsApi/Migrations/` — EF Core migrations
 - `ItemsApi.Tests/` — xUnit integration tests
+- `ItemsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `client/` — React TypeScript Vite frontend
-- `client/src/**/*.test.{ts,tsx}` — Vitest tests (component, App integration, and pure unit tests)
-- `client/src/test/setup.ts` — Vitest setup (jest-dom matchers, RTL cleanup)
+- `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
+- `client/src/lib/utils.ts` — shadcn `cn()` utility (vendor, ESLint-ignored)
+- `client/components.json` — shadcn configuration
+- `client/src/**/*.test.{ts,tsx}` — Vitest tests
+- `client/src/test/setup.ts` — Vitest setup
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
+- `.cursor/rules/` — Cursor agent conventions (mirrors CLAUDE.md)
 - `learning-notes.md` — daily observations from the build
 - `private/seven-week-plan.md` — seven-week programme plan (private file: agent-readable, not committed)
-- `private/original-plan.md` also exists as the original plan shared with the tech lead
+- `private/original-plan.md` — original plan shared with the tech lead (private file: agent-readable, not committed)
 
 ## Tech stack
 
 **Backend:**
 - .NET 8.0 minimal API
 - C# with repository pattern and dependency injection
-- xUnit 2.5.3 for integration tests using WebApplicationFactory
+- Entity Framework Core 8.0.27 with SQLite (`Microsoft.EntityFrameworkCore.Sqlite`)
+- `AppDbContext` in `Data/` — shared context for all modules. `DbSet<Item>` now; `DbSet<Incident>` follows in Week 3.
+- `EfItemsRepository` implements `IItemsRepository` — scoped lifetime, `AsNoTracking()` for reads
+- `Price` stored as TEXT via `HasConversion<string>()` for exact decimal precision
+- `Name` has `HasMaxLength(100)` in `OnModelCreating` — enforced at app layer, documented in schema
+- Database file: `app.db` (local only, never committed — `.gitignore` covers `*.db`, `*.db-shm`, `*.db-wal`)
+- xUnit 2.5.3 for integration tests using `TestWebApplicationFactory`
+- `TestWebApplicationFactory` — swaps `app.db` for kept-open `DataSource=:memory:` SQLite connection; schema applied via `Database.Migrate()`
 - NSubstitute 5.1.0 for mocking
 - Microsoft.AspNetCore.Mvc.Testing 8.0.0
 
 **Frontend:**
 - React 19.2.6 with TypeScript 6.0.2
 - Vite 8.0.12 for bundling
+- Tailwind CSS 4.3.0 via `@tailwindcss/vite` 4.3.0 plugin
+- shadcn/ui — Nova preset, Radix component library, `components.json` config
+- `radix-ui` 1.4.3 and `@radix-ui/react-slot` 1.2.4 (Radix primitives)
+- `class-variance-authority` 0.7.1, `clsx` 2.1.1, `tailwind-merge` 3.6.0 (shadcn utilities)
+- `lucide-react` 1.17.0 (icons)
 - ESLint 10.3.0 with typescript-eslint
 - Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
-- CSS with custom properties and breakpoint variables
 - Vitest 4.1.7 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
 - Playwright for e2e tests (coming in week 3)
+
+**CSS approach:**
+All components use Tailwind CSS and shadcn/ui from Week 3 onwards. Existing items catalogue components (`App.tsx`, `ItemsList`) are being migrated to Tailwind in Week 3. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
 
 **Tooling:**
 - Node.js 24 (LTS)
