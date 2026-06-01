@@ -17,12 +17,12 @@ header h1 {
 
 .subtitle {
   margin: 0;
-  color: var(--muted);
+  color: var(--app-muted);
 }
 
 .panel {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--app-border);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
@@ -49,7 +49,7 @@ header h1 {
 
 .item-form input {
   padding: 0.55rem 0.75rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--app-border);
   border-radius: 8px;
   font: inherit;
   background: var(--bg);
@@ -57,7 +57,7 @@ header h1 {
 }
 
 .item-form input:focus {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--app-accent);
   outline-offset: 1px;
 }
 
@@ -68,7 +68,7 @@ button {
   font: inherit;
   font-weight: 600;
   cursor: pointer;
-  background: var(--accent);
+  background: var(--app-accent);
   color: #fff;
 }
 
@@ -80,7 +80,7 @@ button:disabled {
 button.secondary {
   background: transparent;
   color: var(--text);
-  border: 1px solid var(--border);
+  border: 1px solid var(--app-border);
 }
 
 .list-header {
@@ -107,7 +107,7 @@ button.secondary {
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .item-list li:last-child {
@@ -119,7 +119,7 @@ button.secondary {
 }
 
 .item-price {
-  color: var(--muted);
+  color: var(--app-muted);
   font-variant-numeric: tabular-nums;
 }
 
