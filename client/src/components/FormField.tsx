@@ -11,7 +11,7 @@ type FormFieldProps = {
   htmlFor: string;
   error?: string;
   required?: boolean;
-  children: ReactNode;
+  children: ReactElement;
 };
 
 export function FormField({
