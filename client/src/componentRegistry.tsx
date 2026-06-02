@@ -5,6 +5,7 @@ import type { ReactElement } from 'react';
 import type { ComponentEntry } from './components/ComponentsView';
 import { Badge } from '@/components/Badge';
 import { DatePickerField } from '@/components/DatePickerField';
+import { DataTable } from '@/components/DataTable';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { FormField } from '@/components/FormField';
@@ -51,7 +52,75 @@ function DatePickerFieldPreview(): ReactElement {
   );
 }
 
+type IncidentPreviewRow = {
+  id: string;
+  title: string;
+  severity: string;
+  status: string;
+};
+
+function DataTablePreview(): ReactElement {
+  const [sortKey, setSortKey] = useState<string>('title');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const incidents: IncidentPreviewRow[] = [
+    {
+      id: 'INC-1001',
+      title: 'Medication omitted on night round',
+      severity: 'High',
+      status: 'Open',
+    },
+    {
+      id: 'INC-1002',
+      title: 'Delayed discharge paperwork',
+      severity: 'Medium',
+      status: 'In Review',
+    },
+    {
+      id: 'INC-1003',
+      title: 'Broken bed rail in ward 4',
+      severity: 'Critical',
+      status: 'Resolved',
+    },
+  ];
+
+  const sortedIncidents: IncidentPreviewRow[] = [...incidents].sort((a, b) => {
+    const aValue = String(a[sortKey as keyof IncidentPreviewRow]).toLowerCase();
+    const bValue = String(b[sortKey as keyof IncidentPreviewRow]).toLowerCase();
+    const order = aValue.localeCompare(bValue);
+
+    return sortDirection === 'asc' ? order : -order;
+  });
+
+  return (
+    <div className="w-full rounded-lg border border-dashed border-border p-4">
+      <DataTable<IncidentPreviewRow>
+        columns={[
+          { key: 'id', header: 'ID', sortable: true },
+          { key: 'title', header: 'Title', sortable: true },
+          { key: 'severity', header: 'Severity', sortable: true },
+          { key: 'status', header: 'Status', sortable: true },
+        ]}
+        data={sortedIncidents}
+        sortKey={sortKey}
+        sortDirection={sortDirection}
+        onSort={(key, direction) => {
+          setSortKey(key);
+          setSortDirection(direction);
+        }}
+        emptyState={<span>No incidents found.</span>}
+      />
+    </div>
+  );
+}
+
 export const componentRegistry: ComponentEntry[] = [
+  {
+    name: 'DataTable',
+    description:
+      'Generic sortable data table with semantic table markup, ARIA sort states, and an empty-state slot.',
+    preview: <DataTablePreview />,
+  },
   {
     name: 'Badge',
     description:
