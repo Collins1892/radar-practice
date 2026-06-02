@@ -3,7 +3,7 @@ import * as React from 'react';
 type SortDirection = 'asc' | 'desc';
 
 type DataTableColumn<T extends Record<string, unknown>> = {
-  key: string;
+  key: Extract<keyof T, string>;
   header: string;
   sortable?: boolean;
   render?: (value: unknown, row: T) => React.ReactNode;
@@ -12,7 +12,7 @@ type DataTableColumn<T extends Record<string, unknown>> = {
 type DataTableProps<T extends Record<string, unknown>> = {
   columns: Array<DataTableColumn<T>>;
   data: T[];
-  onSort?: (key: string, direction: SortDirection) => void;
+  onSort?: (key: Extract<keyof T, string>, direction: SortDirection) => void;
   sortKey?: string;
   sortDirection?: SortDirection;
   emptyState?: React.ReactNode;
@@ -84,7 +84,12 @@ export const DataTable = <T extends Record<string, unknown>>({
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div
+      className="overflow-x-auto"
+      tabIndex={0}
+      role="region"
+      aria-label="Data table"
+    >
       <table className="min-w-full divide-y divide-border text-left text-sm">
         <thead className="bg-muted/30">
           <tr>
@@ -106,13 +111,13 @@ export const DataTable = <T extends Record<string, unknown>>({
                 <th
                   key={column.key}
                   scope="col"
-                  aria-sort={ariaSort}
+                  aria-sort={column.sortable ? ariaSort : undefined}
                   className="px-4 py-3 font-semibold text-foreground"
                 >
                   {column.sortable ? (
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 text-left"
+                      className="inline-flex items-center gap-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                       onClick={() => handleSort(column)}
                     >
                       <span>{column.header}</span>
