@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { ReactElement } from 'react';
 import type { ComponentEntry } from './components/ComponentsView';
 import { Badge } from '@/components/Badge';
+import { DatePickerField } from '@/components/DatePickerField';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { FormField } from '@/components/FormField';
@@ -27,6 +28,23 @@ function SelectFieldPreview(): ReactElement {
           { value: 'critical', label: 'Critical' },
         ]}
         placeholder="Select incident severity"
+        required
+      />
+    </div>
+  );
+}
+
+function DatePickerFieldPreview(): ReactElement {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+  return (
+    <div className="w-full max-w-md rounded-lg border border-dashed border-border p-6">
+      <DatePickerField
+        label="Incident date"
+        id="incident-date"
+        value={selectedDate}
+        onChange={setSelectedDate}
+        placeholder="Pick incident date"
         required
       />
     </div>
@@ -162,5 +180,11 @@ export const componentRegistry: ComponentEntry[] = [
     description:
       'FormField-wrapped select using shadcn Select with keyboard-friendly severity options.',
     preview: <SelectFieldPreview />,
+  },
+  {
+    name: 'DatePickerField',
+    description:
+      'FormField-wrapped date picker using a Popover trigger button and Calendar single-date selection.',
+    preview: <DatePickerFieldPreview />,
   },
 ];
