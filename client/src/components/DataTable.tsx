@@ -13,7 +13,7 @@ type DataTableProps<T extends Record<string, unknown>> = {
   columns: Array<DataTableColumn<T>>;
   data: T[];
   onSort?: (key: Extract<keyof T, string>, direction: SortDirection) => void;
-  sortKey?: string;
+  sortKey?: Extract<keyof T, string>;
   sortDirection?: SortDirection;
   emptyState?: React.ReactNode;
 };
@@ -36,14 +36,12 @@ const getDisplayValue = (value: unknown): React.ReactNode => {
 
 const getAriaSortValue = (
   columnKey: string,
-  sortable: boolean | undefined,
   sortKey: string | undefined,
   sortDirection: SortDirection | undefined,
 ): 'ascending' | 'descending' | 'none' => {
-  if (!sortable || sortKey !== columnKey) {
+  if (sortKey !== columnKey) {
     return 'none';
   }
-
   return sortDirection === 'desc' ? 'descending' : 'ascending';
 };
 
@@ -96,7 +94,6 @@ export const DataTable = <T extends Record<string, unknown>>({
             {columns.map((column) => {
               const ariaSort = getAriaSortValue(
                 column.key,
-                column.sortable,
                 sortKey,
                 sortDirection,
               );
