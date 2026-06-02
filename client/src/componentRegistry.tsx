@@ -1,5 +1,6 @@
 import type { ComponentEntry } from './components/ComponentsView';
 import { Badge } from '@/components/Badge';
+import { EmptyState } from '@/components/EmptyState';
 import { LoadingState } from '@/components/LoadingState';
 
 export const componentRegistry: ComponentEntry[] = [
@@ -24,6 +25,37 @@ export const componentRegistry: ComponentEntry[] = [
     preview: (
       <div className="w-full py-6">
         <LoadingState message="Fetching latest items..." />
+      </div>
+    ),
+  },
+  {
+    name: 'EmptyState',
+    description:
+      'Centred empty-state messaging with optional supporting text and a call-to-action slot.',
+    preview: (
+      <div className="w-full rounded-lg border border-dashed border-border p-6">
+        <EmptyState
+          title="No incidents reported"
+          message="Create your first incident report to start tracking follow-up actions."
+          action={
+            <button
+              type="button"
+              className="rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Create incident
+            </button>
+          }
+        />
+      </div>
+    ),
+  },
+  {
+    name: 'EmptyState (Minimal)',
+    description:
+      'Minimal variant with title only for contexts where no action is required.',
+    preview: (
+      <div className="w-full rounded-lg border border-dashed border-border p-6">
+        <EmptyState title="Nothing to show yet" />
       </div>
     ),
   },
