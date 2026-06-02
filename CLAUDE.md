@@ -26,6 +26,9 @@ healthcare domain context relevant to the target production environment.
 - `ItemsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
+- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView)
+- `client/src/componentRegistry.tsx` — registry of all components for the components view (has file-level eslint-disable — see decisions log)
+- `client/src/components/formFieldUtils.ts` — shared form utility (formFieldErrorId)
 - `client/src/lib/utils.ts` — shadcn `cn()` utility (vendor, ESLint-ignored)
 - `client/components.json` — shadcn configuration
 - `client/src/**/*.test.{ts,tsx}` — Vitest tests
@@ -71,6 +74,7 @@ healthcare domain context relevant to the target production environment.
 
 **CSS approach:**
 All components use Tailwind CSS and shadcn/ui from Week 3 onwards. Existing items catalogue components (`App.tsx`, `ItemsList`) are being migrated to Tailwind in Week 3. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
+The global `button {}` rule has been removed from `App.css` — all buttons now carry explicit Tailwind classes.
 
 **Tooling:**
 - Node.js 24 (LTS)
@@ -170,6 +174,8 @@ changed library API.
 ## What the agent should do
 
 - Make small, focused changes — one task at a time
+- Use Plan mode for any non-trivial task — show the full plan before touching files
+- Include `use context7` upfront in prompts when working with specific library APIs
 - Run tests after every change and confirm they pass — `dotnet test` for API changes, `npm test` in `client/` for frontend changes
 - Match existing code style and patterns — repository pattern, typed responses, explicit return types
 - Explain non-obvious architectural decisions unprompted
@@ -180,6 +186,7 @@ changed library API.
 - Use descriptive commit messages when asked to commit
 - Follow the TypeScript conventions defined above — no any, explicit return types
 - Check `.claude/skills/` for relevant skills before starting a task
+- Place hand-authored components in `client/src/components/` — never in `client/src/components/ui/` (shadcn vendor directory)
 
 ## What the agent should not do
 
@@ -191,7 +198,7 @@ changed library API.
 - Never generate multiple tests in one prompt — ask for one at a time
 - Never skip the test run after making changes
 - Never expose stack traces or internal error details to the client
-- Never use `any` types, non-null assertions, or disable ESLint rules
+- Never use `any` types, non-null assertions, or disable ESLint rules — documented exceptions exist in `componentRegistry.tsx` and `FormField.tsx` (see decisions log)
 - Never over-engineer — only add what is directly requested
 - Never assume a task is complete without verifying the build and tests pass
 - Never translate AngularJS patterns directly to React — rewrite using
@@ -237,4 +244,3 @@ under the Data Protection Act 2018.
 
 **The practical rule:** 
 If in doubt, leave it out.
-  
