@@ -50,6 +50,13 @@ const variantIcons: Record<BadgeVariant, LucideIcon> = {
 type BadgeProps = React.ComponentProps<'span'> &
   VariantProps<typeof badgeVariants>;
 
+/**
+ * A compact status label rendered as a span. Each variant pairs a distinct
+ * colour with a distinct leading icon so colour is never the only signal.
+ *
+ * `children` are required: the icon is decorative (`aria-hidden`), so the text
+ * content is the accessible label for the badge.
+ */
 export const Badge = ({
   className,
   variant = 'default',
@@ -61,10 +68,10 @@ export const Badge = ({
 
   return (
     <span
+      {...props}
       data-slot="badge"
       data-variant={variant}
       className={cn(badgeVariants({ variant, size, className }))}
-      {...props}
     >
       <Icon aria-hidden="true" />
       {children}

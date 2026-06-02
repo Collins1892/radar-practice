@@ -1,5 +1,5 @@
 import type { ComponentEntry } from './components/ComponentsView';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/Badge';
 
 export const componentRegistry: ComponentEntry[] = [
   {
