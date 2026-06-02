@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { FormField } from '@/components/FormField';
 import { LoadingState } from '@/components/LoadingState';
+import { Pagination } from '@/components/Pagination';
 import { SelectField } from '@/components/SelectField';
 
 function SelectFieldPreview(): ReactElement {
@@ -114,7 +115,27 @@ function DataTablePreview(): ReactElement {
   );
 }
 
+function PaginationPreview(): ReactElement {
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  return (
+    <div className="w-full rounded-lg border border-dashed border-border p-4">
+      <Pagination
+        currentPage={currentPage}
+        totalPages={10}
+        onPageChange={setCurrentPage}
+      />
+    </div>
+  );
+}
+
 export const componentRegistry: ComponentEntry[] = [
+  {
+    name: 'Pagination',
+    description:
+      'Page navigation controls with previous/next actions, active-page semantics, and ellipsis truncation for long page ranges.',
+    preview: <PaginationPreview />,
+  },
   {
     name: 'DataTable',
     description:
