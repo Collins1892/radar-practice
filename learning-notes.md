@@ -1,3 +1,134 @@
+## Day 12 — 2 June 2026
+
+### Summary
+
+Week 3 Day 2. All 9 reusable components built, reviewed, and merged in a
+single day: Badge, LoadingState, EmptyState, ErrorState, FormField,
+SelectField, DatePickerField, DataTable, and Pagination. ComponentsView
+scaffold with React Router also landed on Day 2. Cursor Pro credit limit hit
+mid-day; switched to Auto mode and continued. Progress update email sent to
+the CTO. Heavy review back-and-forth — most PRs went through 2–3 review
+cycles before merging. Token spend was significant. Documentation session at
+end of day to capture decisions and update CLAUDE.md and .cursor/rules.
+
+### Code review findings
+
+- Two-review approach (Claude Code + Cursor) caught different issues
+  consistently — neither review alone was complete
+- Badge placed in `src/components/ui/` by agent — code-reviewer caught it.
+  Vendor directory is ESLint-ignored; all hand-authored components must go
+  in `src/components/`
+- App.css global `button {}` rule overriding all Tailwind utility classes on
+  buttons — caused active state styling failure in ComponentsView sidebar.
+  Found by browser devtools computed styles after agent correctly diagnosed
+  the cascade conflict
+- react-day-picker v10 removed `initialFocus` — agent used the old API.
+  Claude Code with Context7 caught this on PR review. CI passes because the
+  prop is accepted and ignored, not rejected — a silent regression
+- `react-refresh/only-export-components` fires on `componentRegistry.tsx` — 
+  file-level eslint-disable added as interim fix. FormField.tsx was resolved 
+  by extracting formFieldErrorId to formFieldUtils.ts instead; architectural
+  fix deferred to Week 7
+
+### React Router — replacing state toggle
+
+- Replaced local state view toggle in App.tsx with react-router-dom 7.16.0
+- BrowserRouter in main.tsx, Routes and NavLink in App.tsx
+- ItemsView extracted from App — unprompted agent decision that was correct.
+  Scopes the items fetch to the `/` route so it does not run on `/components`
+- App.test.tsx needed MemoryRouter wrapper — review caught this before merge
+- MemoryRouter renderApp() helper added with explicit `(): void` return type,
+  consistent with existing Vitest conventions
+
+### Component library — all 9 components (Item 4)
+
+- Built standalone with a components view (mini-Storybook), not emerging from
+  the incident module as originally planned. Clearer portfolio signal and
+  decouples component quality from incident module pace
+- Components view: sidebar nav with active state, preview pane, registry-
+  driven. componentRegistry.tsx holds all entries; file-level eslint-disable
+  for react-refresh pending Week 7 architectural fix
+- All components live in `src/components/` not `src/components/ui/`
+- Vitest tests deferred to item 8 — react-test-writer skill first (item 7)
+- formFieldErrorId extracted to formFieldUtils.ts — pure module imported by
+  both FormField and SelectField to avoid the react-refresh rule
+- FormField uses cloneElement to auto-inject aria-describedby and aria-invalid
+  onto child inputs — removes the magic string convention from consumers
+- SelectField: Radix Select.Root renders no DOM node so aria-* must go on
+  SelectTrigger directly, not on the Select root. Comment added explaining why
+- DatePickerField: shadcn Calendar + Popover. react-day-picker v10 uses
+  `autoFocus` not `initialFocus` — version discipline catch
+- DataTable: generic `DataTable<T extends Record<string, unknown>>`, sortable
+  headers, aria-sort, overflow-x-auto keyboard-focusable region, controlled
+  sort via onSort callback. No internal sort state
+- Pagination: getPageTokens with 5-button ellipsis logic, aria-current="page",
+  aria-label on each button, cn() for class composition
+
+### App.css global button rule removal
+
+- Removed `button { background: var(--app-accent); color: #fff; }` from App.css
+- Rule was overriding all Tailwind utility classes on every button element
+- Discovered when ComponentsView sidebar active state showed identical styling
+  for active and inactive items despite correct Tailwind classes
+- Agent added `!important` Tailwind modifiers as a workaround; after root cause
+  was found the overrides were removed and the global rule deleted
+- All three affected buttons (Add item, Refresh, Try again) updated with
+  explicit Tailwind classes
+- Lesson: browser devtools computed styles tab is the correct diagnostic tool
+  for unexplained Tailwind class failures
+
+### Cursor usage limits
+
+- Hit the Pro plan credit ceiling mid-day. Cursor Pro includes a $20/month
+  credit pool — exhausted by heavy agentic use across 9 components
+- Downgraded silently to Auto mode (Cursor's smart router within the plan)
+- Quality held up reasonably well for remaining components on Auto mode
+- Key difference from Claude limits: Cursor degrades silently without
+  notification; Claude issues a hard lock with a clear reset time
+- Cursor limits do not reset daily — check usage at the start of each session
+  not just when failures appear
+- Lesson: save frontier model quota for complex tasks (DataTable, DatePicker);
+  use manual edits or Auto mode for simple single-file changes
+
+### CTO progress update
+
+- Email sent mid-afternoon with progress update
+- Led with skill-specific agents work (his exact advice from 18 May)
+- Mentioned the two-independent-reviews bug catch as a best-practices example
+- Light, personal tone — written in own voice after multiple drafts
+- Key facts correct: React 19, WCAG, skill benchmarks, Claude Project setup
+- No repo link yet — Week 7 reveal when the repo is at its strongest
+
+### What I would not trust the agent to do unsupervised
+
+- Choose the correct directory for a new component without explicit instruction
+  — agent defaulted to `src/components/ui/` (vendor directory) for Badge
+- Know which library API version is current without Context7 — react-day-picker
+  initialFocus was removed in v10 and the agent used the old API silently
+- Notice CSS cascade conflicts — requires browser devtools investigation, not
+  just reading the code
+- Continue at consistent quality after Cursor credit exhaustion — degradation
+  is silent and the drop can be gradual
+- Run tsc reliably — the Cursor shell environment was unresponsive all day;
+  tsc was run manually after every component
+
+### Ideas and observations
+
+- 9 components in one day is the evidence for the Week 6 impact story — the
+  component library is the day-one Radar contribution piece, now in the repo
+- Token economy is real: 9 PRs × 2–3 review cycles each = significant Claude
+  and Cursor budget. Tighter prompts upfront reduce review cycles downstream
+- Two independent reviews consistently catch different things — Claude Code
+  caught the test gap and ESLint violations; Cursor caught the fallback route,
+  the stale h1, and the react-day-picker API regression. Run both for PRs that
+  matter
+- `react-refresh/only-export-components` is a structural problem with the
+  componentRegistry pattern. The Week 7 fix (preview: React.ComponentType)
+  eliminates it properly — do not keep adding file-level disables
+- Cursor vs Claude usage model is a meaningful workflow difference. Cursor's
+  silent degradation is more dangerous than Claude's hard lock for agentic
+  work — you might not notice until the output is wrong
+
 ## Day 11 — 1 June 2026
 
 ### Summary

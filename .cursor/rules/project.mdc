@@ -26,12 +26,22 @@ No patient data, no production dependencies.
 ## Tech stack — Frontend
 
 - React 19.2.6, TypeScript 6.0.2, Vite 8.0.12.
+- `react-router-dom` 7.16.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`).
 - Tailwind CSS 4.3.0 via `@tailwindcss/vite` 4.3.0.
 - shadcn/ui (Nova preset) with Radix: `radix-ui` 1.4.3, `@radix-ui/react-slot` 1.2.4.
 - `class-variance-authority` 0.7.1, `clsx` 2.1.1, `tailwind-merge` 3.6.0, `lucide-react` 1.17.0.
+- `date-fns` 4.4.0 — date formatting utilities.
+- `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar.
 - ESLint 10.3.0 (typescript-eslint); Prettier 3.8.3 (semicolons, single quotes, trailing commas).
 - Vitest 4.1.7 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1; Playwright (Week 3).
 - CSS: OKLCH theme tokens in `src/index.css` under `@theme inline`; compose classes with `cn()`; no new legacy CSS.
+
+## Component file locations
+
+- `client/src/components/ui/` — shadcn-generated vendor components only (ESLint-ignored). Do not place hand-authored components here.
+- `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView).
+- `client/src/componentRegistry.tsx` — registry of all components for the components view. Has a file-level `eslint-disable react-refresh/only-export-components` — documented exception pending Week 7 architectural fix.
+- `client/src/components/formFieldUtils.ts` — shared utility (`formFieldErrorId`). Pure module, no JSX.
 
 ## TypeScript conventions
 
@@ -39,6 +49,7 @@ No patient data, no production dependencies.
 - Explicit function return types required.
 - No non-null assertion operator (`!`).
 - Semicolons on, single quotes, trailing commas.
+- `tsconfig.json` has `"ignoreDeprecations": "6.0"` — silences the TypeScript 6 `baseUrl` deprecation until the proper migration is done.
 
 ## React conventions
 
@@ -47,7 +58,7 @@ No patient data, no production dependencies.
 
 ### Vendor files exempt from lint rules
 
-`client/src/components/ui/**` (shadcn generated components) and `client/src/lib/utils.ts` (the `cn()` helper) are vendor-generated and ESLint-ignored. Do NOT apply the strict TypeScript/React conventions above (no `any`, explicit return types, no non-null assertions, etc.) to these files. Treat them as vendored — review their usage, not their internal style, and avoid hand-editing them to satisfy project lint rules.
+`client/src/components/ui/**` (shadcn generated components) and `client/src/lib/utils.ts` (the `cn()` helper) are vendor-generated and ESLint-ignored. Do NOT apply the strict TypeScript/React conventions above to these files. Treat them as vendored — review their usage, not their internal style.
 
 ## C# conventions
 
@@ -65,6 +76,8 @@ No patient data, no production dependencies.
 ## Workflow
 
 Do:
+- Use Plan mode for any non-trivial agent task — show the plan before touching files.
+- Include `use context7` in prompts upfront when working with library APIs.
 - Make small, focused changes; run tests after every change and confirm they pass.
 - Match existing patterns; use the repository pattern for all new data access.
 - Add tests for any new endpoint or business logic; verify the build before declaring done.
@@ -74,8 +87,9 @@ Do:
 Don't:
 - Commit or push unless explicitly asked; run destructive operations without confirmation.
 - Make large unsupervised refactors; generate multiple tests in one prompt; skip the test run.
-- Expose stack traces or internal errors to the client; use `any`, non-null assertions, or disable ESLint rules.
+- Expose stack traces or internal errors to the client; use `any`, non-null assertions, or disable ESLint rules (except documented exceptions in `componentRegistry.tsx` and `FormField.tsx`).
 - Over-engineer; translate AngularJS patterns directly — rewrite idiomatically in React (legacy is a reference for *what*, not *how*).
+- Place hand-authored components in `src/components/ui/` — that directory is for shadcn vendor files only.
 
 ## Data protection
 
