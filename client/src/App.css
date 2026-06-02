@@ -61,28 +61,6 @@ header {
   outline-offset: 1px;
 }
 
-button {
-  padding: 0.6rem 1rem;
-  border: none;
-  border-radius: 8px;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--app-accent);
-  color: #fff;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-button.secondary {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--app-border);
-}
-
 .list-header {
   display: flex;
   align-items: center;

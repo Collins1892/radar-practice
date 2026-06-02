@@ -125,7 +125,11 @@ function ItemsView(): JSX.Element {
               disabled={submitting}
             />
           </label>
-          <button type="submit" disabled={submitting}>
+          <button
+            type="submit"
+            className="rounded-lg border border-transparent bg-[var(--app-accent)] px-4 py-2 font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={submitting}
+          >
             {submitting ? 'Adding…' : 'Add item'}
           </button>
         </form>
@@ -141,7 +145,7 @@ function ItemsView(): JSX.Element {
           <h2>All items</h2>
           <button
             type="button"
-            className="secondary"
+            className="rounded-lg border border-[var(--app-border)] bg-transparent px-4 py-2 font-semibold text-[var(--text)] transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
             onClick={() => void loadItems()}
             disabled={listLoading}
           >

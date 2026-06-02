@@ -33,7 +33,11 @@ export function ItemsList({
       <div className="items-list-state items-list-error" role="alert">
         <p className="items-list-error-title">Could not load items</p>
         <p className="items-list-error-detail">{errorMessage}</p>
-        <button type="button" className="secondary" onClick={onRetry}>
+        <button
+          type="button"
+          className="rounded-lg border border-[var(--app-border)] bg-transparent px-4 py-2 font-semibold text-[var(--text)] transition-colors hover:bg-muted"
+          onClick={onRetry}
+        >
           Try again
         </button>
       </div>
