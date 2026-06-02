@@ -1,0 +1,62 @@
+import { FormField } from '@/components/FormField';
+import { formFieldErrorId } from './formFieldUtils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+export type SelectFieldOption = {
+  value: string;
+  label: string;
+};
+
+type SelectFieldProps = {
+  label: string;
+  id: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  options: SelectFieldOption[];
+  placeholder?: string;
+  error?: string;
+  required?: boolean;
+};
+
+export function SelectField({
+  label,
+  id,
+  value,
+  onValueChange,
+  options,
+  placeholder = 'Select an option',
+  error,
+  required = false,
+}: SelectFieldProps): React.ReactElement {
+  const errorId = formFieldErrorId(id);
+
+  return (
+    <FormField label={label} htmlFor={id} error={error} required={required}>
+      <Select value={value} onValueChange={onValueChange}>
+        {/* aria-* must live on SelectTrigger — Select.Root renders no DOM node, so FormField's cloneElement cannot reach it */}
+        <SelectTrigger
+          id={id}
+          className="w-full"
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={error ? true : undefined}
+          aria-required={required || undefined}
+        >
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </FormField>
+  );
+}
