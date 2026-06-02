@@ -2,6 +2,7 @@ import type { ComponentEntry } from './components/ComponentsView';
 import { Badge } from '@/components/Badge';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { FormField } from '@/components/FormField';
 import { LoadingState } from '@/components/LoadingState';
 
 export const componentRegistry: ComponentEntry[] = [
@@ -84,6 +85,48 @@ export const componentRegistry: ComponentEntry[] = [
           title="Something went wrong"
           message="Try refreshing the page."
         />
+      </div>
+    ),
+  },
+  {
+    name: 'FormField',
+    description:
+      'Form field wrapper with WCAG-compliant label association and optional required indicator.',
+    preview: (
+      <div className="w-full max-w-md rounded-lg border border-dashed border-border p-6">
+        <FormField label="Item name" htmlFor="item-name" required>
+          <input
+            id="item-name"
+            name="itemName"
+            type="text"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+            placeholder="Enter item name"
+          />
+        </FormField>
+      </div>
+    ),
+  },
+  {
+    name: 'FormField (Error)',
+    description:
+      'Validation state showing an alert message linked by aria-describedby from the input.',
+    preview: (
+      <div className="w-full max-w-md rounded-lg border border-dashed border-border p-6">
+        <FormField
+          label="Price"
+          htmlFor="item-price"
+          required
+          error="Price must be a positive amount."
+        >
+          <input
+            id="item-price"
+            name="itemPrice"
+            type="text"
+            aria-describedby="formfield-item-price-error"
+            className="w-full rounded-md border border-destructive bg-background px-3 py-2 text-sm text-foreground"
+            placeholder="0.00"
+          />
+        </FormField>
       </div>
     ),
   },
