@@ -32,9 +32,6 @@ export function DatePickerField({
 }: DatePickerFieldProps): React.ReactElement {
   const errorId = formFieldErrorId(id);
   const buttonText = value ? format(value, 'dd/MM/yyyy') : placeholder;
-  const buttonAriaLabel = value
-    ? `Choose date for ${label}. Current selection ${format(value, 'dd/MM/yyyy')}.`
-    : `Choose date for ${label}.`;
 
   return (
     <FormField label={label} htmlFor={id} error={error} required={required}>
@@ -48,7 +45,6 @@ export function DatePickerField({
               'w-full justify-start text-left font-normal',
               !value && 'text-muted-foreground',
             )}
-            aria-label={buttonAriaLabel}
             aria-describedby={error ? errorId : undefined}
             aria-invalid={error ? true : undefined}
             aria-required={required || undefined}
@@ -62,7 +58,7 @@ export function DatePickerField({
             mode="single"
             selected={value}
             onSelect={onChange}
-            initialFocus
+            autoFocus
           />
         </PopoverContent>
       </Popover>
