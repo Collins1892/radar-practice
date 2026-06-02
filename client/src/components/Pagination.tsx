@@ -44,13 +44,13 @@ const getPageTokens = (
   ];
 };
 
-const getArrowButtonClassName = (disabled: boolean): string => {
-  if (disabled) {
-    return 'h-9 rounded-md border border-input bg-muted px-3 text-sm font-medium text-muted-foreground';
-  }
-
-  return 'h-9 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground';
-};
+const getArrowButtonClassName = (disabled: boolean): string =>
+  cn(
+    'h-9 rounded-md border px-3 text-sm font-medium',
+    disabled
+      ? 'border-input bg-muted text-muted-foreground cursor-not-allowed'
+      : 'border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
+  );
 
 export function Pagination({
   currentPage,
