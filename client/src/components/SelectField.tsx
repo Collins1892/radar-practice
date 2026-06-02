@@ -39,6 +39,7 @@ export function SelectField({
   return (
     <FormField label={label} htmlFor={id} error={error} required={required}>
       <Select value={value} onValueChange={onValueChange}>
+        {/* aria-* must live on SelectTrigger — Select.Root renders no DOM node, so FormField's cloneElement cannot reach it */}
         <SelectTrigger
           id={id}
           className="w-full"
