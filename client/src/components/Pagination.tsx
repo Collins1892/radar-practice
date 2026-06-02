@@ -1,6 +1,8 @@
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 type PaginationProps = {
+  /** 1-indexed. Caller is responsible for keeping this within [1, totalPages]. */
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -40,14 +42,6 @@ const getPageTokens = (
     'ellipsis',
     totalPages,
   ];
-};
-
-const getPageButtonClassName = (isActive: boolean): string => {
-  if (isActive) {
-    return 'h-9 min-w-9 rounded-md border border-primary bg-primary px-3 text-sm font-medium text-primary-foreground';
-  }
-
-  return 'h-9 min-w-9 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground';
 };
 
 const getArrowButtonClassName = (disabled: boolean): string => {
@@ -104,7 +98,12 @@ export function Pagination({
               onClick={() => onPageChange(token)}
               aria-label={`Page ${token}`}
               aria-current={isActivePage ? 'page' : undefined}
-              className={getPageButtonClassName(isActivePage)}
+              className={cn(
+                'h-9 min-w-9 rounded-md border px-3 text-sm font-medium',
+                isActivePage
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
+              )}
             >
               {token}
             </button>
