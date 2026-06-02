@@ -66,6 +66,8 @@ healthcare domain context relevant to the target production environment.
 - Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
 - Vitest 4.1.7 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
 - Playwright for e2e tests (coming in week 3)
+- `date-fns` 4.4.0 — date formatting utilities
+- `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar
 
 **CSS approach:**
 All components use Tailwind CSS and shadcn/ui from Week 3 onwards. Existing items catalogue components (`App.tsx`, `ItemsList`) are being migrated to Tailwind in Week 3. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
