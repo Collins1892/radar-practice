@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent, JSX } from 'react';
-import { NavLink, Route, Routes } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import { createItem, fetchItems } from './api';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
@@ -96,6 +96,9 @@ function ItemsView(): JSX.Element {
 
   return (
     <>
+      <h1>Items</h1>
+      <p className="subtitle">Inventory from the Items API</p>
+
       <section className="panel">
         <h2>Add item</h2>
         <form className="item-form" onSubmit={handleSubmit}>
@@ -162,10 +165,8 @@ function App(): JSX.Element {
   return (
     <main className="app">
       <header>
-        <h1>Items</h1>
-        <p className="subtitle">Inventory from the Items API</p>
         <nav
-          className="mt-3 pb-4 flex gap-1 border-b border-border"
+          className="pb-4 flex gap-1 border-b border-border"
           aria-label="Views"
         >
           <NavLink to="/" end className={navLinkClass}>
@@ -183,6 +184,7 @@ function App(): JSX.Element {
           path="/components"
           element={<ComponentsView components={componentRegistry} />}
         />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </main>
   );
