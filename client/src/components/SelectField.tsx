@@ -1,4 +1,5 @@
-import { FormField, formFieldErrorId } from '@/components/FormField';
+import { FormField } from '@/components/FormField';
+import { formFieldErrorId } from './formFieldUtils';
 import {
   Select,
   SelectContent,

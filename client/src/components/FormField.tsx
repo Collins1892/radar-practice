@@ -1,5 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
-
 import {
   Children,
   cloneElement,
@@ -7,6 +5,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import { formFieldErrorId } from './formFieldUtils';
 
 type FormFieldProps = {
   label: string;
@@ -15,9 +14,6 @@ type FormFieldProps = {
   required?: boolean;
   children: ReactElement;
 };
-
-export const formFieldErrorId = (htmlFor: string): string =>
-  `formfield-${htmlFor}-error`;
 
 export function FormField({
   label,
