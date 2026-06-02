@@ -122,7 +122,6 @@ export const componentRegistry: ComponentEntry[] = [
             id="item-price"
             name="itemPrice"
             type="text"
-            aria-describedby="formfield-item-price-error"
             className="w-full rounded-md border border-destructive bg-background px-3 py-2 text-sm text-foreground"
             placeholder="0.00"
           />

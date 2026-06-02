@@ -1,4 +1,10 @@
-import type { ReactElement, ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
 type FormFieldProps = {
   label: string;
@@ -8,13 +14,6 @@ type FormFieldProps = {
   children: ReactNode;
 };
 
-/**
- * Renders a labelled form field wrapper with optional validation message.
- *
- * When `error` is present, the child input should receive
- * `aria-describedby="formfield-{htmlFor}-error"`.
- * The parent/consumer is responsible for wiring this attribute.
- */
 export function FormField({
   label,
   htmlFor,
@@ -22,7 +21,15 @@ export function FormField({
   required = false,
   children,
 }: FormFieldProps): ReactElement {
-  const errorId: string = `formfield-${htmlFor}-error`;
+  const errorId = `formfield-${htmlFor}-error`;
+  const singleChild: ReactNode = Children.only(children);
+  const enhancedChild: ReactNode = isValidElement(singleChild)
+    ? cloneElement(singleChild, {
+        'aria-describedby': error ? errorId : undefined,
+        'aria-invalid': error ? true : undefined,
+        'aria-required': required || undefined,
+      })
+    : singleChild;
 
   return (
     <div className="space-y-1.5">
@@ -38,7 +45,7 @@ export function FormField({
         ) : null}
       </label>
 
-      {children}
+      {enhancedChild}
 
       {error ? (
         <p id={errorId} role="alert" className="text-sm text-destructive">
