@@ -1,9 +1,37 @@
+/* eslint-disable react-refresh/only-export-components */
+
+import { useState } from 'react';
+import type { ReactElement } from 'react';
 import type { ComponentEntry } from './components/ComponentsView';
 import { Badge } from '@/components/Badge';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { FormField } from '@/components/FormField';
 import { LoadingState } from '@/components/LoadingState';
+import { SelectField } from '@/components/SelectField';
+
+function SelectFieldPreview(): ReactElement {
+  const [severity, setSeverity] = useState<string>('');
+
+  return (
+    <div className="w-full max-w-md rounded-lg border border-dashed border-border p-6">
+      <SelectField
+        label="Severity"
+        id="incident-severity"
+        value={severity}
+        onValueChange={setSeverity}
+        options={[
+          { value: 'low', label: 'Low' },
+          { value: 'medium', label: 'Medium' },
+          { value: 'high', label: 'High' },
+          { value: 'critical', label: 'Critical' },
+        ]}
+        placeholder="Select incident severity"
+        required
+      />
+    </div>
+  );
+}
 
 export const componentRegistry: ComponentEntry[] = [
   {
@@ -128,5 +156,11 @@ export const componentRegistry: ComponentEntry[] = [
         </FormField>
       </div>
     ),
+  },
+  {
+    name: 'SelectField',
+    description:
+      'FormField-wrapped select using shadcn Select with keyboard-friendly severity options.',
+    preview: <SelectFieldPreview />,
   },
 ];
