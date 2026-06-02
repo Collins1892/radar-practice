@@ -1,5 +1,6 @@
 import type { ComponentEntry } from './components/ComponentsView';
 import { Badge } from '@/components/Badge';
+import { LoadingState } from '@/components/LoadingState';
 
 export const componentRegistry: ComponentEntry[] = [
   {
@@ -13,6 +14,16 @@ export const componentRegistry: ComponentEntry[] = [
         <Badge variant="warning">Warning</Badge>
         <Badge variant="danger">Danger</Badge>
         <Badge variant="info">Info</Badge>
+      </div>
+    ),
+  },
+  {
+    name: 'LoadingState',
+    description:
+      'Centred loading spinner with accessible status role and optional message for background operations.',
+    preview: (
+      <div className="w-full py-6">
+        <LoadingState message="Fetching latest items..." />
       </div>
     ),
   },

@@ -73,8 +73,10 @@ export function ComponentsView({
                     onClick={() => setSelectedName(c.name)}
                     aria-current={isActive ? 'true' : undefined}
                     className={cn(
-                      'w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
-                      isActive && 'bg-muted font-medium text-foreground',
+                      'w-full rounded-md px-3 py-2 text-left text-sm transition-colors',
+                      isActive
+                        ? 'bg-primary !text-primary-foreground !font-medium'
+                        : '!bg-transparent !text-foreground !font-normal hover:!bg-muted hover:!text-foreground',
                     )}
                   >
                     {c.name}
