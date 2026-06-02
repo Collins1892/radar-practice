@@ -1,4 +1,4 @@
-import { FormField } from '@/components/FormField';
+import { FormField, formFieldErrorId } from '@/components/FormField';
 import {
   Select,
   SelectContent,
@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-type SelectFieldOption = {
+export type SelectFieldOption = {
   value: string;
   label: string;
 };
@@ -33,7 +33,7 @@ export function SelectField({
   error,
   required = false,
 }: SelectFieldProps): React.ReactElement {
-  const errorId = `formfield-${id}-error`;
+  const errorId = formFieldErrorId(id);
 
   return (
     <FormField label={label} htmlFor={id} error={error} required={required}>

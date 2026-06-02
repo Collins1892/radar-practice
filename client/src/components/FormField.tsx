@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import {
   Children,
   cloneElement,
@@ -14,6 +16,9 @@ type FormFieldProps = {
   children: ReactElement;
 };
 
+export const formFieldErrorId = (htmlFor: string): string =>
+  `formfield-${htmlFor}-error`;
+
 export function FormField({
   label,
   htmlFor,
@@ -21,7 +26,7 @@ export function FormField({
   required = false,
   children,
 }: FormFieldProps): ReactElement {
-  const errorId = `formfield-${htmlFor}-error`;
+  const errorId = formFieldErrorId(htmlFor);
   const singleChild: ReactNode = Children.only(children);
   const enhancedChild: ReactNode = isValidElement(singleChild)
     ? cloneElement(singleChild, {
