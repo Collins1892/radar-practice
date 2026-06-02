@@ -56,6 +56,7 @@ healthcare domain context relevant to the target production environment.
 **Frontend:**
 - React 19.2.6 with TypeScript 6.0.2
 - Vite 8.0.12 for bundling
+- `react-router-dom` 7.16.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`)
 - Tailwind CSS 4.3.0 via `@tailwindcss/vite` 4.3.0 plugin
 - shadcn/ui — Nova preset, Radix component library, `components.json` config
 - `radix-ui` 1.4.3 and `@radix-ui/react-slot` 1.2.4 (Radix primitives)
