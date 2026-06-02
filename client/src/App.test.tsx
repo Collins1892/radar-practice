@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { createItem, fetchItems } from './api';
@@ -9,6 +10,14 @@ vi.mock('./api', () => ({
   fetchItems: vi.fn(),
   createItem: vi.fn(),
 }));
+
+const renderApp = (): void => {
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <App />
+    </MemoryRouter>,
+  );
+};
 
 describe('App', () => {
   beforeEach((): void => {
@@ -22,7 +31,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue(items);
 
     // Act
-    render(<App />);
+    renderApp();
 
     // Assert
     await screen.findByRole('list');
@@ -36,7 +45,7 @@ describe('App', () => {
     );
 
     // Act
-    render(<App />);
+    renderApp();
 
     // Assert
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -49,7 +58,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue([]);
 
     // Act
-    render(<App />);
+    renderApp();
 
     // Assert
     await screen.findByText('No items yet. Add one above to get started.');
@@ -61,7 +70,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue(items);
 
     // Act
-    render(<App />);
+    renderApp();
     await screen.findByRole('list');
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
 
@@ -74,7 +83,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue([]);
 
     // Act
-    render(<App />);
+    renderApp();
     await screen.findByText('No items yet. Add one above to get started.');
     fireEvent.click(screen.getByRole('button', { name: 'Add item' }));
 
@@ -87,7 +96,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue([]);
 
     // Act
-    render(<App />);
+    renderApp();
     await screen.findByText('No items yet. Add one above to get started.');
     fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: 'Sprocket' },
@@ -110,7 +119,7 @@ describe('App', () => {
     vi.mocked(createItem).mockResolvedValue(newItem);
 
     // Act
-    render(<App />);
+    renderApp();
     await screen.findByText('No items yet. Add one above to get started.');
     fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: 'Widget' },
@@ -136,7 +145,7 @@ describe('App', () => {
     );
 
     // Act
-    render(<App />);
+    renderApp();
     await screen.findByText('No items yet. Add one above to get started.');
     fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: 'Widget' },

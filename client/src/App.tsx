@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent, JSX } from 'react';
+import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import { createItem, fetchItems } from './api';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
+import { ComponentsView } from './components/ComponentsView';
+import { componentRegistry } from './componentRegistry';
 import { toUserMessage } from './errors';
 import type { Item } from './types';
+import { cn } from '@/lib/utils';
 import './App.css';
 
 function formatPrice(price: number): string {
@@ -25,7 +29,14 @@ function listStatus(
   return 'ready';
 }
 
-function App(): JSX.Element {
+function navLinkClass({ isActive }: { isActive: boolean }): string {
+  return cn(
+    '-mb-px border-b-2 border-transparent px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground',
+    isActive && 'border-primary font-medium text-foreground',
+  );
+}
+
+function ItemsView(): JSX.Element {
   const [items, setItems] = useState<Item[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
@@ -84,11 +95,9 @@ function App(): JSX.Element {
   const status = listStatus(listLoading, listError, items);
 
   return (
-    <main className="app">
-      <header>
-        <h1>Items</h1>
-        <p className="subtitle">Inventory from the Items API</p>
-      </header>
+    <>
+      <h1>Items</h1>
+      <p className="subtitle">Inventory from the Items API</p>
 
       <section className="panel">
         <h2>Add item</h2>
@@ -148,6 +157,35 @@ function App(): JSX.Element {
           formatPrice={formatPrice}
         />
       </section>
+    </>
+  );
+}
+
+function App(): JSX.Element {
+  return (
+    <main className="app">
+      <header>
+        <nav
+          className="pb-4 flex gap-1 border-b border-border"
+          aria-label="Views"
+        >
+          <NavLink to="/" end className={navLinkClass}>
+            Items
+          </NavLink>
+          <NavLink to="/components" className={navLinkClass}>
+            Components
+          </NavLink>
+        </nav>
+      </header>
+
+      <Routes>
+        <Route path="/" element={<ItemsView />} />
+        <Route
+          path="/components"
+          element={<ComponentsView components={componentRegistry} />}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </main>
   );
 }
