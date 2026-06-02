@@ -25,9 +25,9 @@ end of day to capture decisions and update CLAUDE.md and .cursor/rules.
 - react-day-picker v10 removed `initialFocus` — agent used the old API.
   Claude Code with Context7 caught this on PR review. CI passes because the
   prop is accepted and ignored, not rejected — a silent regression
-- `react-refresh/only-export-components` fires on `componentRegistry.tsx`
-  and `FormField.tsx` when files export both components and non-component
-  values. File-level `eslint-disable` added as interim fix; architectural
+- `react-refresh/only-export-components` fires on `componentRegistry.tsx` — 
+  file-level eslint-disable added as interim fix. FormField.tsx was resolved 
+  by extracting formFieldErrorId to formFieldUtils.ts instead; architectural
   fix deferred to Week 7
 
 ### React Router — replacing state toggle

@@ -198,7 +198,7 @@ changed library API.
 - Never generate multiple tests in one prompt — ask for one at a time
 - Never skip the test run after making changes
 - Never expose stack traces or internal error details to the client
-- Never use `any` types, non-null assertions, or disable ESLint rules — documented exceptions exist in `componentRegistry.tsx` and `FormField.tsx` (see decisions log)
+- Never use `any` types, non-null assertions, or disable ESLint rules — the one documented exception is the file-level disable in `componentRegistry.tsx` (see decisions log)
 - Never over-engineer — only add what is directly requested
 - Never assume a task is complete without verifying the build and tests pass
 - Never translate AngularJS patterns directly to React — rewrite using
