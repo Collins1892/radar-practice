@@ -47,8 +47,9 @@ const variantIcons: Record<BadgeVariant, LucideIcon> = {
   info: Info,
 };
 
-type BadgeProps = React.ComponentProps<'span'> &
-  VariantProps<typeof badgeVariants>;
+type BadgeProps = Omit<React.ComponentProps<'span'>, 'children'> & {
+  children: React.ReactNode;
+} & VariantProps<typeof badgeVariants>;
 
 /**
  * A compact status label rendered as a span. Each variant pairs a distinct
