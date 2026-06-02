@@ -1,6 +1,7 @@
 import type { ComponentEntry } from './components/ComponentsView';
 import { Badge } from '@/components/Badge';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 
 export const componentRegistry: ComponentEntry[] = [
@@ -56,6 +57,33 @@ export const componentRegistry: ComponentEntry[] = [
     preview: (
       <div className="w-full rounded-lg border border-dashed border-border p-6">
         <EmptyState title="Nothing to show yet" />
+      </div>
+    ),
+  },
+  {
+    name: 'ErrorState',
+    description:
+      'Centred error messaging with optional details and a retry button when a handler is provided.',
+    preview: (
+      <div className="w-full rounded-lg border border-dashed border-border p-6">
+        <ErrorState
+          title="Could not load data"
+          message="Please try again in a moment."
+          onRetry={() => void 0}
+        />
+      </div>
+    ),
+  },
+  {
+    name: 'ErrorState (No Retry)',
+    description:
+      'Error messaging without a retry action when no handler is provided.',
+    preview: (
+      <div className="w-full rounded-lg border border-dashed border-border p-6">
+        <ErrorState
+          title="Something went wrong"
+          message="Try refreshing the page."
+        />
       </div>
     ),
   },
