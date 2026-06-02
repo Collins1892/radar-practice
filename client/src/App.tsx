@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent, JSX } from 'react';
+import { NavLink, Route, Routes } from 'react-router-dom';
 import { createItem, fetchItems } from './api';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
@@ -9,8 +10,6 @@ import { toUserMessage } from './errors';
 import type { Item } from './types';
 import { cn } from '@/lib/utils';
 import './App.css';
-
-type View = 'items' | 'components';
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat(undefined, {
@@ -30,8 +29,14 @@ function listStatus(
   return 'ready';
 }
 
-function App(): JSX.Element {
-  const [view, setView] = useState<View>('items');
+function navLinkClass({ isActive }: { isActive: boolean }): string {
+  return cn(
+    '-mb-px border-b-2 border-transparent px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground',
+    isActive && 'border-primary font-medium text-foreground',
+  );
+}
+
+function ItemsView(): JSX.Element {
   const [items, setItems] = useState<Item[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
@@ -90,6 +95,71 @@ function App(): JSX.Element {
   const status = listStatus(listLoading, listError, items);
 
   return (
+    <>
+      <section className="panel">
+        <h2>Add item</h2>
+        <form className="item-form" onSubmit={handleSubmit}>
+          <label>
+            Name
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Sprocket"
+              maxLength={100}
+              disabled={submitting}
+            />
+          </label>
+          <label>
+            Price
+            <input
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              disabled={submitting}
+            />
+          </label>
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Adding…' : 'Add item'}
+          </button>
+        </form>
+        {formError && (
+          <p className="form-error" role="alert">
+            {formError}
+          </p>
+        )}
+      </section>
+
+      <section className="panel">
+        <div className="list-header">
+          <h2>All items</h2>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => void loadItems()}
+            disabled={listLoading}
+          >
+            Refresh
+          </button>
+        </div>
+
+        <ItemsList
+          items={items}
+          status={status}
+          errorMessage={listError}
+          onRetry={() => void loadItems()}
+          formatPrice={formatPrice}
+        />
+      </section>
+    </>
+  );
+}
+
+function App(): JSX.Element {
+  return (
     <main className="app">
       <header>
         <h1>Items</h1>
@@ -98,96 +168,22 @@ function App(): JSX.Element {
           className="mt-3 pb-4 flex gap-1 border-b border-border"
           aria-label="Views"
         >
-          <button
-            type="button"
-            onClick={() => setView('items')}
-            aria-current={view === 'items' ? 'page' : undefined}
-            className={cn(
-              '-mb-px border-b-2 border-transparent px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground',
-              view === 'items' && 'border-primary font-medium text-foreground',
-            )}
-          >
+          <NavLink to="/" end className={navLinkClass}>
             Items
-          </button>
-          <button
-            type="button"
-            onClick={() => setView('components')}
-            aria-current={view === 'components' ? 'page' : undefined}
-            className={cn(
-              '-mb-px border-b-2 border-transparent px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground',
-              view === 'components' &&
-                'border-primary font-medium text-foreground',
-            )}
-          >
+          </NavLink>
+          <NavLink to="/components" className={navLinkClass}>
             Components
-          </button>
+          </NavLink>
         </nav>
       </header>
 
-      {view === 'items' ? (
-        <>
-          <section className="panel">
-            <h2>Add item</h2>
-            <form className="item-form" onSubmit={handleSubmit}>
-              <label>
-                Name
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Sprocket"
-                  maxLength={100}
-                  disabled={submitting}
-                />
-              </label>
-              <label>
-                Price
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  disabled={submitting}
-                />
-              </label>
-              <button type="submit" disabled={submitting}>
-                {submitting ? 'Adding…' : 'Add item'}
-              </button>
-            </form>
-            {formError && (
-              <p className="form-error" role="alert">
-                {formError}
-              </p>
-            )}
-          </section>
-
-          <section className="panel">
-            <div className="list-header">
-              <h2>All items</h2>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => void loadItems()}
-                disabled={listLoading}
-              >
-                Refresh
-              </button>
-            </div>
-
-            <ItemsList
-              items={items}
-              status={status}
-              errorMessage={listError}
-              onRetry={() => void loadItems()}
-              formatPrice={formatPrice}
-            />
-          </section>
-        </>
-      ) : (
-        <ComponentsView components={componentRegistry} />
-      )}
+      <Routes>
+        <Route path="/" element={<ItemsView />} />
+        <Route
+          path="/components"
+          element={<ComponentsView components={componentRegistry} />}
+        />
+      </Routes>
     </main>
   );
 }
