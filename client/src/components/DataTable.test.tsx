@@ -123,4 +123,19 @@ describe('DataTable', () => {
     // Assert
     expect(screen.getByText('No records to display.')).toBeInTheDocument();
   });
+
+  it('calls onSort with desc when clicking the active ascending column header', (): void => {
+    // Arrange
+    const { onSort } = renderDataTable({
+      sortKey: 'name',
+      sortDirection: 'asc',
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: 'Name' }));
+
+    // Assert
+    expect(onSort).toHaveBeenCalledTimes(1);
+    expect(onSort).toHaveBeenCalledWith('name', 'desc');
+  });
 });

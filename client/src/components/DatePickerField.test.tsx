@@ -11,7 +11,7 @@ describe('DatePickerField', () => {
     overrides: Partial<ComponentProps<typeof DatePickerField>> = {},
   ): ReturnType<typeof render> {
     const {
-      label = 'Incident date',
+      label = labelText,
       id = 'incident-date',
       value = undefined,
       onChange = vi.fn((): void => {}),

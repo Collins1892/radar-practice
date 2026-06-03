@@ -118,4 +118,14 @@ describe('Pagination', () => {
       screen.getByRole('button', { name: 'Previous page' }),
     ).toBeDisabled();
   });
+
+  it('disables the next page button when currentPage equals totalPages', (): void => {
+    // Arrange — defaults via renderPagination
+
+    // Act
+    renderPagination({ currentPage: 5, totalPages: 5 });
+
+    // Assert
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
+  });
 });
