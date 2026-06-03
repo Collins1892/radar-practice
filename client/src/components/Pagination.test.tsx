@@ -143,4 +143,19 @@ describe('Pagination', () => {
     expect(onPageChange).toHaveBeenCalledTimes(1);
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
+
+  it('calls onPageChange with the previous page when the previous page button is clicked', (): void => {
+    // Arrange
+    const { onPageChange } = renderPagination({
+      currentPage: 3,
+      totalPages: 5,
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
+
+    // Assert
+    expect(onPageChange).toHaveBeenCalledTimes(1);
+    expect(onPageChange).toHaveBeenCalledWith(2);
+  });
 });
