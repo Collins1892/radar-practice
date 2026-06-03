@@ -128,4 +128,19 @@ describe('Pagination', () => {
     // Assert
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
   });
+
+  it('calls onPageChange with the next page when the next page button is clicked', (): void => {
+    // Arrange
+    const { onPageChange } = renderPagination({
+      currentPage: 1,
+      totalPages: 5,
+    });
+
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+
+    // Assert
+    expect(onPageChange).toHaveBeenCalledTimes(1);
+    expect(onPageChange).toHaveBeenCalledWith(2);
+  });
 });

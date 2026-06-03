@@ -138,4 +138,17 @@ describe('DataTable', () => {
     expect(onSort).toHaveBeenCalledTimes(1);
     expect(onSort).toHaveBeenCalledWith('name', 'desc');
   });
+
+  it('sets aria-sort descending on the active sortable column header', (): void => {
+    // Arrange — defaults via renderDataTable
+
+    // Act
+    renderDataTable({ sortKey: 'name', sortDirection: 'desc' });
+
+    // Assert
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toHaveAttribute(
+      'aria-sort',
+      'descending',
+    );
+  });
 });

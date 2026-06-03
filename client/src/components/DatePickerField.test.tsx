@@ -90,4 +90,30 @@ describe('DatePickerField', () => {
     expect(calendarRoot).not.toBeNull();
     expect(calendarRoot).toContain(document.activeElement);
   });
+
+  it('sets aria-invalid and aria-describedby on the trigger when error is provided', (): void => {
+    // Arrange
+    const errorMessage = 'Incident date is required.';
+    const id = 'incident-date';
+
+    // Act
+    renderDatePickerField({ error: errorMessage });
+
+    // Assert
+    const trigger = screen.getByLabelText(labelText);
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', formFieldErrorId(id));
+  });
+
+  it('does not set aria-invalid or aria-describedby on the trigger when there is no error', (): void => {
+    // Arrange — defaults via renderDatePickerField (no error prop)
+
+    // Act
+    renderDatePickerField();
+
+    // Assert
+    const trigger = screen.getByLabelText(labelText);
+    expect(trigger).not.toHaveAttribute('aria-invalid');
+    expect(trigger).not.toHaveAttribute('aria-describedby');
+  });
 });
