@@ -1,4 +1,74 @@
-## Day 12 — 2 June 2026
+## Day 13 — 3 June 2026
+
+### Summary
+
+Week 3 Day 3. Four PRs merged: react-test-writer skill + dotnet-test-writer alignment (PR #41), simple component tests — Badge, LoadingState, EmptyState, ErrorState (PR #42), complex component tests — FormField, SelectField, DatePickerField, DataTable, Pagination (PR #43), and Node.js 20 CI deprecation fix (PR #44). 80 tests total, up from 51 at the start of the day. Multiple Claude Code and Cursor review cycles on each PR — findings grew across rounds. EmptyState got a real accessibility fix driven by a failing test. School run break mid-afternoon; DataTable and Pagination completed after returning.
+
+### react-test-writer skill
+
+Built into `.claude/skills/react-test-writer/SKILL.md` after the 9 components existed — following the "skills after real code" rule. Covers six Vitest test types: unit, component, integration, form, router, accessibility. Dedicated shadcn/Radix gotchas section: SelectTrigger aria placement, autoFocus not initialFocus, DataTable generic typing. Mirrors dotnet-test-writer structure exactly. Two issues found during skill build: dotnet-test-writer said "never run dotnet test" which contradicted CLAUDE.md — fixed as part of the same PR. Benchmark deferred to Week 4 to avoid burning Day 13 session budget.
+
+### Two-branch strategy for component tests
+
+Simple presentational components (Badge, LoadingState, EmptyState, ErrorState) on one branch; complex Radix/shadcn components (FormField, SelectField, DatePickerField, DataTable, Pagination) on a second. Simple branch validated the skill before tackling the complex components. Each review cycle on the simple branch improved the skill for the complex ones. Two focused PRs were significantly easier to review than one large PR would have been.
+
+### Test-driven accessibility fix
+
+EmptyState.tsx lacked `role="status"`. The react-test-writer skill produced a test asserting `role="status"` which failed, surfacing a real accessibility gap. Added `role="status"` and `aria-live="polite"` to match LoadingState. This is the skill working as intended — a test drove a component fix rather than just verifying existing behaviour. The two sibling state components are now consistent.
+
+### Review cycle findings — component tests
+
+Both Claude Code and Cursor reviews caught real issues across PR #42 and #43:
+- Badge danger variant test added no coverage (identical to first test) — fixed to assert `data-variant="danger"`
+- EmptyState `aria-live="polite"` inconsistency vs LoadingState — fixed
+- DataTable `aria-label` on region wrapper, not `<table>` — accessibility table corrected in skill
+- FormField label nesting (implicit vs explicit `htmlFor`) — clarified in skill
+- DatePickerField trigger aria-invalid/aria-describedby missing from error test — added
+- DataTable aria-sort descending not asserted — added
+- Pagination Prev/Next callback coverage gaps — added
+
+Each review round improved both the tests and the skill documentation. Final test count grew from 19 planned to 29 through review cycles.
+
+### DatePickerField autoFocus in jsdom
+
+The autoFocus assertion in Test 4 (focus moves into the portaled calendar after open) was flagged as a risk — focus behaviour inside Radix portals doesn't always match browser behaviour in jsdom. It worked correctly. The test uses `closest('[data-slot="calendar"]') ?? closest('.rdp-root')` which couples to vendor markup — flagged as a known brittleness for Week 7 refactor.
+
+### DatePickerField accessible name finding
+
+The trigger button's accessible name comes from label association (`htmlFor`/`id`), not the placeholder text. `getByLabelText('Incident date')` is the correct query, not `getByRole('button', { name: 'Pick incident date' })`. Label association overrides placeholder — a subtle but important RTL behaviour.
+
+### Cursor Auto mode and quota
+
+Day started with Cursor API credit pool at 100% exhausted from Day 12's heavy component work. Auto mode confirmed as unlimited — does not draw from the credit pool. Cursor Auto used for all coding throughout the day; Claude Code used for reviews (separate quota). Quality held well for pattern-following test work. Cursor Plan & Usage screen (Settings) is the place to check quota.
+
+### gh pr create on Windows PowerShell
+
+`--body` flag with multi-line strings, backticks, and em dashes fails in PowerShell — shell parses them as separate arguments. Raised PRs manually on GitHub for today. To investigate on Day 14: `--fill` (uses commit message) or `--body-file` (temp file approach).
+
+### GitHub Actions Node.js 20 deprecation
+
+`actions/setup-node@v4` was running on deprecated Node.js 20. GitHub Actions forces Node.js 24 by default from 16 June 2026 — 13 days away at time of fix. Upgraded to `actions/setup-node@v5` in `.github/workflows/ci.yml`. CI annotations warning cleared. Quick fix, ~15 minutes including PR and verification.
+
+### Prompts as code blocks not widget artifacts
+
+The copy button in visualiser widgets is unreliable in the Claude.ai interface. Switched to plain code blocks for all Cursor prompts — the code block copy button works natively. Applied from mid-session onwards.
+
+### What I would not trust the agent to do unsupervised
+
+- Start implementing without explicitly being told "plan mode, no files" — Pagination tests were built without plan mode because the user pressed build rather than selecting plan. The output was correct but the planning step was skipped.
+- Identify the right Cursor mode without being told — no mode, plan, agent, ask, debug selector was shown; user had to know to choose.
+- Correctly identify accessible name when label association is present — the agent initially proposed `getByRole('button', { name: 'Pick incident date' })` for the DatePickerField trigger, which would fail because label association overrides placeholder as the accessible name.
+- Maintain consistent behaviour across two skill files without explicit alignment — dotnet-test-writer "never run test" contradiction with CLAUDE.md existed until it was surfaced today.
+
+### Ideas and observations
+
+- 80 tests in 13 working days across 13 test files — the react-test-writer skill drove 29 of them in a single day. Acceleration is visible and measurable.
+- The skill benchmark (deferred to Week 4) will be the clearest delta story for Week 6 — skill vs no-skill pass rate across all three test writers.
+- Two independent reviews (Claude Code + Cursor) on skill documentation files is as valuable as on code files — both caught accuracy errors that would have misled agents in future sessions.
+- Button label inconsistency (ErrorState 'Retry' vs ItemsList 'Try again') surfaced through testing — another example of tests revealing UX issues, not just code correctness.
+- The Node.js 20 deprecation fix took 15 minutes. Spotting it early from the CI annotation saved a potential CI break on 16 June.
+
+
 
 ### Summary
 
