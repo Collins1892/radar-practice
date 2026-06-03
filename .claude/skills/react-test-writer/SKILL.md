@@ -175,7 +175,7 @@ describe('ItemsList', () => {
     );
 
     return { ...view, onRetry };
-  };
+  }
 
   it('shows error state with retry action when loading fails', (): void => {
     // Arrange
@@ -354,9 +354,9 @@ There is no axe/eslint-a11y plugin in this repo — verify WCAG 2.1 AA concerns 
 
 | UI | What to assert |
 |----|----------------|
-| Loading (`LoadingState`, `ItemsList`) | `role="status"`, `aria-live="polite"` where present |
+| Loading and empty (`LoadingState`, `ItemsList`) | `role="status"`; `aria-live="polite"` on loading where present |
 | Errors | `role="alert"`, visible error text |
-| Lists | `role="list"`, `listitem` count |
+| Populated list (`ItemsList` ready) | `role="list"`, `listitem` count — only when items are rendered |
 | Forms | `<label htmlFor={id}>` matches control `id`; `aria-describedby` points to error `id` when `error` prop set |
 | Pagination | `nav` with `aria-label="Pagination"`; `aria-current="page"` on active page |
 | DataTable | `aria-label="Data table"`; `aria-sort` on sortable headers |
@@ -441,5 +441,5 @@ When **appending** to an existing file, insert the new `it` inside the relevant 
 3. Look up any uncertain API details via Context7 before writing.
 4. Write exactly one `it`, with AAA comments and the correct return type (`(): void` or `async (): Promise<void>`).
 5. If the file exists, show only the new `it` (and any new helper) with a clear note about where to insert it. If it is a new file, show the complete file.
-6. Run `npm test` from `client/` and fix failures before finishing.
+6. Run `npm test` from `client/` after writing each test and confirm all tests pass before asking for the next one.
 7. Confirm what was written and the test result, then ask: "Which test would you like next?"

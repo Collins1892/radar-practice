@@ -200,5 +200,5 @@ When **appending** to an existing file, insert the new `[Fact]` method before th
 3. Look up any uncertain API details via Context7 before writing.
 4. Write exactly one test, following the naming convention and A/A/A structure.
 5. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
-6. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` and confirm all tests pass.
+6. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` after writing each test and confirm all tests pass before asking for the next one.
 7. Confirm what was written, then ask: "Which test would you like next?"
