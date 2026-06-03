@@ -357,9 +357,9 @@ There is no axe/eslint-a11y plugin in this repo — verify WCAG 2.1 AA concerns 
 | Loading and empty (`LoadingState`, `ItemsList`) | `role="status"`; `aria-live="polite"` on loading where present |
 | Errors | `role="alert"`, visible error text |
 | Populated list (`ItemsList` ready) | `role="list"`, `listitem` count — only when items are rendered |
-| Forms | `<label htmlFor={id}>` matches control `id`; `aria-describedby` points to error `id` when `error` prop set |
+| Forms | `<label htmlFor={id}>` matches control `id`; `aria-describedby` points to error `id` when `error` prop set. Legacy App items form uses implicit label nesting (input inside `<label>`, no `htmlFor`/`id`); `FormField`, `SelectField`, and `DatePickerField` use explicit `htmlFor`/`id`. `getByLabelText` works either way |
 | Pagination | `nav` with `aria-label="Pagination"`; `aria-current="page"` on active page |
-| DataTable | `aria-label="Data table"`; `aria-sort` on sortable headers |
+| DataTable | `aria-label="Data table"` on the region wrapper (`role="region"`), not the `<table>` — query with `getByRole('region', { name: 'Data table' })`; `aria-sort` on sortable `<th>` headers |
 | Decorative icons | `aria-hidden="true"` — do not assert on icon-only text |
 
 ### Focus and keyboard
