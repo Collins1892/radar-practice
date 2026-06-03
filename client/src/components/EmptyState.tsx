@@ -12,7 +12,10 @@ export const EmptyState = ({
   action,
 }: EmptyStateProps): React.ReactElement => {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+    <div
+      role="status"
+      className="flex flex-col items-center justify-center gap-3 py-8 text-center"
+    >
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
       {message ? (
         <p className="max-w-md text-sm text-muted-foreground">{message}</p>
