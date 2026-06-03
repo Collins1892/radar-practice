@@ -70,7 +70,6 @@ The copy button in visualiser widgets is unreliable in the Claude.ai interface. 
 
 ## Day 12 — 2 June 2026
 
-
 ### Summary
 
 Week 3 Day 2. All 9 reusable components built, reviewed, and merged in a
