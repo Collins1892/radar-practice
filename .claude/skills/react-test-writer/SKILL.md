@@ -50,7 +50,7 @@ client/
     errors.test.ts            — unit tests (reference)
     api.ts                    — fetchItems, createItem (mock in App tests)
     App.tsx                   — items view + routing; form and list orchestration
-    App.test.tsx              — integration, form, router tests (reference)
+    App.test.tsx              — integration, form tests (reference); router — patterns in §5 (no reference test yet)
     types.ts                  — Item and shared types
     components/
       ItemsList.tsx           — loading / error / empty / ready states
@@ -72,7 +72,8 @@ Match patterns already used in this repo:
 |-----------|----------------|
 | Unit | [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts) |
 | Component | [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx) |
-| Integration, form, router | [`client/src/App.test.tsx`](../../../client/src/App.test.tsx) |
+| Integration, form | [`client/src/App.test.tsx`](../../../client/src/App.test.tsx) |
+| Router | patterns in §5 (no reference test yet) |
 
 ## Return types
 
@@ -272,6 +273,8 @@ Form behaviour can be tested **through App** (integration) or **in isolation** o
 
 Patterns from `App.test.tsx`:
 
+Each block below is a separate `it` — do not combine scenarios in one test.
+
 ```typescript
 // Arrange
 vi.mocked(fetchItems).mockResolvedValue([]);
@@ -354,9 +357,10 @@ There is no axe/eslint-a11y plugin in this repo — verify WCAG 2.1 AA concerns 
 
 | UI | What to assert |
 |----|----------------|
-| Loading and empty (`LoadingState`, `ItemsList`) | `role="status"`; `aria-live="polite"` on loading where present |
+| Loading (`LoadingState`, `ItemsList` loading) | `role="status"`, `aria-live="polite"` |
+| Empty (`ItemsList` empty) | `role="status"` |
 | Errors | `role="alert"`, visible error text |
-| Populated list (`ItemsList` ready) | `role="list"`, `listitem` count — only when items are rendered |
+| Populated list (`ItemsList` ready) | implicit on `<ul>` in `ItemsList`; query with `getByRole('list')`; `listitem` count — only when items are rendered |
 | Forms | `<label htmlFor={id}>` matches control `id`; `aria-describedby` points to error `id` when `error` prop set. Legacy App items form uses implicit label nesting (input inside `<label>`, no `htmlFor`/`id`); `FormField`, `SelectField`, and `DatePickerField` use explicit `htmlFor`/`id`. `getByLabelText` works either way |
 | Pagination | `nav` with `aria-label="Pagination"`; `aria-current="page"` on active page |
 | DataTable | `aria-label="Data table"` on the region wrapper (`role="region"`), not the `<table>` — query with `getByRole('region', { name: 'Data table' })`; `aria-sort` on sortable `<th>` headers |
@@ -364,7 +368,7 @@ There is no axe/eslint-a11y plugin in this repo — verify WCAG 2.1 AA concerns 
 
 ### Focus and keyboard
 
-- Test `tab` / keyboard interaction only when the scenario requires it (e.g. sortable table, popover trigger).
+- Use `fireEvent.keyDown` / native tab focus assertions, or add `@testing-library/user-event` only if the project adopts it (not currently in `package.json`). Test keyboard interaction only when the scenario requires it (e.g. sortable table, popover trigger).
 - Radix popovers, selects, and dialogs use focus traps — portal content may need `findBy*` after open.
 - Do not add accessibility assertions to pure unit tests (`guards`, `errors`).
 

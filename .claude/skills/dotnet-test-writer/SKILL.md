@@ -1,6 +1,6 @@
 ---
 name: dotnet-test-writer
-description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use this skill whenever the user asks to write, add, generate, or create a test for the .NET API — even if they just say "write a test for GET /items" or "add a failing case for invalid price". Always write exactly one test at a time. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments.
+description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use this skill whenever the user asks to write, add, generate, or create a test for the .NET API — even if they just say "write a test for GET /items" or "add a failing case for invalid price". Always write exactly one test at a time. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj after every test.
 ---
 
 # .NET Test Writer
@@ -52,7 +52,7 @@ ItemsApi.Tests/
   TestWebApplicationFactory.cs — custom factory; per-class in-memory SQLite DB
   PostItemsTests.cs           — POST /items tests (file already exists)
   GlobalExceptionHandlerTests.cs
-  GetItemsTests.cs            — create this if writing GET /items tests
+  GetItemsTests.cs            — GET /items tests (file already exists — append new [Fact] before private records)
 ```
 
 ## Test class structure (boilerplate)
@@ -201,4 +201,4 @@ When **appending** to an existing file, insert the new `[Fact]` method before th
 4. Write exactly one test, following the naming convention and A/A/A structure.
 5. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
 6. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` after writing each test and confirm all tests pass before asking for the next one.
-7. Confirm what was written, then ask: "Which test would you like next?"
+7. Confirm what was written and the test result, then ask: "Which test would you like next?"
