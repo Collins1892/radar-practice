@@ -10,7 +10,7 @@ Guides writing integration tests for the `ItemsApi` .NET 8 minimal API.
 ## Core rules
 
 - **One test per request.** Write exactly one `[Fact]` method. When done, ask which test to write next — never generate a batch.
-- **Never run `dotnet test`.** Just produce the code.
+- **Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`** after writing each test and confirm all tests pass before asking for the next one.
 - **Use Context7** when you need to verify current xUnit or NSubstitute API details:
   1. `mcp__context7__resolve-library-id` with library name + question
   2. `mcp__context7__query-docs` with the resolved ID
@@ -200,5 +200,5 @@ When **appending** to an existing file, insert the new `[Fact]` method before th
 3. Look up any uncertain API details via Context7 before writing.
 4. Write exactly one test, following the naming convention and A/A/A structure.
 5. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
-6. Do NOT run `dotnet test`.
+6. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` and confirm all tests pass.
 7. Confirm what was written, then ask: "Which test would you like next?"
