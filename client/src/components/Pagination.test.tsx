@@ -106,4 +106,16 @@ describe('Pagination', () => {
       screen.getByRole('navigation', { name: 'Pagination' }),
     ).toBeInTheDocument();
   });
+
+  it('disables the previous page button when currentPage is 1', (): void => {
+    // Arrange — defaults via renderPagination
+
+    // Act
+    renderPagination({ currentPage: 1, totalPages: 5 });
+
+    // Assert
+    expect(
+      screen.getByRole('button', { name: 'Previous page' }),
+    ).toBeDisabled();
+  });
 });

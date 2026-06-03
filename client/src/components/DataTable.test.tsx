@@ -113,4 +113,14 @@ describe('DataTable', () => {
       screen.getByRole('region', { name: 'Data table' }),
     ).toBeInTheDocument();
   });
+
+  it('shows default empty message when data is empty', (): void => {
+    // Arrange — defaults via renderDataTable
+
+    // Act
+    renderDataTable({ data: [] });
+
+    // Assert
+    expect(screen.getByText('No records to display.')).toBeInTheDocument();
+  });
 });
