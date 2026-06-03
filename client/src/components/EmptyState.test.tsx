@@ -36,4 +36,14 @@ describe('EmptyState', () => {
     // Assert
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
+
+  it('uses polite aria-live on the status region', (): void => {
+    // Arrange — defaults via renderEmptyState
+
+    // Act
+    renderEmptyState();
+
+    // Assert
+    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+  });
 });

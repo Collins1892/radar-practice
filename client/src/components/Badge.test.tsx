@@ -28,10 +28,14 @@ describe('Badge', () => {
     const label = 'Critical';
 
     // Act
-    renderBadge({ variant: 'danger', children: label });
+    const { container } = renderBadge({ variant: 'danger', children: label });
 
     // Assert
     expect(screen.getByText(label)).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="badge"]')).toHaveAttribute(
+      'data-variant',
+      'danger',
+    );
   });
 
   it('marks the badge icon as decorative for screen readers', (): void => {
