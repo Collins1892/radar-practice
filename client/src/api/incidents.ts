@@ -1,6 +1,37 @@
 import { ApiClientError } from '../errors';
 import { isApiErrorBody, isRecord } from '../guards';
 
+const INCIDENTS_NETWORK_MESSAGE =
+  'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.';
+
+export function incidentUserMessage(
+  error: unknown,
+  verb: 'loading' | 'creating' | 'updating',
+): string {
+  if (error instanceof ApiClientError) {
+    if (error.kind === 'network') {
+      return INCIDENTS_NETWORK_MESSAGE;
+    }
+    return error.message;
+  }
+
+  if (error instanceof TypeError) {
+    return INCIDENTS_NETWORK_MESSAGE;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return `Something went wrong while ${verb} the incident.`;
+}
+
+export function parseIncidentId(id: string | undefined): number | null {
+  if (id === undefined) return null;
+  const n = Number(id);
+  return Number.isFinite(n) && Number.isInteger(n) && n >= 1 ? n : null;
+}
+
 const base = import.meta.env.VITE_INCIDENTS_API_URL ?? 'http://localhost:5134';
 
 export type IncidentSeverity = 'Low' | 'Medium' | 'High' | 'Critical';

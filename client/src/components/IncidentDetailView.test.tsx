@@ -6,9 +6,13 @@ import { getIncident, type Incident } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
 import { IncidentDetailView } from './IncidentDetailView';
 
-vi.mock('@/api/incidents', () => ({
-  getIncident: vi.fn(),
-}));
+vi.mock('@/api/incidents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/incidents')>();
+  return {
+    ...actual,
+    getIncident: vi.fn(),
+  };
+});
 
 function renderIncidentDetailView(): ReturnType<typeof render> {
   return render(

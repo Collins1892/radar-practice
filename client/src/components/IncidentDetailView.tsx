@@ -4,6 +4,8 @@ import { Link, useParams } from 'react-router-dom';
 import { format, isValid, parseISO } from 'date-fns';
 import {
   getIncident,
+  incidentUserMessage,
+  parseIncidentId,
   type Incident,
   type IncidentSeverity,
   type IncidentStatus,
@@ -12,35 +14,6 @@ import { Badge } from '@/components/Badge';
 import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { Button } from '@/components/ui/button';
-import { ApiClientError } from '@/errors';
-
-function parseIncidentId(id: string | undefined): number | null {
-  if (id === undefined) return null;
-  const parsed = Number(id);
-  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 1) {
-    return null;
-  }
-  return parsed;
-}
-
-function toUserMessage(error: unknown): string {
-  if (error instanceof ApiClientError) {
-    if (error.kind === 'network') {
-      return 'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.';
-    }
-    return error.message;
-  }
-
-  if (error instanceof TypeError) {
-    return 'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.';
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Something went wrong while loading the incident.';
-}
 
 function severityBadgeVariant(
   severity: IncidentSeverity,
@@ -101,7 +74,7 @@ export function IncidentDetailView(): JSX.Element {
     try {
       setIncident(await getIncident(incidentId));
     } catch (err) {
-      setError(toUserMessage(err));
+      setError(incidentUserMessage(err, 'loading'));
       setIncident(null);
     } finally {
       setLoading(false);

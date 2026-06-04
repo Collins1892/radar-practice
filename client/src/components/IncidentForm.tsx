@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   createIncident,
   getIncident,
+  incidentUserMessage,
   updateIncident,
   type IncidentSeverity,
   type IncidentStatus,
@@ -15,7 +16,6 @@ import { FormField } from '@/components/FormField';
 import { LoadingState } from '@/components/LoadingState';
 import { SelectField } from '@/components/SelectField';
 import { Button } from '@/components/ui/button';
-import { ApiClientError } from '@/errors';
 import { cn } from '@/lib/utils';
 
 const SEVERITIES: readonly IncidentSeverity[] = [
@@ -126,27 +126,6 @@ function hasFieldErrors(errors: FieldErrors): boolean {
   return Object.keys(errors).length > 0;
 }
 
-function toUserMessage(error: unknown, mode: 'create' | 'edit'): string {
-  if (error instanceof ApiClientError) {
-    if (error.kind === 'network') {
-      return 'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.';
-    }
-    return error.message;
-  }
-
-  if (error instanceof TypeError) {
-    return 'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.';
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return mode === 'create'
-    ? 'Something went wrong while creating the incident.'
-    : 'Something went wrong while updating the incident.';
-}
-
 const inputClassName =
   'w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground';
 
@@ -186,7 +165,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
       const parsed = parseISO(incident.reportedDate.slice(0, 10));
       setReportedDate(isValid(parsed) ? parsed : undefined);
     } catch (err) {
-      setLoadError(toUserMessage(err, 'edit'));
+      setLoadError(incidentUserMessage(err, 'loading'));
     } finally {
       setLoadLoading(false);
     }
@@ -239,7 +218,12 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
       }
       navigate('/incidents');
     } catch (err) {
-      setSubmitError(toUserMessage(err, props.mode));
+      setSubmitError(
+        incidentUserMessage(
+          err,
+          props.mode === 'create' ? 'creating' : 'updating',
+        ),
+      );
     } finally {
       setSubmitting(false);
     }

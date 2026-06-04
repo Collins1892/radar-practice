@@ -1,16 +1,8 @@
 import type { JSX } from 'react';
 import { useParams } from 'react-router-dom';
+import { parseIncidentId } from '@/api/incidents';
 import { ErrorState } from '@/components/ErrorState';
 import { IncidentForm } from '@/components/IncidentForm';
-
-function parseIncidentId(id: string | undefined): number | null {
-  if (id === undefined) return null;
-  const parsed = Number(id);
-  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 1) {
-    return null;
-  }
-  return parsed;
-}
 
 export function IncidentEditView(): JSX.Element {
   const { id } = useParams();

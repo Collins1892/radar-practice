@@ -4,11 +4,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getIncident } from '@/api/incidents';
 import { IncidentEditView } from './IncidentEditView';
 
-vi.mock('@/api/incidents', () => ({
-  createIncident: vi.fn(),
-  getIncident: vi.fn(),
-  updateIncident: vi.fn(),
-}));
+vi.mock('@/api/incidents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/incidents')>();
+  return {
+    ...actual,
+    createIncident: vi.fn(),
+    getIncident: vi.fn(),
+    updateIncident: vi.fn(),
+  };
+});
 
 function renderIncidentEditViewWithInvalidId(): ReturnType<typeof render> {
   return render(
