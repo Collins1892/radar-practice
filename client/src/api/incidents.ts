@@ -1,6 +1,40 @@
 import { ApiClientError } from '../errors';
 import { isApiErrorBody, isRecord } from '../guards';
 
+const INCIDENTS_NETWORK_MESSAGE =
+  'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.';
+
+export function incidentUserMessage(
+  error: unknown,
+  verb: 'loading' | 'creating' | 'updating',
+): string {
+  if (error instanceof ApiClientError) {
+    if (error.kind === 'network') {
+      return INCIDENTS_NETWORK_MESSAGE;
+    }
+    return error.message;
+  }
+
+  if (error instanceof TypeError) {
+    return INCIDENTS_NETWORK_MESSAGE;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return `Something went wrong while ${verb} the incident.`;
+}
+
+export function parseIncidentId(id: string | undefined): number | null {
+  if (id === undefined) return null;
+  const n = Number(id);
+  if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1) return null;
+  // Reject leading-zero and other non-canonical forms (e.g. '01', '+1').
+  if (id !== String(n)) return null;
+  return n;
+}
+
 const base = import.meta.env.VITE_INCIDENTS_API_URL ?? 'http://localhost:5134';
 
 export type IncidentSeverity = 'Low' | 'Medium' | 'High' | 'Critical';
@@ -169,6 +203,51 @@ export async function createIncident(
 ): Promise<Incident> {
   const response = await request('/incidents', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new ApiClientError(
+      await parseErrorMessage(response),
+      'http',
+      response.status,
+    );
+  }
+
+  const body = await parseJson(response);
+  if (!isIncident(body)) {
+    throw new ApiClientError('Unexpected response format from server', 'parse');
+  }
+
+  return body;
+}
+
+export async function getIncident(id: number): Promise<Incident> {
+  const response = await request(`/incidents/${id}`);
+
+  if (!response.ok) {
+    throw new ApiClientError(
+      await parseErrorMessage(response),
+      'http',
+      response.status,
+    );
+  }
+
+  const body = await parseJson(response);
+  if (!isIncident(body)) {
+    throw new ApiClientError('Unexpected response format from server', 'parse');
+  }
+
+  return body;
+}
+
+export async function updateIncident(
+  id: number,
+  data: CreateIncidentRequest,
+): Promise<Incident> {
+  const response = await request(`/incidents/${id}`, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });

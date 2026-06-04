@@ -67,9 +67,13 @@ function clickCalendarDay(year: number, month: number, day: number): void {
   throw new Error(`Could not select ${day}/${month + 1}/${year} in calendar`);
 }
 
-vi.mock('@/api/incidents', () => ({
-  createIncident: vi.fn(),
-}));
+vi.mock('@/api/incidents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/incidents')>();
+  return {
+    ...actual,
+    createIncident: vi.fn(),
+  };
+});
 
 function renderIncidentCreateView(): ReturnType<typeof render> {
   return render(

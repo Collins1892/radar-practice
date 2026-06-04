@@ -6,6 +6,8 @@ import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
 import { ComponentsView } from './components/ComponentsView';
 import { IncidentCreateView } from './components/IncidentCreateView';
+import { IncidentDetailView } from './components/IncidentDetailView';
+import { IncidentEditView } from './components/IncidentEditView';
 import { IncidentsView } from './components/IncidentsView';
 import { componentRegistry } from './componentRegistry';
 import { toUserMessage } from './errors';
@@ -190,6 +192,8 @@ function App(): JSX.Element {
       <Routes>
         <Route path="/" element={<ItemsView />} />
         <Route path="/incidents/create" element={<IncidentCreateView />} />
+        <Route path="/incidents/:id/edit" element={<IncidentEditView />} />
+        <Route path="/incidents/:id" element={<IncidentDetailView />} />
         <Route path="/incidents" element={<IncidentsView />} />
         <Route
           path="/components"
