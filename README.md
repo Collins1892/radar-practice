@@ -44,10 +44,10 @@ radar-practice/
 │   ├── src/components/IncidentCreateView.tsx # Thin wrapper — mode=create
 │   ├── src/components/IncidentDetailView.tsx # Read-only detail view
 │   ├── src/components/IncidentEditView.tsx   # Thin wrapper — mode=edit
-│   ├── src/App.test.tsx              # Vitest App integration tests — 8 tests
-│   ├── src/components/ItemsList.test.tsx     # Vitest component tests — 5 tests
-│   ├── src/guards.test.ts            # Vitest unit tests — 20 tests
-│   ├── src/errors.test.ts            # Vitest unit tests — 9 tests
+│   ├── src/App.test.tsx              # Vitest App integration tests
+│   ├── src/components/ItemsList.test.tsx     # Vitest component tests
+│   ├── src/guards.test.ts            # Vitest unit tests
+│   ├── src/errors.test.ts            # Vitest unit tests
 │   └── src/test/setup.ts             # Vitest setup
 ├── .github/workflows/     # GitHub Actions CI
 └── learning-notes.md      # Daily observations from the build
