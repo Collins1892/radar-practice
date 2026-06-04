@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -206,6 +205,35 @@ public class PostIncidentsTests : IClassFixture<TestWebApplicationFactory>
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(body);
         Assert.Equal("Invalid severity value.", body.Error);
+    }
+
+    [Fact]
+    public async Task Post_InvalidStatus_Returns400WithError()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+        var reportedDate = DateTime.UtcNow.Date.ToString("yyyy-MM-dd");
+        var json = $$"""
+            {
+              "title": "Spill in corridor B",
+              "description": "Water on floor near supplies",
+              "location": "Building 2, level 1",
+              "severity": 1,
+              "status": 99,
+              "reportedDate": "{{reportedDate}}"
+            }
+            """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PostAsync("/incidents", content);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Invalid status value.", body.Error);
     }
 
     private record IncidentResponse(
