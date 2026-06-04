@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using IncidentsApi;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 public class GetIncidentByIdTests : IClassFixture<TestWebApplicationFactory>
 {
@@ -80,6 +81,27 @@ public class GetIncidentByIdTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(IncidentSeverity.Medium, body.Severity);
         Assert.Equal(IncidentStatus.Open, body.Status);
         Assert.Equal(reportedDate, body.ReportedDate.Date);
+    }
+
+    [Fact]
+    public async Task Get_ById_WhenRepositoryThrows_Returns500()
+    {
+        // Arrange
+        const int id = 1;
+        var repo = Substitute.For<IIncidentRepository>();
+        repo.GetById(id).Throws(new InvalidOperationException("Simulated failure"));
+        var client = CreateClientWithRepo(repo);
+
+        // Act
+        var response = await client.GetAsync($"/incidents/{id}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("An unexpected error occurred.", body.Error);
+        Assert.DoesNotContain("Simulated failure", body.Error);
     }
 
     private record IncidentResponse(

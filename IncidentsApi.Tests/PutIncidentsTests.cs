@@ -108,19 +108,7 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
     {
         // Arrange
         const int id = 1;
-        var reportedDate = DateTime.UtcNow.Date;
-        var incident = new Incident(
-            id,
-            "Spill in corridor B",
-            "Water on floor near supplies",
-            "Building 2, level 1",
-            IncidentSeverity.Medium,
-            IncidentStatus.Open,
-            reportedDate);
-
-        var repo = Substitute.For<IIncidentRepository>();
-        repo.Update(Arg.Any<Incident>()).Returns(incident);
-        var client = CreateClientWithRepo(repo);
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
 
         // Act
         var response = await client.PutAsJsonAsync(
@@ -132,7 +120,7 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
                 location = "Building 2, level 1",
                 severity = IncidentSeverity.Medium,
                 status = IncidentStatus.Open,
-                reportedDate,
+                reportedDate = DateTime.UtcNow.Date,
             });
 
         // Assert
@@ -148,20 +136,8 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
     {
         // Arrange
         const int id = 1;
-        var reportedDate = DateTime.UtcNow.Date;
-        var futureReportedDate = reportedDate.AddDays(1);
-        var incident = new Incident(
-            id,
-            "Spill in corridor B",
-            "Water on floor near supplies",
-            "Building 2, level 1",
-            IncidentSeverity.Medium,
-            IncidentStatus.Open,
-            reportedDate);
-
-        var repo = Substitute.For<IIncidentRepository>();
-        repo.Update(Arg.Any<Incident>()).Returns(incident);
-        var client = CreateClientWithRepo(repo);
+        var futureReportedDate = DateTime.UtcNow.Date.AddDays(1);
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
 
         // Act
         var response = await client.PutAsJsonAsync(

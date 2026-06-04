@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using IncidentsApi;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 public class GetIncidentsTests : IClassFixture<TestWebApplicationFactory>
 {
@@ -172,6 +173,44 @@ public class GetIncidentsTests : IClassFixture<TestWebApplicationFactory>
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(body);
         Assert.Equal("Sort direction must be asc or desc.", body.Error);
+    }
+
+    [Fact]
+    public async Task Get_PageSizeLessThan1_Returns400WithError()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+
+        // Act
+        var response = await client.GetAsync("/incidents?pageSize=0");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Page size must be at least 1.", body.Error);
+    }
+
+    [Fact]
+    public async Task Get_WhenRepositoryThrows_Returns500()
+    {
+        // Arrange
+        var repo = Substitute.For<IIncidentRepository>();
+        repo.GetPaged(Arg.Any<IncidentListQuery>())
+            .Throws(new InvalidOperationException("Simulated failure"));
+        var client = CreateClientWithRepo(repo);
+
+        // Act
+        var response = await client.GetAsync("/incidents");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("An unexpected error occurred.", body.Error);
+        Assert.DoesNotContain("Simulated failure", body.Error);
     }
 
     private record PagedIncidentsResponse(
