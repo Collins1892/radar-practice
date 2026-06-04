@@ -5,6 +5,7 @@ import { createItem, fetchItems } from './api';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
 import { ComponentsView } from './components/ComponentsView';
+import { IncidentsView } from './components/IncidentsView';
 import { componentRegistry } from './componentRegistry';
 import { toUserMessage } from './errors';
 import type { Item } from './types';
@@ -176,6 +177,9 @@ function App(): JSX.Element {
           <NavLink to="/" end className={navLinkClass}>
             Items
           </NavLink>
+          <NavLink to="/incidents" className={navLinkClass}>
+            Incidents
+          </NavLink>
           <NavLink to="/components" className={navLinkClass}>
             Components
           </NavLink>
@@ -184,6 +188,7 @@ function App(): JSX.Element {
 
       <Routes>
         <Route path="/" element={<ItemsView />} />
+        <Route path="/incidents" element={<IncidentsView />} />
         <Route
           path="/components"
           element={<ComponentsView components={componentRegistry} />}
