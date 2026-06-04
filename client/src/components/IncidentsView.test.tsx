@@ -6,9 +6,13 @@ import type { Incident, PagedIncidentsResult } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
 import { IncidentsView } from './IncidentsView';
 
-vi.mock('@/api/incidents', () => ({
-  fetchIncidents: vi.fn(),
-}));
+vi.mock('@/api/incidents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/incidents')>();
+  return {
+    ...actual,
+    fetchIncidents: vi.fn(),
+  };
+});
 
 const emptyPagedResult: PagedIncidentsResult = {
   items: [],

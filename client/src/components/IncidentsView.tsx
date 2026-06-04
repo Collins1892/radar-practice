@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { format, isValid, parseISO } from 'date-fns';
 import {
   fetchIncidents,
+  incidentUserMessage,
   type Incident,
   type IncidentSeverity,
   type IncidentStatus,
@@ -17,7 +18,6 @@ import { LoadingState } from '@/components/LoadingState';
 import { Pagination } from '@/components/Pagination';
 import { SelectField } from '@/components/SelectField';
 import { Button } from '@/components/ui/button';
-import { ApiClientError } from '@/errors';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -42,27 +42,6 @@ const STATUS_OPTIONS = [
   { value: 'Resolved', label: 'Resolved' },
   { value: 'Closed', label: 'Closed' },
 ];
-
-// Intentionally separate from errors.ts — provides an IncidentsApi-specific
-// network error message directing the user to start the IncidentsApi server.
-function toUserMessage(error: unknown): string {
-  if (error instanceof ApiClientError) {
-    if (error.kind === 'network') {
-      return 'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.';
-    }
-    return error.message;
-  }
-
-  if (error instanceof TypeError) {
-    return 'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.';
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Something went wrong while loading incidents.';
-}
 
 function severityBadgeVariant(
   severity: IncidentSeverity,
@@ -138,7 +117,7 @@ export function IncidentsView(): JSX.Element {
       });
       setResult(data);
     } catch (err) {
-      setError(toUserMessage(err));
+      setError(incidentUserMessage(err, 'loading'));
       setResult(null);
     } finally {
       setLoading(false);
@@ -173,7 +152,19 @@ export function IncidentsView(): JSX.Element {
 
   const columns = useMemo(
     () => [
-      { key: 'title' as const, header: 'Title', sortable: true },
+      {
+        key: 'title' as const,
+        header: 'Title',
+        sortable: true,
+        render: (value: unknown, row: IncidentRow) => (
+          <Link
+            to={`/incidents/${row.id}`}
+            className="text-foreground underline-offset-4 hover:underline"
+          >
+            {String(value)}
+          </Link>
+        ),
+      },
       {
         key: 'description' as const,
         header: 'Description',

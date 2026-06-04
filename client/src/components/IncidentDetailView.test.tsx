@@ -24,6 +24,16 @@ function renderIncidentDetailView(): ReturnType<typeof render> {
   );
 }
 
+function renderIncidentDetailViewWithInvalidId(): ReturnType<typeof render> {
+  return render(
+    <MemoryRouter initialEntries={['/incidents/abc']}>
+      <Routes>
+        <Route path="/incidents/:id" element={<IncidentDetailView />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
 describe('IncidentDetailView', () => {
   beforeEach((): void => {
     vi.mocked(getIncident).mockReset();
@@ -81,5 +91,16 @@ describe('IncidentDetailView', () => {
 
     // Assert
     expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+
+  it('shows error state when the id param is not a valid number', (): void => {
+    // Arrange — invalid id via renderIncidentDetailViewWithInvalidId
+
+    // Act
+    renderIncidentDetailViewWithInvalidId();
+
+    // Assert
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(getIncident).not.toHaveBeenCalled();
   });
 });
