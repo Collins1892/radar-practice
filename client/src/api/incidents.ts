@@ -34,6 +34,15 @@ export type PagedIncidentsResult = {
   totalPages: number;
 };
 
+export type CreateIncidentRequest = {
+  title: string;
+  description: string;
+  location: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  reportedDate: string;
+};
+
 const SEVERITIES: readonly IncidentSeverity[] = [
   'Low',
   'Medium',
@@ -149,6 +158,31 @@ export async function fetchIncidents(
 
   const body = await parseJson(response);
   if (!isPagedIncidentsResult(body)) {
+    throw new ApiClientError('Unexpected response format from server', 'parse');
+  }
+
+  return body;
+}
+
+export async function createIncident(
+  data: CreateIncidentRequest,
+): Promise<Incident> {
+  const response = await request('/incidents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new ApiClientError(
+      await parseErrorMessage(response),
+      'http',
+      response.status,
+    );
+  }
+
+  const body = await parseJson(response);
+  if (!isIncident(body)) {
     throw new ApiClientError('Unexpected response format from server', 'parse');
   }
 
