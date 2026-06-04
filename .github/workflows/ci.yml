@@ -31,8 +31,11 @@ jobs:
         working-directory: client
         run: npm ci
 
-      - name: Run tests
+      - name: Run Items API tests
         run: dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj --verbosity normal
+
+      - name: Run Incidents API tests
+        run: dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj --verbosity normal
 
       - name: Run client tests
         working-directory: client
