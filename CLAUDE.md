@@ -33,7 +33,8 @@ Mirrors microservices direction without over-engineering.
 - `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
-- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView)
+- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView)
+- `client/src/api/incidents.ts` — typed fetch layer for IncidentsApi (fetchIncidents, createIncident, getIncident, updateIncident, shared helpers incidentUserMessage, parseIncidentId)
 - `client/src/componentRegistry.tsx` — registry of all components for the components view (has file-level eslint-disable — see decisions log)
 - `client/src/components/formFieldUtils.ts` — shared form utility (formFieldErrorId)
 - `client/src/lib/utils.ts` — shadcn `cn()` utility (vendor, ESLint-ignored)
@@ -69,7 +70,7 @@ Mirrors microservices direction without over-engineering.
 **Frontend:**
 - React 19.2.6 with TypeScript 6.0.2
 - Vite 8.0.12 for bundling
-- `react-router-dom` 7.16.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`)
+- `react-router-dom` 7.16.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (items), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`
 - Tailwind CSS 4.3.0 via `@tailwindcss/vite` 4.3.0 plugin
 - shadcn/ui — Nova preset, Radix component library, `components.json` config
 - `radix-ui` 1.4.3 and `@radix-ui/react-slot` 1.2.4 (Radix primitives)
