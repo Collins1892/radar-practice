@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchIncidents } from '@/api/incidents';
 import type { Incident, PagedIncidentsResult } from '@/api/incidents';
@@ -36,7 +37,11 @@ const populatedPagedResult: PagedIncidentsResult = {
 };
 
 function renderIncidentsView(): ReturnType<typeof render> {
-  return render(<IncidentsView />);
+  return render(
+    <MemoryRouter initialEntries={['/incidents']}>
+      <IncidentsView />
+    </MemoryRouter>,
+  );
 }
 
 describe('IncidentsView', () => {

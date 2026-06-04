@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { JSX } from 'react';
+import { Link } from 'react-router-dom';
 import { format, isValid, parseISO } from 'date-fns';
 import {
   fetchIncidents,
@@ -15,6 +16,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { Pagination } from '@/components/Pagination';
 import { SelectField } from '@/components/SelectField';
+import { Button } from '@/components/ui/button';
 import { ApiClientError } from '@/errors';
 
 type SortDirection = 'asc' | 'desc';
@@ -220,10 +222,17 @@ export function IncidentsView(): JSX.Element {
 
   return (
     <>
-      <h1>Incidents</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Incident reports from the Incidents API
-      </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1>Incidents</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Incident reports from the Incidents API
+          </p>
+        </div>
+        <Button asChild className="w-full sm:w-auto">
+          <Link to="/incidents/create">Create incident</Link>
+        </Button>
+      </div>
 
       <section className="rounded-lg border border-border bg-card p-6">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">

@@ -5,6 +5,7 @@ import { createItem, fetchItems } from './api';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
 import { ComponentsView } from './components/ComponentsView';
+import { IncidentCreateView } from './components/IncidentCreateView';
 import { IncidentsView } from './components/IncidentsView';
 import { componentRegistry } from './componentRegistry';
 import { toUserMessage } from './errors';
@@ -188,6 +189,7 @@ function App(): JSX.Element {
 
       <Routes>
         <Route path="/" element={<ItemsView />} />
+        <Route path="/incidents/create" element={<IncidentCreateView />} />
         <Route path="/incidents" element={<IncidentsView />} />
         <Route
           path="/components"
