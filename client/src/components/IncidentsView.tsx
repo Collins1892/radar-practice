@@ -41,6 +41,8 @@ const STATUS_OPTIONS = [
   { value: 'Closed', label: 'Closed' },
 ];
 
+// Intentionally separate from errors.ts — provides an IncidentsApi-specific
+// network error message directing the user to start the IncidentsApi server.
 function toUserMessage(error: unknown): string {
   if (error instanceof ApiClientError) {
     if (error.kind === 'network') {
