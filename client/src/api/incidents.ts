@@ -188,3 +188,48 @@ export async function createIncident(
 
   return body;
 }
+
+export async function getIncident(id: number): Promise<Incident> {
+  const response = await request(`/incidents/${id}`);
+
+  if (!response.ok) {
+    throw new ApiClientError(
+      await parseErrorMessage(response),
+      'http',
+      response.status,
+    );
+  }
+
+  const body = await parseJson(response);
+  if (!isIncident(body)) {
+    throw new ApiClientError('Unexpected response format from server', 'parse');
+  }
+
+  return body;
+}
+
+export async function updateIncident(
+  id: number,
+  data: CreateIncidentRequest,
+): Promise<Incident> {
+  const response = await request(`/incidents/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new ApiClientError(
+      await parseErrorMessage(response),
+      'http',
+      response.status,
+    );
+  }
+
+  const body = await parseJson(response);
+  if (!isIncident(body)) {
+    throw new ApiClientError('Unexpected response format from server', 'parse');
+  }
+
+  return body;
+}
