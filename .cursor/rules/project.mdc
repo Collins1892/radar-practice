@@ -11,6 +11,15 @@ Full-stack learning project demonstrating agentic AI development — not product
 Domain: Items catalogue (`ItemsApi/` .NET 8 minimal API + `client/` React/TS/Vite client).
 No patient data, no production dependencies.
 
+## Repo layout
+
+- `IncidentsApi/` — standalone .NET 8 minimal API for incident reporting
+- `IncidentsApi/Data/IncidentsDbContext.cs` — dedicated DbContext (`incidents.db`); no shared context with ItemsApi
+- `IncidentsApi/Repositories/EfIncidentRepository.cs` — EF Core repository
+- `IncidentsApi/Migrations/` — EF Core migrations
+- `IncidentsApi.Tests/` — xUnit integration tests
+- `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
+
 ## Tech stack — Backend
 
 - .NET 8.0 minimal API; repository pattern + built-in DI.
@@ -20,6 +29,7 @@ No patient data, no production dependencies.
 - `Price` stored as TEXT via `HasConversion<string>()` for exact decimal precision.
 - `Name` has `HasMaxLength(100)` in `OnModelCreating`.
 - Database file `app.db` — local only, never committed.
+- IncidentsApi: `incidents.db` (local only). `Severity` and `Status` enums stored as int for correct sort order.
 - xUnit 2.5.3 with `TestWebApplicationFactory`; NSubstitute 5.1.0; Microsoft.AspNetCore.Mvc.Testing 8.0.0.
 - Node.js 24 (LTS).
 
@@ -68,7 +78,7 @@ No patient data, no production dependencies.
 
 ## Testing approach
 
-- Backend: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`. Frontend: `npm test` in `client/`.
+- Backend: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`; `dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj`. Frontend: `npm test` in `client/`.
 - Generate one test per prompt; integration tests preferred for endpoints.
 - Test behaviour, not implementation details; do not edit or remove existing tests without instruction.
 - Gotchas: Vitest requires `pool: 'threads'` on Windows; `TestWebApplicationFactory` gives each test class its own in-memory SQLite database.
