@@ -1,4 +1,61 @@
+## Day 14 — 4 June 2026
+
+### Summary
+
+Week 3 Day 4. Five PRs merged: IncidentsApi standalone backend (PR #46), 23 backend integration tests (PR #47), incident list view with server-side filtering/sorting/pagination (PR #48), incident create form (PR #49), and incident detail/edit views with shared IncidentForm component (PR #50). 147 tests total — 36 xUnit (13 ItemsApi, 23 IncidentsApi) and 111 Vitest. Started at 12:35pm, worked into the evening. Two independent reviews (Claude Code + Cursor) ran on every significant PR and caught different things each time.
+
+### IncidentsApi — standalone backend
+
+Built as a separate .NET 8 project with its own IncidentsDbContext and incidents.db — not added to ItemsApi. Mirrors the microservices direction Radar is moving toward. Incident entity with Severity and Status stored as int enums for correct sort order and query performance. Full CRUD: GET /incidents (server-side filter/sort/paginate), POST /incidents, GET /incidents/{id}, PUT /incidents/{id}. Global exception handler, Enum.IsDefined validation, page size cap at 100. CI updated to run both test projects.
+
+### Backend tests — 23 in one day
+
+All four endpoint groups covered before raising the first PR. Proactively filled gaps before review rather than waiting for findings — this paid off: the reviewer had no major test findings to report. Key pattern: POST and PUT 500 tests explicitly assert the generic error message and `DoesNotContain` the internal exception string. The IncidentsApi tests ran in 5s vs 26s for ItemsApi — fewer tests and a lighter test surface, both using in-memory SQLite.
+
+### Incident frontend — full module in one day
+
+List view: DataTable with six columns, server-side filtering by severity/status (separate SelectField dropdowns), server-side sort and pagination (25/page), Badge for severity and status, LoadingState/EmptyState/ErrorState states, timezone-safe date formatting using date-fns `parseISO` + `format`.
+
+Create form: FormField, SelectField, DatePickerField wired to POST /incidents. Client-side validation matching server messages exactly. Client-only "Reported date is required." documented as intentional exception to server parity. UTC date serialization fixed to use local calendar date (`format(date, 'yyyy-MM-dd')`) after review caught the Perth timezone bug.
+
+Detail and edit views: shared `IncidentForm` component with `mode: 'create' | 'edit'` discriminated union prop eliminates the classic create/edit code duplication. Thin wrapper views (`IncidentCreateView`, `IncidentEditView`) handle routing only. `IncidentDetailView` is read-only with Badge, formatted date, back/edit links.
+
+### Two-review discipline — confirmed again
+
+Day 14 was the most thorough validation of the two-review pattern yet. Claude Code caught: enum out-of-range validation gap on GET list, dead mock setup in PUT validation tests, stale-response concern, exception not logged. Cursor caught: loading flash on refetch (WCAG — table unmounts drops keyboard focus), title link only visible on hover (WCAG accessibility), toUserMessage duplicated, parseIncidentId duplicated across two files, POST returns null Location header. Neither review alone was complete on any PR. This is now a firm discipline for significant frontend PRs.
+
+### Architecture decisions
+
+- **Standalone IncidentsApi** — not shared AppDbContext. Deliberate microservices-direction decision. CLAUDE.md updated.
+- **Int enum storage** — `HasConversion<int>()` for Severity and Status. Native DB-level sort, correct logical order. String storage gives alphabetical order (Critical, High, Low, Medium) which is wrong for a healthcare severity ranking.
+- **Shared IncidentForm** — `mode: 'create' | 'edit'` discriminated union prop. One component, two modes, no duplicated form markup. The pattern to use whenever create/edit forms share the same fields.
+- **parseIncidentId** — strict integer-string parsing: `id !== String(n)` rejects leading zeros and other non-canonical forms. Extracted as a shared helper.
+
+### Test patterns learned — Day 14
+
+- **MemoryRouter required when Link is in the tree** — adding a `Link` to IncidentsView broke all existing tests with a React context error. Wrap any component that uses `Link`, `NavLink`, or `useNavigate` in `MemoryRouter` in tests.
+- **Radix Select needs scrollIntoView shim** — `Element.prototype.scrollIntoView = vi.fn()` in `beforeEach` prevents jsdom throw when opening a SelectField dropdown.
+- **UTC date serialization** — use `format(date, 'yyyy-MM-dd')` (local date) not UTC getters. Perth is UTC+8; picking "4 June" with UTC methods would POST "3 June".
+- **vi.mock with importOriginal** — partial mocks that expose shared helpers (incidentUserMessage, parseIncidentId) need `async (importOriginal) => ({ ...await importOriginal(), ...overrides })` pattern to keep real implementations available.
+
+### What I would not trust the agent to do unsupervised
+
+- Choose the correct architecture (standalone vs shared context) without explicit direction — the first plan proposed adding everything to ItemsApi
+- Know that Radix Select needs a scrollIntoView shim — this breaks silently until the test runs
+- Use local date methods for form submission — UTC getters are the natural default and the bug is invisible until you're in a UTC+ timezone
+- Keep enum sort order correct with string storage — the agent suggested HasConversion<string>() without flagging the alphabetical sort trap
+- Identify that MemoryRouter is needed when a Link is added — the error message is clear but non-obvious to trace back to the missing router context
+
+### Ideas and observations
+
+- 147 tests in 14 working days across 19 test files — the compound effect of the test-writing discipline is now very visible
+- The IncidentsApi test run (5s vs 26s for ItemsApi) is a good data point for the Week 6 impact story — fast tests are a product of good isolation discipline
+- The shared IncidentForm is the strongest demonstration yet that the component library approach works: one component, informed by reusable primitives, covering two screens without duplication
+- Proactive test coverage before raising a PR (adding 5 more tests after "are we sure we have enough?") prevented every single Major test finding across the five PRs. This is now the established pattern.
+- The Perth timezone bug in date serialization is an example of a subtle correctness issue the agent would never catch — it passed all tests because the CI runner is UTC. Real-world impact discovered only by thinking through the user's actual context.
+
 ## Day 13 — 3 June 2026
+
 
 ### Summary
 

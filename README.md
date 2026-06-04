@@ -7,6 +7,8 @@ A full-stack practice project built to explore **agentic AI development** — us
 
 This is not a production system. It is a deliberately small codebase that demonstrates how AI-assisted workflows behave in practice: what agents do well, where they stall, and why human review remains essential.
 
+The project covers two domains: an **items catalogue** (the initial safe practice domain) and an **incident reporting module** (healthcare-relevant, added in Week 3) — built as a standalone API and full React frontend using a shared reusable component library.
+
 ## What this project demonstrates
 
 ### Agent-directed development over multiple sessions
@@ -33,11 +35,19 @@ The domain is a simple **items catalogue** — no patient data, no production de
 radar-practice/
 ├── ItemsApi/              # .NET 8 minimal API (GET/POST /items), EF Core + SQLite
 ├── ItemsApi.Tests/        # xUnit integration tests (13 tests)
+├── IncidentsApi/          # .NET 8 minimal API (CRUD /incidents), EF Core + SQLite
+├── IncidentsApi.Tests/    # xUnit integration tests (23 tests)
 ├── client/                # React + TypeScript + Vite frontend
+│   ├── src/api/incidents.ts          # Typed fetch layer for IncidentsApi
+│   ├── src/components/IncidentsView.tsx      # Incident list with filters, sort, pagination
+│   ├── src/components/IncidentForm.tsx       # Shared create/edit form (mode prop)
+│   ├── src/components/IncidentCreateView.tsx # Thin wrapper — mode=create
+│   ├── src/components/IncidentDetailView.tsx # Read-only detail view
+│   ├── src/components/IncidentEditView.tsx   # Thin wrapper — mode=edit
 │   ├── src/App.test.tsx              # Vitest App integration tests — 8 tests
-│   ├── src/components/ItemsList.test.tsx  # Vitest component tests — 5 tests
-│   ├── src/guards.test.ts              # Vitest unit tests — 20 tests
-│   ├── src/errors.test.ts              # Vitest unit tests — 9 tests
+│   ├── src/components/ItemsList.test.tsx     # Vitest component tests — 5 tests
+│   ├── src/guards.test.ts            # Vitest unit tests — 20 tests
+│   ├── src/errors.test.ts            # Vitest unit tests — 9 tests
 │   └── src/test/setup.ts             # Vitest setup
 ├── .github/workflows/     # GitHub Actions CI
 └── learning-notes.md      # Daily observations from the build
@@ -45,14 +55,14 @@ radar-practice/
 
 | Layer | Stack |
 |-------|-------|
-| API | .NET 8, minimal APIs, repository pattern |
-| Persistence | Entity Framework Core 8 with SQLite (`app.db`) |
-| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite), NSubstitute (13 tests) |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui |
-| Frontend tests | Vitest, `@testing-library/react` — `client/src/App.test.tsx`, `client/src/components/ItemsList.test.tsx`, `client/src/guards.test.ts`, `client/src/errors.test.ts`, `client/src/test/setup.ts` (42 tests) |
-| CI | GitHub Actions — `dotnet test` and `npm test` (Vitest) on push/PR to `main` |
+| Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`) |
+| Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
+| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 23 IncidentsApi tests |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom |
+| Frontend tests | Vitest, `@testing-library/react` — 111 tests across 19 files |
+| CI | GitHub Actions — `dotnet test` (both APIs) and `npm test` (Vitest) on push/PR to `main` |
 
-> **Note:** Items are persisted via Entity Framework Core to a local SQLite database (`app.db`), so they survive API restarts. The database file is local only and is not committed.
+> **Note:** Each API uses its own SQLite database (`app.db` for items, `incidents.db` for incidents). Both are local only and not committed.
 
 ## AI tooling observations
 
@@ -77,6 +87,14 @@ These are practical lessons from building this project with Claude Code (termina
 **Context7 MCP**
 — fetches live library documentation into agent context so agents work from current API references rather than training-data snapshots.
 
+**Two independent reviews catch different things**
+- Claude Code `/review` and Cursor review consistently flag different issues on the same diff. Running both for significant PRs is now a firm discipline — neither alone is complete.
+
+**Radix/shadcn testing gotchas**
+- Radix Select requires `Element.prototype.scrollIntoView = vi.fn()` in jsdom tests.
+- Any component using `Link`, `NavLink`, or `useNavigate` must be wrapped in `MemoryRouter` in tests.
+- UTC date serialization: use `format(date, 'yyyy-MM-dd')` (local date) not UTC getters — affects users in UTC+ timezones.
+
 **Safety habits (especially relevant to healthcare work)**
 - Never paste identifiable patient data into prompts — anything in a prompt leaves your environment via the API.
 - Strip names, IDs, and NHS numbers from stack traces and code snippets before sharing with an agent.
@@ -92,19 +110,27 @@ See [`learning-notes.md`](learning-notes.md) for the full daily log.
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js 24](https://nodejs.org/)
 
-### Run the API
+### Run the APIs
 
 ```bash
 cd ItemsApi
 dotnet run
 ```
 
-The API listens on `http://localhost:5133`.
+The Items API listens on `http://localhost:5133`.
+
+```bash
+cd IncidentsApi
+dotnet run
+```
+
+The Incidents API listens on `http://localhost:5134`.
 
 ### Run the tests
 
 ```bash
 dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj
+dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj
 ```
 
 From `client/`:
