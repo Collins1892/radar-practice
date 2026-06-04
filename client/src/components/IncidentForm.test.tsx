@@ -232,6 +232,32 @@ describe('IncidentForm', () => {
     });
   });
 
+  it('shows an inline error alert and does not navigate when updateIncident rejects with a network error', async (): Promise<void> => {
+    // Arrange
+    const incident: Incident = {
+      id: 1,
+      title: 'Spill in corridor B',
+      description: 'Water on floor',
+      location: 'Building 2',
+      severity: 'High',
+      status: 'Open',
+      reportedDate: '2026-06-04T00:00:00.000Z',
+    };
+    vi.mocked(getIncident).mockResolvedValue(incident);
+    vi.mocked(updateIncident).mockRejectedValue(
+      new ApiClientError('Network error', 'network'),
+    );
+
+    // Act
+    renderIncidentFormEdit();
+    await screen.findByDisplayValue('Spill in corridor B');
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    // Assert
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
   it('calls createIncident on valid submit', async (): Promise<void> => {
     // Arrange
     const createdIncident: Incident = {

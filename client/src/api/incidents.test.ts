@@ -83,6 +83,15 @@ describe('parseIncidentId', () => {
     // Assert
     expect(fractionalResult).toBe(null);
 
+    // Arrange — leading-zero strings are intentionally rejected (not valid IDs)
+    const leadingZeroId = '01';
+
+    // Act
+    const leadingZeroResult = parseIncidentId(leadingZeroId);
+
+    // Assert
+    expect(leadingZeroResult).toBe(null);
+
     // Arrange
     const oneId = '1';
 

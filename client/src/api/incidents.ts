@@ -29,7 +29,10 @@ export function incidentUserMessage(
 export function parseIncidentId(id: string | undefined): number | null {
   if (id === undefined) return null;
   const n = Number(id);
-  return Number.isFinite(n) && Number.isInteger(n) && n >= 1 ? n : null;
+  if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1) return null;
+  // Reject leading-zero and other non-canonical forms (e.g. '01', '+1').
+  if (id !== String(n)) return null;
+  return n;
 }
 
 const base = import.meta.env.VITE_INCIDENTS_API_URL ?? 'http://localhost:5134';

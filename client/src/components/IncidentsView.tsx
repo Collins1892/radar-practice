@@ -159,7 +159,7 @@ export function IncidentsView(): JSX.Element {
         render: (value: unknown, row: IncidentRow) => (
           <Link
             to={`/incidents/${row.id}`}
-            className="text-foreground underline-offset-4 hover:underline"
+            className="text-foreground underline underline-offset-4 decoration-muted-foreground"
           >
             {String(value)}
           </Link>

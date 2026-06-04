@@ -113,6 +113,9 @@ describe('IncidentsView', () => {
     await screen.findByRole('region', { name: 'Data table' });
     expect(screen.getByText('Spill in corridor B')).toBeInTheDocument();
     expect(
+      screen.getByRole('link', { name: 'Spill in corridor B' }),
+    ).toHaveAttribute('href', '/incidents/1');
+    expect(
       screen.getByText('Water on floor near supplies'),
     ).toBeInTheDocument();
     expect(screen.getByText('Building 2, level 1')).toBeInTheDocument();
