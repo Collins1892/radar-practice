@@ -1,6 +1,8 @@
 using IncidentsApi.Data;
 using Microsoft.EntityFrameworkCore;
 
+namespace IncidentsApi;
+
 public class EfIncidentRepository : IIncidentRepository
 {
     private readonly IncidentsDbContext _db;
@@ -71,11 +73,11 @@ public class EfIncidentRepository : IIncidentRepository
                 ? query.OrderByDescending(i => i.Location)
                 : query.OrderBy(i => i.Location),
             "severity" => sortDescending
-                ? query.OrderByDescending(i => i.Severity)
-                : query.OrderBy(i => i.Severity),
+                ? query.OrderByDescending(i => (int)i.Severity)
+                : query.OrderBy(i => (int)i.Severity),
             "status" => sortDescending
-                ? query.OrderByDescending(i => i.Status)
-                : query.OrderBy(i => i.Status),
+                ? query.OrderByDescending(i => (int)i.Status)
+                : query.OrderBy(i => (int)i.Status),
             "reporteddate" => sortDescending
                 ? query.OrderByDescending(i => i.ReportedDate)
                 : query.OrderBy(i => i.ReportedDate),

@@ -1,3 +1,5 @@
+namespace IncidentsApi;
+
 public record IncidentRequest(
     string Title,
     string Description,

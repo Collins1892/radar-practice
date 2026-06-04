@@ -1,3 +1,5 @@
+namespace IncidentsApi;
+
 public enum IncidentSeverity
 {
     Low,

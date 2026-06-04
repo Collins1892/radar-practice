@@ -1,3 +1,4 @@
+using IncidentsApi;
 using Microsoft.EntityFrameworkCore;
 
 namespace IncidentsApi.Data;
@@ -24,10 +25,10 @@ public class IncidentsDbContext : DbContext
 
         modelBuilder.Entity<Incident>()
             .Property(i => i.Severity)
-            .HasConversion<string>();
+            .HasConversion<int>();
 
         modelBuilder.Entity<Incident>()
             .Property(i => i.Status)
-            .HasConversion<string>();
+            .HasConversion<int>();
     }
 }

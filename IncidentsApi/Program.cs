@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using IncidentsApi;
 using IncidentsApi.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,8 +40,8 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-app.UseCors();
 app.UseHttpsRedirection();
+app.UseCors();
 
 app.MapGet("/incidents", (
     IIncidentRepository repo,
@@ -56,6 +57,9 @@ app.MapGet("/incidents", (
 
     if (pageSize < 1)
         return Results.BadRequest(new { error = "Page size must be at least 1." });
+
+    if (pageSize > 100)
+        return Results.BadRequest(new { error = "Page size must be 100 or fewer." });
 
     var resolvedSortBy = string.IsNullOrWhiteSpace(sortBy) ? "reportedDate" : sortBy;
     if (!IsValidSortBy(resolvedSortBy))
@@ -99,7 +103,7 @@ app.MapPost("/incidents", (IncidentRequest req, IIncidentRepository repo) =>
         req.ReportedDate);
 
     var created = repo.Add(incident);
-    return Results.Created((string?)null, created);
+    return Results.Created($"/incidents/{created.Id}", created);
 });
 
 app.MapGet("/incidents/{id}", (int id, IIncidentRepository repo) =>
@@ -135,19 +139,19 @@ static IResult? ValidateIncidentRequest(IncidentRequest req)
         return Results.BadRequest(new { error = "Title is required." });
 
     if (req.Title.Length > 50)
-        return Results.BadRequest(new { error = "Title must be under 50 characters." });
+        return Results.BadRequest(new { error = "Title must be 50 characters or fewer." });
 
     if (string.IsNullOrWhiteSpace(req.Description))
         return Results.BadRequest(new { error = "Description is required." });
 
     if (req.Description.Length > 100)
-        return Results.BadRequest(new { error = "Description must be under 100 characters." });
+        return Results.BadRequest(new { error = "Description must be 100 characters or fewer." });
 
     if (string.IsNullOrWhiteSpace(req.Location))
         return Results.BadRequest(new { error = "Location is required." });
 
     if (req.Location.Length > 100)
-        return Results.BadRequest(new { error = "Location must be under 100 characters." });
+        return Results.BadRequest(new { error = "Location must be 100 characters or fewer." });
 
     if (req.ReportedDate.Date > DateTime.UtcNow.Date)
         return Results.BadRequest(new { error = "Reported date must not be in the future." });

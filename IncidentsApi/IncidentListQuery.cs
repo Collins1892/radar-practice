@@ -1,3 +1,5 @@
+namespace IncidentsApi;
+
 public record IncidentListQuery(
     IncidentSeverity? Severity,
     IncidentStatus? Status,

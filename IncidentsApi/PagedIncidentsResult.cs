@@ -1,3 +1,5 @@
+namespace IncidentsApi;
+
 public record PagedIncidentsResult(
     IReadOnlyList<Incident> Items,
     int Page,

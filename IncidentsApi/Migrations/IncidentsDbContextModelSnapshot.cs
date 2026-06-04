@@ -17,7 +17,7 @@ namespace IncidentsApi.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.27");
 
-            modelBuilder.Entity("Incident", b =>
+            modelBuilder.Entity("IncidentsApi.Incident", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,13 +36,11 @@ namespace IncidentsApi.Migrations
                     b.Property<DateTime>("ReportedDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Severity")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Severity")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
                         .IsRequired()

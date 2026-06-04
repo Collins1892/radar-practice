@@ -1,3 +1,5 @@
+namespace IncidentsApi;
+
 public interface IIncidentRepository
 {
     PagedIncidentsResult GetPaged(IncidentListQuery query);

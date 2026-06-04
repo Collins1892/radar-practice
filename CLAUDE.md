@@ -14,8 +14,9 @@ realistic practice domain. No patient data, no production dependencies.
 extend, test, and maintain a real application under human direction — 
 mirroring the kind of work done on a healthcare SaaS modernisation programme.
 
-**Planned additions:** Incident reporting module (week 3) to add 
-healthcare domain context relevant to the target production environment.
+**Incident reporting module added in Week 3** as a standalone IncidentsApi 
+project — separate API, separate IncidentsDbContext, separate incidents.db. 
+Mirrors microservices direction without over-engineering.
 
 **Repo layout:**
 - `ItemsApi/` — .NET 8 minimal API
@@ -24,6 +25,12 @@ healthcare domain context relevant to the target production environment.
 - `ItemsApi/Migrations/` — EF Core migrations
 - `ItemsApi.Tests/` — xUnit integration tests
 - `ItemsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
+- `IncidentsApi/` — standalone .NET 8 minimal API for incident reporting
+- `IncidentsApi/Data/IncidentsDbContext.cs` — dedicated DbContext (incidents.db)
+- `IncidentsApi/Repositories/EfIncidentRepository.cs` — EF Core repository
+- `IncidentsApi/Migrations/` — EF Core migrations
+- `IncidentsApi.Tests/` — xUnit integration tests
+- `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
 - `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView)
@@ -46,7 +53,10 @@ healthcare domain context relevant to the target production environment.
 - .NET 8.0 minimal API
 - C# with repository pattern and dependency injection
 - Entity Framework Core 8.0.27 with SQLite (`Microsoft.EntityFrameworkCore.Sqlite`)
-- `AppDbContext` in `Data/` — shared context for all modules. `DbSet<Item>` now; `DbSet<Incident>` follows in Week 3.
+- `AppDbContext` — ItemsApi only. IncidentsApi uses its own IncidentsDbContext 
+  in `IncidentsApi/Data/`. Two separate SQLite databases: `app.db` (items), 
+  `incidents.db` (incidents). Severity and Status enums stored as int for 
+  correct sort order and query performance.
 - `EfItemsRepository` implements `IItemsRepository` — scoped lifetime, `AsNoTracking()` for reads
 - `Price` stored as TEXT via `HasConversion<string>()` for exact decimal precision
 - `Name` has `HasMaxLength(100)` in `OnModelCreating` — enforced at app layer, documented in schema
