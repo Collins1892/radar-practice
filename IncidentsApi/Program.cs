@@ -40,8 +40,8 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-app.UseHttpsRedirection();
 app.UseCors();
+app.UseHttpsRedirection();
 
 app.MapGet("/incidents", (
     IIncidentRepository repo,

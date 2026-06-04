@@ -62,7 +62,7 @@ Mirrors microservices direction without over-engineering.
 - `Name` has `HasMaxLength(100)` in `OnModelCreating` — enforced at app layer, documented in schema
 - Database file: `app.db` (local only, never committed — `.gitignore` covers `*.db`, `*.db-shm`, `*.db-wal`)
 - xUnit 2.5.3 for integration tests using `TestWebApplicationFactory`
-- `TestWebApplicationFactory` — swaps `app.db` for kept-open `DataSource=:memory:` SQLite connection; schema applied via `Database.Migrate()`
+- `TestWebApplicationFactory` — ItemsApi.Tests and IncidentsApi.Tests each swap their DbContext for a kept-open `DataSource=:memory:` SQLite connection; schema applied via `Database.Migrate()`
 - NSubstitute 5.1.0 for mocking
 - Microsoft.AspNetCore.Mvc.Testing 8.0.0
 
