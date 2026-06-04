@@ -102,7 +102,7 @@ function formatStatusLabel(status: IncidentStatus): string {
 }
 
 function formatReportedDate(value: string): string {
-  return format(parseISO(value), 'dd MMM yyyy');
+  return format(parseISO(value.slice(0, 10)), 'dd MMM yyyy');
 }
 
 export function IncidentsView(): JSX.Element {

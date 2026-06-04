@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchIncidents } from '@/api/incidents';
 import type { Incident, PagedIncidentsResult } from '@/api/incidents';
@@ -42,6 +42,7 @@ function renderIncidentsView(): ReturnType<typeof render> {
 describe('IncidentsView', () => {
   beforeEach((): void => {
     vi.mocked(fetchIncidents).mockReset();
+    Element.prototype.scrollIntoView = vi.fn();
   });
 
   it('shows loading state while incidents are being fetched', (): void => {
@@ -120,5 +121,51 @@ describe('IncidentsView', () => {
     expect(screen.queryByText('Loading incidents…')).not.toBeInTheDocument();
     expect(screen.queryByText('No incidents found')).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('calls fetchIncidents with severity High and page 1 when severity filter is selected', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockResolvedValue(populatedPagedResult);
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Data table' });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+
+    // Assert
+    await waitFor(() => {
+      expect(fetchIncidents).toHaveBeenLastCalledWith({
+        severity: 'High',
+        status: undefined,
+        sortBy: 'reportedDate',
+        sortDirection: 'desc',
+        page: 1,
+        pageSize: 25,
+      });
+    });
+  });
+
+  it('renders Pagination when totalPages is greater than 1', async (): Promise<void> => {
+    // Arrange
+    const multiPageResult: PagedIncidentsResult = {
+      items: [sampleIncident],
+      page: 1,
+      pageSize: 25,
+      totalCount: 75,
+      totalPages: 3,
+    };
+    vi.mocked(fetchIncidents).mockResolvedValue(multiPageResult);
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Data table' });
+
+    // Assert
+    expect(
+      screen.getByRole('navigation', { name: 'Pagination' }),
+    ).toBeInTheDocument();
   });
 });
