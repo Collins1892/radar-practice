@@ -69,6 +69,12 @@ app.MapGet("/incidents", (
     if (!TryParseSortDirection(resolvedDirection, out var sortDescending))
         return Results.BadRequest(new { error = "Sort direction must be asc or desc." });
 
+    if (severity.HasValue && !Enum.IsDefined(severity.Value))
+        return Results.BadRequest(new { error = "Invalid severity value." });
+
+    if (status.HasValue && !Enum.IsDefined(status.Value))
+        return Results.BadRequest(new { error = "Invalid status value." });
+
     var result = repo.GetPaged(new IncidentListQuery(
         severity,
         status,
@@ -109,7 +115,9 @@ app.MapPost("/incidents", (IncidentRequest req, IIncidentRepository repo) =>
 app.MapGet("/incidents/{id}", (int id, IIncidentRepository repo) =>
 {
     var incident = repo.GetById(id);
-    return incident is null ? Results.NotFound() : Results.Ok(incident);
+    return incident is null
+        ? Results.NotFound(new { error = "Incident not found." })
+        : Results.Ok(incident);
 });
 
 app.MapPut("/incidents/{id}", (int id, IncidentRequest req, IIncidentRepository repo) =>
@@ -128,7 +136,9 @@ app.MapPut("/incidents/{id}", (int id, IncidentRequest req, IIncidentRepository 
         req.ReportedDate);
 
     var updated = repo.Update(incident);
-    return updated is null ? Results.NotFound() : Results.Ok(updated);
+    return updated is null
+        ? Results.NotFound(new { error = "Incident not found." })
+        : Results.Ok(updated);
 });
 
 app.Run();

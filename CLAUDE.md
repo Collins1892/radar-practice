@@ -142,7 +142,8 @@ changed library API.
 - One focused prompt per test generation — never ask for multiple tests at once
 - Tests should cover happy path and all failure cases
 - Use NSubstitute for mocking repository dependencies
-- Run tests with: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`
+- Run ItemsApi tests with: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`
+- Run IncidentsApi tests with: `dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj`
 
 **Frontend — Vitest:**
 - Vitest is the React test runner; run from `client/` with `npm test` (`vitest run`)
