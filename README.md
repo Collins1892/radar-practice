@@ -35,7 +35,7 @@ The domain is a simple **items catalogue** — no patient data, no production de
 radar-practice/
 ├── ItemsApi/              # .NET 8 minimal API (GET/POST /items), EF Core + SQLite
 ├── ItemsApi.Tests/        # xUnit integration tests (13 tests)
-├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT /incidents), EF Core + SQLite
+├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT /incidents, GET /incidents/{id}), EF Core + SQLite
 ├── IncidentsApi.Tests/    # xUnit integration tests (23 tests)
 ├── client/                # React + TypeScript + Vite frontend
 │   ├── src/api/incidents.ts          # Typed fetch layer for IncidentsApi
