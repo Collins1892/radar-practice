@@ -153,6 +153,12 @@ static IResult? ValidateIncidentRequest(IncidentRequest req)
     if (req.Location.Length > 100)
         return Results.BadRequest(new { error = "Location must be 100 characters or fewer." });
 
+    if (!Enum.IsDefined(req.Severity))
+        return Results.BadRequest(new { error = "Invalid severity value." });
+
+    if (!Enum.IsDefined(req.Status))
+        return Results.BadRequest(new { error = "Invalid status value." });
+
     if (req.ReportedDate.Date > DateTime.UtcNow.Date)
         return Results.BadRequest(new { error = "Reported date must not be in the future." });
 
