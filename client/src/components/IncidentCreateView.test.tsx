@@ -23,6 +23,10 @@ function formatReportedDateUtc(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+// Note: this helper uses react-day-picker v10 internal class names
+// (.rdp-button_next, [data-day]). These are version-specific and
+// will need updating if react-day-picker is upgraded. See CLAUDE.md
+// version discipline.
 function clickCalendarDay(year: number, month: number, day: number): void {
   if (!document.querySelector('[data-slot="calendar"]')) {
     fireEvent.click(screen.getByLabelText(/^Reported date/));

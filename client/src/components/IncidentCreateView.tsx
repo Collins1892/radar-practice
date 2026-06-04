@@ -188,11 +188,6 @@ export function IncidentCreateView(): JSX.Element {
     setSubmitError(null);
     setSubmitting(true);
 
-    const date = reportedDate;
-    if (date === undefined) {
-      return;
-    }
-
     try {
       await createIncident({
         title,
@@ -200,7 +195,7 @@ export function IncidentCreateView(): JSX.Element {
         location,
         severity: severity as IncidentSeverity,
         status: status as IncidentStatus,
-        reportedDate: formatReportedDateUtc(date),
+        reportedDate: formatReportedDateUtc(reportedDate as Date),
       });
       navigate('/incidents');
     } catch (err) {
