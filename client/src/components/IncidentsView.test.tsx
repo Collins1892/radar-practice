@@ -168,4 +168,40 @@ describe('IncidentsView', () => {
       screen.getByRole('navigation', { name: 'Pagination' }),
     ).toBeInTheDocument();
   });
+
+  it('shows filtered empty message when severity filter is active and no incidents match', async (): Promise<void> => {
+    // Arrange
+    Element.prototype.scrollIntoView = vi.fn();
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockResolvedValueOnce(emptyPagedResult);
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Data table' });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+
+    // Assert
+    expect(
+      await screen.findByText(
+        'Try adjusting your filters to see more results.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('shows error state with http error message when fetchIncidents rejects with ApiClientError', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents).mockRejectedValue(
+      new ApiClientError('Invalid sort field.', 'http', 400),
+    );
+
+    // Act
+    renderIncidentsView();
+
+    // Assert
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Could not load incidents');
+    expect(alert).toHaveTextContent('Invalid sort field.');
+  });
 });

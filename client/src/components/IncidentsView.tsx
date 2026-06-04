@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { JSX } from 'react';
-import { format, parseISO } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import {
   fetchIncidents,
   type Incident,
@@ -102,7 +102,8 @@ function formatStatusLabel(status: IncidentStatus): string {
 }
 
 function formatReportedDate(value: string): string {
-  return format(parseISO(value.slice(0, 10)), 'dd MMM yyyy');
+  const parsed = parseISO(value.slice(0, 10));
+  return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : String(value);
 }
 
 export function IncidentsView(): JSX.Element {
