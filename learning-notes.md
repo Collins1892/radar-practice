@@ -6,7 +6,7 @@ Week 3 Day 4. Five PRs merged: IncidentsApi standalone backend (PR #46), 23 back
 
 ### IncidentsApi — standalone backend
 
-Built as a separate .NET 8 project with its own IncidentsDbContext and incidents.db — not added to ItemsApi. Mirrors the microservices direction Radar is moving toward. Incident entity with Severity and Status stored as int enums for correct sort order and query performance. Full CRUD: GET /incidents (server-side filter/sort/paginate), POST /incidents, GET /incidents/{id}, PUT /incidents/{id}. Global exception handler, Enum.IsDefined validation, page size cap at 100. CI updated to run both test projects.
+Built as a separate .NET 8 project with its own IncidentsDbContext and incidents.db — not added to ItemsApi. Mirrors the microservices direction Radar is moving toward. Incident entity with Severity and Status stored as int enums for correct sort order and query performance. CRU (no DELETE): GET /incidents (server-side filter/sort/paginate), POST /incidents, GET /incidents/{id}, PUT /incidents/{id}. Global exception handler, Enum.IsDefined validation, page size cap at 100. CI updated to run both test projects.
 
 ### Backend tests — 23 in one day
 
