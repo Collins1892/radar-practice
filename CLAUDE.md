@@ -79,7 +79,7 @@ Mirrors microservices direction without over-engineering.
 - ESLint 10.3.0 with typescript-eslint
 - Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
 - Vitest 4.1.7 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
-- Playwright for e2e tests (coming in week 3)
+- `@playwright/test` 1.60.0 — e2e tests, Chromium only. Key user journeys deferred to Week 5.
 - `date-fns` 4.4.0 — date formatting utilities
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar
 
@@ -168,13 +168,14 @@ changed library API.
 - When changing `api.ts` parsing or `guards.ts`, add or update tests in `client/src/guards.test.ts`
 - When changing `errors.ts`, add or update tests in `client/src/errors.test.ts` using the same style as guards — one test per prompt, AAA, no RTL
 
-**End-to-end — Playwright (coming week 3):**
-- Key user journeys — view items, add item, error state
-- Runs nightly via GitHub Actions cron schedule
+**End-to-end — Playwright 1.60.0:**
+- Installed with Chromium only. Smoke test: app loads, title correct (`client/e2e/app.spec.ts`)
+- Key user journeys deferred to Week 5
+- Nightly cron schedule deferred to Week 5 — e2e tests do not run on PR builds
 
 **CI:**
 - .NET tests and Vitest run on every push and PR to main
-- Playwright to be added in week 3
+- Playwright e2e does not run on PR builds — nightly cron deferred to Week 5
 - PR cannot merge until all checks pass
 
 **Agent guidance:**
