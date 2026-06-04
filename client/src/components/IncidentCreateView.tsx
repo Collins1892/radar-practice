@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { useState } from 'react';
 import type { FormEvent, JSX } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -68,20 +69,8 @@ function isIncidentStatusValue(value: string): value is IncidentStatus {
   return (STATUSES as readonly string[]).includes(value);
 }
 
-function formatReportedDateUtc(date: Date): string {
-  const y = date.getUTCFullYear();
-  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(date.getUTCDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function utcDateOnlyMs(date: Date): number {
-  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-}
-
-function todayUtcMs(): number {
-  const now = new Date();
-  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+function formatReportedDateForApi(date: Date): string {
+  return format(date, 'yyyy-MM-dd');
 }
 
 function validateIncidentForm(values: IncidentFormValues): FieldErrors {
@@ -115,7 +104,10 @@ function validateIncidentForm(values: IncidentFormValues): FieldErrors {
 
   if (values.reportedDate === undefined) {
     errors.reportedDate = 'Reported date is required.';
-  } else if (utcDateOnlyMs(values.reportedDate) > todayUtcMs()) {
+  } else if (
+    new Date(formatReportedDateForApi(values.reportedDate)) >
+    new Date(formatReportedDateForApi(new Date()))
+  ) {
     errors.reportedDate = 'Reported date must not be in the future.';
   }
 
@@ -195,7 +187,7 @@ export function IncidentCreateView(): JSX.Element {
         location,
         severity: severity as IncidentSeverity,
         status: status as IncidentStatus,
-        reportedDate: formatReportedDateUtc(reportedDate as Date),
+        reportedDate: formatReportedDateForApi(reportedDate as Date),
       });
       navigate('/incidents');
     } catch (err) {

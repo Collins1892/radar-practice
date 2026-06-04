@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { format } from 'date-fns';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createIncident } from '@/api/incidents';
@@ -15,13 +16,6 @@ vi.mock('react-router-dom', async (importOriginal) => {
     useNavigate: () => navigateMock,
   };
 });
-
-function formatReportedDateUtc(date: Date): string {
-  const y = date.getUTCFullYear();
-  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(date.getUTCDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
 
 // Note: this helper uses react-day-picker v10 internal class names
 // (.rdp-button_next, [data-day]). These are version-specific and
@@ -165,7 +159,7 @@ describe('IncidentCreateView', () => {
   it('calls createIncident with correct data when submitting a valid form', async (): Promise<void> => {
     // Arrange
     const reportedDateLocal = new Date(2026, 5, 4);
-    const expectedReportedDate = formatReportedDateUtc(reportedDateLocal);
+    const expectedReportedDate = format(reportedDateLocal, 'yyyy-MM-dd');
     const createdIncident: Incident = {
       id: 1,
       title: 'Spill in corridor B',
@@ -255,5 +249,41 @@ describe('IncidentCreateView', () => {
     // Assert
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(errorMessage);
+    expect(screen.getByLabelText(/^Title/)).toHaveValue('Spill in corridor B');
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('shows future reported date validation error when tomorrow is selected', async (): Promise<void> => {
+    // Arrange
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    renderIncidentCreateView();
+
+    // Act
+    fireEvent.change(screen.getByLabelText(/^Title/), {
+      target: { value: 'Spill in corridor B' },
+    });
+    fireEvent.change(screen.getByLabelText(/^Description/), {
+      target: { value: 'Water on floor' },
+    });
+    fireEvent.change(screen.getByLabelText(/^Location/), {
+      target: { value: 'Building 2, level 1' },
+    });
+    fireEvent.click(screen.getByLabelText(/^Severity/));
+    fireEvent.click(await screen.findByRole('option', { name: 'Medium' }));
+    fireEvent.click(screen.getByLabelText(/^Status/));
+    fireEvent.click(await screen.findByRole('option', { name: 'Open' }));
+    clickCalendarDay(
+      tomorrow.getFullYear(),
+      tomorrow.getMonth(),
+      tomorrow.getDate(),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+
+    // Assert
+    expect(
+      screen.getByText('Reported date must not be in the future.'),
+    ).toBeInTheDocument();
+    expect(createIncident).not.toHaveBeenCalled();
   });
 });
