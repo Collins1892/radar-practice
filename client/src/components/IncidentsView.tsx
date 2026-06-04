@@ -142,6 +142,9 @@ export function IncidentsView(): JSX.Element {
     }
   }, [severityFilter, statusFilter, sortKey, sortDirection, page]);
 
+  // Known: no stale-response guard — rapid filter/sort changes can
+  // cause earlier responses to overwrite later ones. Low impact for
+  // a single-user app; fix in Week 7 with an active flag or AbortController.
   useEffect(() => {
     void loadIncidents();
   }, [loadIncidents]);
@@ -217,9 +220,11 @@ export function IncidentsView(): JSX.Element {
   return (
     <>
       <h1>Incidents</h1>
-      <p className="subtitle">Incident reports from the Incidents API</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Incident reports from the Incidents API
+      </p>
 
-      <section className="panel">
+      <section className="rounded-lg border border-border bg-card p-6">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
           <div className="w-full md:max-w-xs">
             <SelectField
