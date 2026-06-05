@@ -10,8 +10,10 @@ import {
   type IncidentSeverity,
   type IncidentStatus,
 } from '@/api/incidents';
+import { INCIDENT_DETAIL_HEADING } from '@/components/IncidentForm';
 import { Badge } from '@/components/Badge';
 import { ErrorState } from '@/components/ErrorState';
+import { IncidentPageChrome } from '@/components/IncidentPageChrome';
 import { LoadingState } from '@/components/LoadingState';
 import { Button } from '@/components/ui/button';
 
@@ -89,34 +91,57 @@ export function IncidentDetailView(): JSX.Element {
 
   if (incidentId === null) {
     return (
-      <ErrorState
-        title="Invalid incident"
-        message="The incident ID in the URL is not valid."
-      />
+      <>
+        <IncidentPageChrome heading={INCIDENT_DETAIL_HEADING} />
+        <ErrorState
+          title="Invalid incident"
+          message="The incident ID in the URL is not valid."
+        />
+      </>
     );
   }
 
   if (loading) {
-    return <LoadingState message="Loading incident…" />;
+    return (
+      <>
+        <IncidentPageChrome
+          heading={INCIDENT_DETAIL_HEADING}
+          subtitle={`Incident #${incidentId}`}
+        />
+        <LoadingState message="Loading incident…" />
+      </>
+    );
   }
 
   if (error) {
     return (
-      <ErrorState
-        title="Could not load incident"
-        message={error}
-        onTryAgain={() => void loadIncident()}
-      />
+      <>
+        <IncidentPageChrome
+          heading={INCIDENT_DETAIL_HEADING}
+          subtitle={`Incident #${incidentId}`}
+        />
+        <ErrorState
+          title="Could not load incident"
+          message={error}
+          onTryAgain={() => void loadIncident()}
+        />
+      </>
     );
   }
 
   if (incident === null) {
     return (
-      <ErrorState
-        title="Could not load incident"
-        message="No incident data is available."
-        onTryAgain={() => void loadIncident()}
-      />
+      <>
+        <IncidentPageChrome
+          heading={INCIDENT_DETAIL_HEADING}
+          subtitle={`Incident #${incidentId}`}
+        />
+        <ErrorState
+          title="Could not load incident"
+          message="No incident data is available."
+          onTryAgain={() => void loadIncident()}
+        />
+      </>
     );
   }
 

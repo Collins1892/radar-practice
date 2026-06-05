@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getIncident, type Incident } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
+import { INCIDENT_DETAIL_HEADING } from '@/components/IncidentForm';
 import { IncidentDetailView } from './IncidentDetailView';
 
 vi.mock('@/api/incidents', async (importOriginal) => {
@@ -77,6 +78,12 @@ describe('IncidentDetailView', () => {
     renderIncidentDetailView();
 
     // Assert
+    expect(
+      screen.getByRole('heading', { name: INCIDENT_DETAIL_HEADING }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
@@ -90,6 +97,29 @@ describe('IncidentDetailView', () => {
     renderIncidentDetailView();
 
     // Assert
+    expect(
+      screen.getByRole('heading', { name: INCIDENT_DETAIL_HEADING }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+
+  it('shows chrome and error state when getIncident resolves with null', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(getIncident).mockResolvedValue(null as unknown as Incident);
+
+    // Act
+    renderIncidentDetailView();
+
+    // Assert
+    expect(
+      screen.getByRole('heading', { name: INCIDENT_DETAIL_HEADING }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 
@@ -100,6 +130,12 @@ describe('IncidentDetailView', () => {
     renderIncidentDetailViewWithInvalidId();
 
     // Assert
+    expect(
+      screen.getByRole('heading', { name: INCIDENT_DETAIL_HEADING }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(getIncident).not.toHaveBeenCalled();
   });

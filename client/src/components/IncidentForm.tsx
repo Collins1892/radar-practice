@@ -1,7 +1,7 @@
 import { format, isValid, parseISO } from 'date-fns';
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent, JSX } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   createIncident,
   getIncident,
@@ -13,10 +13,19 @@ import {
 import { DatePickerField } from '@/components/DatePickerField';
 import { ErrorState } from '@/components/ErrorState';
 import { FormField } from '@/components/FormField';
+import { IncidentPageChrome } from '@/components/IncidentPageChrome';
 import { LoadingState } from '@/components/LoadingState';
 import { SelectField } from '@/components/SelectField';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
+export const INCIDENT_CREATE_HEADING = 'Create incident';
+export const INCIDENT_CREATE_SUBTITLE =
+  'Report a new incident to the Incidents API';
+export const INCIDENT_EDIT_HEADING = 'Edit incident';
+export const INCIDENT_EDIT_SUBTITLE =
+  'Update an existing incident in the Incidents API';
+export const INCIDENT_DETAIL_HEADING = 'Incident detail';
 
 const SEVERITIES: readonly IncidentSeverity[] = [
   'Low',
@@ -229,38 +238,36 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
     }
   }
 
+  const heading = isEdit ? INCIDENT_EDIT_HEADING : INCIDENT_CREATE_HEADING;
+  const subtitle = isEdit ? INCIDENT_EDIT_SUBTITLE : INCIDENT_CREATE_SUBTITLE;
+
   if (isEdit && loadLoading) {
-    return <LoadingState message="Loading incident…" />;
+    return (
+      <>
+        <IncidentPageChrome heading={heading} subtitle={subtitle} />
+        <LoadingState message="Loading incident…" />
+      </>
+    );
   }
 
   if (isEdit && loadError) {
     return (
-      <ErrorState
-        title="Could not load incident"
-        message={loadError}
-        onTryAgain={() => void loadIncident()}
-      />
+      <>
+        <IncidentPageChrome heading={heading} subtitle={subtitle} />
+        <ErrorState
+          title="Could not load incident"
+          message={loadError}
+          onTryAgain={() => void loadIncident()}
+        />
+      </>
     );
   }
-
-  const heading = isEdit ? 'Edit incident' : 'Create incident';
-  const subtitle = isEdit
-    ? 'Update an existing incident in the Incidents API'
-    : 'Report a new incident to the Incidents API';
-  const submitLabel = isEdit ? 'Save changes' : 'Create incident';
+  const submitLabel = isEdit ? 'Save changes' : INCIDENT_CREATE_HEADING;
   const submittingLabel = isEdit ? 'Saving…' : 'Creating…';
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1>{heading}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-        </div>
-        <Button variant="outline" asChild className="w-full sm:w-auto">
-          <Link to="/incidents">Back to incidents</Link>
-        </Button>
-      </div>
+      <IncidentPageChrome heading={heading} subtitle={subtitle} />
 
       <section className="mt-6 rounded-lg border border-border bg-card p-6">
         <form
