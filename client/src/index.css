@@ -99,9 +99,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* OKLCH tokens duplicate .dark intentionally: this media query drives legacy
-   CSS variable consumers (--text, --bg, --app-accent, etc.) while .dark drives
-   Tailwind dark: utilities. Keep both blocks in sync when tokens change. */
+/* Dark theme: .dark sets OKLCH vars on class ancestors; prefers-color-scheme
+   sets :root OKLCH + legacy vars (--text, --bg, etc.); @custom-variant dark
+   (above) enables dark: utilities for both. Keep all three in sync. */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: oklch(0.145 0 0);
