@@ -9,7 +9,7 @@ import {
   type Incident,
 } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
-import { IncidentForm } from './IncidentForm';
+import { INCIDENT_EDIT_HEADING, IncidentForm } from './IncidentForm';
 
 const navigateMock = vi.hoisted(() => vi.fn());
 
@@ -132,7 +132,7 @@ describe('IncidentForm', () => {
 
     // Assert
     expect(
-      screen.getByRole('heading', { name: 'Edit incident' }),
+      screen.getByRole('heading', { name: INCIDENT_EDIT_HEADING }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Back to incidents' }),
@@ -151,7 +151,7 @@ describe('IncidentForm', () => {
 
     // Assert
     expect(
-      screen.getByRole('heading', { name: 'Edit incident' }),
+      screen.getByRole('heading', { name: INCIDENT_EDIT_HEADING }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Back to incidents' }),

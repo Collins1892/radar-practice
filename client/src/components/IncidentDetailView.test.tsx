@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getIncident, type Incident } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
+import { INCIDENT_DETAIL_HEADING } from '@/components/IncidentForm';
 import { IncidentDetailView } from './IncidentDetailView';
 
 vi.mock('@/api/incidents', async (importOriginal) => {
@@ -78,7 +79,7 @@ describe('IncidentDetailView', () => {
 
     // Assert
     expect(
-      screen.getByRole('heading', { name: 'Incident detail' }),
+      screen.getByRole('heading', { name: INCIDENT_DETAIL_HEADING }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Back to incidents' }),
@@ -97,7 +98,7 @@ describe('IncidentDetailView', () => {
 
     // Assert
     expect(
-      screen.getByRole('heading', { name: 'Incident detail' }),
+      screen.getByRole('heading', { name: INCIDENT_DETAIL_HEADING }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Back to incidents' }),
@@ -114,7 +115,7 @@ describe('IncidentDetailView', () => {
 
     // Assert
     expect(
-      screen.getByRole('heading', { name: 'Incident detail' }),
+      screen.getByRole('heading', { name: INCIDENT_DETAIL_HEADING }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Back to incidents' }),
@@ -130,7 +131,7 @@ describe('IncidentDetailView', () => {
 
     // Assert
     expect(
-      screen.getByRole('heading', { name: 'Incident detail' }),
+      screen.getByRole('heading', { name: INCIDENT_DETAIL_HEADING }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Back to incidents' }),

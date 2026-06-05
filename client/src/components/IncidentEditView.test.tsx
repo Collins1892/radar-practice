@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getIncident } from '@/api/incidents';
+import { INCIDENT_EDIT_HEADING } from '@/components/IncidentForm';
 import { IncidentEditView } from './IncidentEditView';
 
 vi.mock('@/api/incidents', async (importOriginal) => {
@@ -38,7 +39,7 @@ describe('IncidentEditView', () => {
 
     // Assert
     expect(
-      screen.getByRole('heading', { name: 'Edit incident' }),
+      screen.getByRole('heading', { name: INCIDENT_EDIT_HEADING }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Back to incidents' }),
