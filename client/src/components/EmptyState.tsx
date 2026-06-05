@@ -17,7 +17,7 @@ export const EmptyState = ({
       aria-live="polite"
       className="flex flex-col items-center justify-center gap-3 py-8 text-center"
     >
-      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-lg font-semibold text-foreground">{title}</p>
       {message ? (
         <p className="max-w-md text-sm text-muted-foreground">{message}</p>
       ) : null}

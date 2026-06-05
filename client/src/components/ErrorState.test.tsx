@@ -34,12 +34,12 @@ describe('ErrorState', () => {
     expect(screen.getByText(message)).toBeInTheDocument();
   });
 
-  it('calls onRetry when the retry button is clicked', (): void => {
+  it('calls onRetry when the Try again button is clicked', (): void => {
     // Arrange — defaults via renderErrorState
 
     // Act
     const { onRetry } = renderErrorState();
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
     // Assert
     expect(onRetry).toHaveBeenCalledTimes(1);
