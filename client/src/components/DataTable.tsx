@@ -16,6 +16,7 @@ type DataTableProps<T extends Record<string, unknown>> = {
   sortKey?: Extract<keyof T, string>;
   sortDirection?: SortDirection;
   emptyState?: React.ReactNode;
+  /** Accessible name for the scrollable table region. Override when multiple tables exist on one page. */
   ariaLabel?: string;
 };
 
