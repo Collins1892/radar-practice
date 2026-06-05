@@ -12,6 +12,7 @@ import {
 } from '@/api/incidents';
 import { Badge } from '@/components/Badge';
 import { ErrorState } from '@/components/ErrorState';
+import { IncidentPageChrome } from '@/components/IncidentPageChrome';
 import { LoadingState } from '@/components/LoadingState';
 import { Button } from '@/components/ui/button';
 
@@ -59,6 +60,8 @@ function formatReportedDate(value: string): string {
   return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : String(value);
 }
 
+const DETAIL_HEADING = 'Incident detail';
+
 export function IncidentDetailView(): JSX.Element {
   const { id } = useParams();
   const incidentId = parseIncidentId(id);
@@ -89,34 +92,57 @@ export function IncidentDetailView(): JSX.Element {
 
   if (incidentId === null) {
     return (
-      <ErrorState
-        title="Invalid incident"
-        message="The incident ID in the URL is not valid."
-      />
+      <>
+        <IncidentPageChrome heading={DETAIL_HEADING} />
+        <ErrorState
+          title="Invalid incident"
+          message="The incident ID in the URL is not valid."
+        />
+      </>
     );
   }
 
   if (loading) {
-    return <LoadingState message="Loading incident…" />;
+    return (
+      <>
+        <IncidentPageChrome
+          heading={DETAIL_HEADING}
+          subtitle={`Incident #${incidentId}`}
+        />
+        <LoadingState message="Loading incident…" />
+      </>
+    );
   }
 
   if (error) {
     return (
-      <ErrorState
-        title="Could not load incident"
-        message={error}
-        onTryAgain={() => void loadIncident()}
-      />
+      <>
+        <IncidentPageChrome
+          heading={DETAIL_HEADING}
+          subtitle={`Incident #${incidentId}`}
+        />
+        <ErrorState
+          title="Could not load incident"
+          message={error}
+          onTryAgain={() => void loadIncident()}
+        />
+      </>
     );
   }
 
   if (incident === null) {
     return (
-      <ErrorState
-        title="Could not load incident"
-        message="No incident data is available."
-        onTryAgain={() => void loadIncident()}
-      />
+      <>
+        <IncidentPageChrome
+          heading={DETAIL_HEADING}
+          subtitle={`Incident #${incidentId}`}
+        />
+        <ErrorState
+          title="Could not load incident"
+          message="No incident data is available."
+          onTryAgain={() => void loadIncident()}
+        />
+      </>
     );
   }
 

@@ -77,6 +77,12 @@ describe('IncidentDetailView', () => {
     renderIncidentDetailView();
 
     // Assert
+    expect(
+      screen.getByRole('heading', { name: 'Incident detail' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
@@ -90,6 +96,12 @@ describe('IncidentDetailView', () => {
     renderIncidentDetailView();
 
     // Assert
+    expect(
+      screen.getByRole('heading', { name: 'Incident detail' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 
@@ -100,6 +112,12 @@ describe('IncidentDetailView', () => {
     renderIncidentDetailViewWithInvalidId();
 
     // Assert
+    expect(
+      screen.getByRole('heading', { name: 'Incident detail' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(getIncident).not.toHaveBeenCalled();
   });

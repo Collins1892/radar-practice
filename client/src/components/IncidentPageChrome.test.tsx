@@ -1,0 +1,41 @@
+import { render, screen } from '@testing-library/react';
+import type { ComponentProps } from 'react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, expect, it } from 'vitest';
+import { IncidentPageChrome } from './IncidentPageChrome';
+
+describe('IncidentPageChrome', () => {
+  function renderIncidentPageChrome(
+    overrides: Partial<ComponentProps<typeof IncidentPageChrome>> = {},
+  ): ReturnType<typeof render> {
+    return render(
+      <MemoryRouter>
+        <IncidentPageChrome heading="Incident detail" {...overrides} />
+      </MemoryRouter>,
+    );
+  }
+
+  it('renders the heading and back link', (): void => {
+    // Arrange
+    const heading = 'Incident detail';
+
+    // Act
+    renderIncidentPageChrome({ heading });
+
+    // Assert
+    expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
+  });
+
+  it('does not render a subtitle paragraph when subtitle is not provided', (): void => {
+    // Arrange — defaults via renderIncidentPageChrome; no subtitle prop
+
+    // Act
+    renderIncidentPageChrome();
+
+    // Assert
+    expect(screen.queryByRole('paragraph')).not.toBeInTheDocument();
+  });
+});

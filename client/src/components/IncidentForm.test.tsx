@@ -131,6 +131,12 @@ describe('IncidentForm', () => {
     renderIncidentFormEdit();
 
     // Assert
+    expect(
+      screen.getByRole('heading', { name: 'Edit incident' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
@@ -144,6 +150,12 @@ describe('IncidentForm', () => {
     renderIncidentFormEdit();
 
     // Assert
+    expect(
+      screen.getByRole('heading', { name: 'Edit incident' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 
