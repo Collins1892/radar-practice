@@ -10,6 +10,7 @@ import {
   type IncidentSeverity,
   type IncidentStatus,
 } from '@/api/incidents';
+import { INCIDENT_DETAIL_HEADING } from '@/components/IncidentForm';
 import { Badge } from '@/components/Badge';
 import { ErrorState } from '@/components/ErrorState';
 import { IncidentPageChrome } from '@/components/IncidentPageChrome';
@@ -60,8 +61,6 @@ function formatReportedDate(value: string): string {
   return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : String(value);
 }
 
-const DETAIL_HEADING = 'Incident detail';
-
 export function IncidentDetailView(): JSX.Element {
   const { id } = useParams();
   const incidentId = parseIncidentId(id);
@@ -93,7 +92,7 @@ export function IncidentDetailView(): JSX.Element {
   if (incidentId === null) {
     return (
       <>
-        <IncidentPageChrome heading={DETAIL_HEADING} />
+        <IncidentPageChrome heading={INCIDENT_DETAIL_HEADING} />
         <ErrorState
           title="Invalid incident"
           message="The incident ID in the URL is not valid."
@@ -106,7 +105,7 @@ export function IncidentDetailView(): JSX.Element {
     return (
       <>
         <IncidentPageChrome
-          heading={DETAIL_HEADING}
+          heading={INCIDENT_DETAIL_HEADING}
           subtitle={`Incident #${incidentId}`}
         />
         <LoadingState message="Loading incident…" />
@@ -118,7 +117,7 @@ export function IncidentDetailView(): JSX.Element {
     return (
       <>
         <IncidentPageChrome
-          heading={DETAIL_HEADING}
+          heading={INCIDENT_DETAIL_HEADING}
           subtitle={`Incident #${incidentId}`}
         />
         <ErrorState
@@ -134,7 +133,7 @@ export function IncidentDetailView(): JSX.Element {
     return (
       <>
         <IncidentPageChrome
-          heading={DETAIL_HEADING}
+          heading={INCIDENT_DETAIL_HEADING}
           subtitle={`Incident #${incidentId}`}
         />
         <ErrorState

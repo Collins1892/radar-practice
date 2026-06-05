@@ -105,6 +105,23 @@ describe('IncidentDetailView', () => {
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 
+  it('shows chrome and error state when getIncident resolves with null', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(getIncident).mockResolvedValue(null as unknown as Incident);
+
+    // Act
+    renderIncidentDetailView();
+
+    // Assert
+    expect(
+      screen.getByRole('heading', { name: 'Incident detail' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+
   it('shows error state when the id param is not a valid number', (): void => {
     // Arrange — invalid id via renderIncidentDetailViewWithInvalidId
 

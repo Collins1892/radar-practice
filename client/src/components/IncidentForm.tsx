@@ -25,6 +25,7 @@ export const INCIDENT_CREATE_SUBTITLE =
 export const INCIDENT_EDIT_HEADING = 'Edit incident';
 export const INCIDENT_EDIT_SUBTITLE =
   'Update an existing incident in the Incidents API';
+export const INCIDENT_DETAIL_HEADING = 'Incident detail';
 
 const SEVERITIES: readonly IncidentSeverity[] = [
   'Low',
@@ -261,7 +262,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
       </>
     );
   }
-  const submitLabel = isEdit ? 'Save changes' : 'Create incident';
+  const submitLabel = isEdit ? 'Save changes' : INCIDENT_CREATE_HEADING;
   const submittingLabel = isEdit ? 'Saving…' : 'Creating…';
 
   return (
