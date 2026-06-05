@@ -100,7 +100,7 @@ describe('IncidentsView', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(
-      screen.queryByRole('region', { name: 'Data table' }),
+      screen.queryByRole('region', { name: 'Data table, scrollable' }),
     ).not.toBeInTheDocument();
   });
 
@@ -112,7 +112,7 @@ describe('IncidentsView', () => {
     renderIncidentsView();
 
     // Assert
-    await screen.findByRole('region', { name: 'Data table' });
+    await screen.findByRole('region', { name: 'Data table, scrollable' });
     expect(screen.getByText('Spill in corridor B')).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Spill in corridor B' }),
@@ -145,7 +145,7 @@ describe('IncidentsView', () => {
 
     // Act
     renderIncidentsView();
-    await screen.findByRole('region', { name: 'Data table' });
+    await screen.findByRole('region', { name: 'Data table, scrollable' });
     fireEvent.click(screen.getByLabelText('Severity'));
     fireEvent.click(await screen.findByRole('option', { name: 'High' }));
 
@@ -175,7 +175,7 @@ describe('IncidentsView', () => {
 
     // Act
     renderIncidentsView();
-    await screen.findByRole('region', { name: 'Data table' });
+    await screen.findByRole('region', { name: 'Data table, scrollable' });
 
     // Assert
     expect(
@@ -192,7 +192,7 @@ describe('IncidentsView', () => {
 
     // Act
     renderIncidentsView();
-    await screen.findByRole('region', { name: 'Data table' });
+    await screen.findByRole('region', { name: 'Data table, scrollable' });
     fireEvent.click(screen.getByLabelText('Severity'));
     fireEvent.click(await screen.findByRole('option', { name: 'High' }));
 

@@ -110,7 +110,7 @@ describe('DataTable', () => {
 
     // Assert
     expect(
-      screen.getByRole('region', { name: 'Data table' }),
+      screen.getByRole('region', { name: 'Data table, scrollable' }),
     ).toBeInTheDocument();
   });
 
