@@ -180,7 +180,7 @@ changed library API.
 
 **Agent guidance:**
 - Generate one test at a time — stalling occurs with multiple test requests
-- Always verify tests pass after generation — run `dotnet test` for API changes, `npm test` in `client/` for frontend changes
+- Always verify tests pass after generation — run `dotnet test` for API changes, `npm test` in `client/` for frontend changes, `npx playwright test` in `client/` for e2e changes (start ItemsApi and IncidentsApi when the journey needs data)
 - Integration tests are preferred for API endpoints
 - Do not remove or edit existing tests without explicit instruction
 
@@ -189,7 +189,7 @@ changed library API.
 - Make small, focused changes — one task at a time
 - Use Plan mode for any non-trivial task — show the full plan before touching files
 - Include `use context7` upfront in prompts when working with specific library APIs
-- Run tests after every change and confirm they pass — `dotnet test` for API changes, `npm test` in `client/` for frontend changes
+- Run tests after every change and confirm they pass — `dotnet test` for API changes, `npm test` in `client/` for frontend changes, `npx playwright test` from `client/` for e2e changes (start ItemsApi and IncidentsApi first for journey tests)
 - Match existing code style and patterns — repository pattern, typed responses, explicit return types
 - Explain non-obvious architectural decisions unprompted
 - Use the repository pattern for all new data access
@@ -198,7 +198,7 @@ changed library API.
 - Ask for clarification if a task is ambiguous rather than guessing
 - Use descriptive commit messages when asked to commit
 - Follow the TypeScript conventions defined above — no any, explicit return types
-- Check `.claude/skills/` for relevant skills before starting a task — available skills: `dotnet-test-writer`, `react-test-writer`, `code-reviewer`
+- Check `.claude/skills/` for relevant skills before starting a task — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`
 - Place hand-authored components in `client/src/components/` — never in `client/src/components/ui/` (shadcn vendor directory)
 
 ## What the agent should not do

@@ -54,7 +54,7 @@ Keep these aligned with [CLAUDE.md](../../../CLAUDE.md), `package.json`, and `.c
 |------|----------|
 | Backend | .NET 8.0, xUnit 2.5.3, NSubstitute 5.1.0, Microsoft.AspNetCore.Mvc.Testing 8.0.0, Microsoft.EntityFrameworkCore.Sqlite 8.0.27, Microsoft.EntityFrameworkCore.Design 8.0.27 (ItemsApi only), Microsoft.Data.Sqlite 8.0.27 |
 | Frontend | React 19.2.6, TypeScript 6.0.2, Vite 8.0.12, ESLint 10.3.0, Tailwind CSS 4.3.0, shadcn/ui (Nova), radix-ui 1.4.3, @radix-ui/react-slot 1.2.4, class-variance-authority 0.7.1, clsx 2.1.1, tailwind-merge 3.6.0, lucide-react 1.17.0, react-router-dom 7.16.0, date-fns 4.4.0, react-day-picker 10.0.1 |
-| Frontend tests | Vitest 4.1.7 with @testing-library/react; Playwright (planned week 3) |
+| Frontend tests | Vitest 4.1.7 with @testing-library/react; Playwright 1.60.0 (Chromium only, `client/e2e/`) |
 
 ## Project layout
 
@@ -90,12 +90,15 @@ client/
   src/errors.test.ts              — Vitest unit tests for error mapping (toUserMessage, ApiClientError)
   src/guards.ts                   — runtime type guards
   src/guards.test.ts              — Vitest unit tests for runtime type guards
+  playwright.config.ts            — Playwright config (baseURL, Vite webServer only)
+  e2e/app.spec.ts                 — smoke e2e (reference)
+  e2e/pages/                      — page objects (Week 5 journeys)
 ```
 
 Imports use the `@/` path alias (configured in `vite.config.ts` and `tsconfig.app.json`) for `src/`.
 
 - **`ItemsApi/`** or **`ItemsApi.Tests/`** → apply [Backend rules](#backend-rules-net--c) plus [Universal rules](#universal-rules-all-files).
-- **`client/`** → apply [Frontend rules](#frontend-rules-react--typescript) plus universal rules.
+- **`client/`** (including `client/e2e/`) → apply [Frontend rules](#frontend-rules-react--typescript) plus universal rules.
 - **Repo-wide** (e.g. `.github/`, docs) → universal rules primarily.
 
 ## Universal rules (all files)
@@ -141,8 +144,9 @@ Applies under `client/`. Aligns with `CLAUDE.md` and [`client/eslint.config.js`]
 - **Path alias** — imports from `src/` use the `@/` alias (e.g. `@/lib/utils`, `@/components/ui/button`).
 - **Component tests** — new presentational UI should have Vitest tests for loading, error, empty, and populated states. **App integration tests** (mock `api.ts`) cover full-page flows — reference [`client/src/App.test.tsx`](../../../client/src/App.test.tsx). Behaviour over implementation detail; flag missing coverage on high-risk UI changes.
 - **Unit tests** — pure modules (`guards.ts`, `errors.ts`); Arrange / Act / Assert, explicit `(): void`, no RTL, behaviour-focused cases — reference [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts)
+- **E2E tests (Playwright)** — under `client/e2e/`; one `test` per agent request; behaviour sentences for names; Arrange / Act / Assert; explicit `async ({ page }): Promise<void>`. Prefer `getByRole` / `getByLabel` over CSS selectors. Page objects hold locators and actions — specs hold `expect`. Journey tests require ItemsApi (5133) and/or IncidentsApi (5134) running locally; `webServer` starts Vite only — flag tests that assume APIs without documenting that dependency. Synthetic fixture data only (no PII). E2e does not run on PR CI yet (Week 5 nightly). Reference [playwright-test-writer/SKILL.md](../playwright-test-writer/SKILL.md) and [`client/e2e/app.spec.ts`](../../../client/e2e/app.spec.ts).
 
-**Positive references:** [`client/src/App.test.tsx`](../../../client/src/App.test.tsx), [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx), [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts).
+**Positive references:** [`client/src/App.test.tsx`](../../../client/src/App.test.tsx), [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx), [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts), [`client/e2e/app.spec.ts`](../../../client/e2e/app.spec.ts).
 
 **Note:** `guards.test.ts` / `errors.test.ts`-style unit test files use universal and TypeScript/Vitest conventions only — WCAG checks and component loading/error/empty/populated rules do not apply to pure function unit tests.
 
