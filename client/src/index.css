@@ -1,6 +1,13 @@
 @import 'tailwindcss';
 
-@custom-variant dark (&:is(.dark *), &:where(@media (prefers-color-scheme: dark)));
+@custom-variant dark {
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    @slot;
+  }
+}
 
 :root {
   --background: oklch(1 0 0);
