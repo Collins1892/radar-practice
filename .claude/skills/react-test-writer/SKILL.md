@@ -345,7 +345,9 @@ render(
 
 ## 6. Accessibility tests
 
-There is no axe/eslint-a11y plugin in this repo — verify WCAG 2.1 AA concerns with RTL queries and attribute assertions. Use Context7 when unsure about a WCAG technique.
+For dedicated accessibility audits (not test writing), use [wcag/SKILL.md](../wcag/SKILL.md).
+
+There is no axe/eslint-a11y plugin in this repo — verify WCAG 2.2 AA concerns with RTL queries and attribute assertions. Use Context7 when unsure about a WCAG technique.
 
 ### Query priority
 
