@@ -34,7 +34,7 @@ describe('ErrorState', () => {
     expect(screen.getByText(message)).toBeInTheDocument();
   });
 
-  it('calls onRetry when the Try again button is clicked', (): void => {
+  it('calls onTryAgain when the Try again button is clicked', (): void => {
     // Arrange — defaults via renderErrorState
 
     // Act
