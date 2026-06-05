@@ -11,19 +11,23 @@ import {
 
 import { cn } from '@/lib/utils';
 
+// whitespace-nowrap keeps short labels on one line (required visual design) but
+// prevents wrapping in narrow containers (WCAG 2.2 SC 1.4.10 Reflow). Consumers
+// should keep badge text to 15 characters or fewer (e.g. "In Progress", "Critical").
 const badgeVariants = cva(
-  'inline-flex items-center gap-1 rounded-md border font-medium whitespace-nowrap',
+  'inline-flex items-center gap-1 rounded-md font-medium whitespace-nowrap',
   {
     variants: {
       variant: {
-        default: 'bg-muted text-muted-foreground border-border',
+        // Border aids separation on light page backgrounds; border-border vs bg-muted
+        // is ~1.16:1 (below SC 1.4.11 3:1). Identification uses text + icon, not border.
+        default: 'bg-muted text-foreground border border-border',
         success:
-          'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-900',
+          'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
         warning:
-          'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-900',
-        danger:
-          'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-900',
-        info: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-900',
+          'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+        danger: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
+        info: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
       },
       size: {
         sm: 'text-xs px-1.5 py-0.5 [&_svg]:size-3',
@@ -57,6 +61,14 @@ type BadgeProps = Omit<React.ComponentProps<'span'>, 'children'> & {
  *
  * `children` are required: the icon is decorative (`aria-hidden`), so the text
  * content is the accessible label for the badge.
+ *
+ * Presentational only — not designed for keyboard interaction. Consumers should
+ * not pass `tabIndex` or interactive roles (e.g. `role="button"`); Badge has no
+ * `focus-visible` ring styles.
+ *
+ * If a parent updates a Badge value dynamically (e.g. after an edit), the parent
+ * should provide a live region (`role="status"` or `aria-live="polite"`) at the
+ * screen level — not inside Badge itself.
  */
 export const Badge = ({
   className,
