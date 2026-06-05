@@ -367,8 +367,8 @@ When the user is **building** rather than auditing, output a **Build guide** (se
 | Severity | WCAG audit meaning | Examples in this repo |
 |----------|-------------------|----------------------|
 | **Blocker** | Fails Level A or AA SC; blocks assistive-tech users from a core task | Missing label on form control; keyboard-inaccessible custom control; primary text contrast below 4.5:1 |
-| **Major** | Fails AA SC with workaround, or systemic pattern risk | Focus lost when table unmounts on reload; link affordance hover-only; retry button missing visible focus ring |
-| **Minor** | Partial compliance, edge state, or inconsistency | Heading level skip inside a card; redundant `tabIndex={0}` on region; inconsistent label pattern (Items vs Incidents forms); Skip link |
+| **Major** | Fails AA SC with workaround, or systemic pattern risk | Focus lost when table unmounts on reload; link affordance hover-only; retry button missing visible focus ring; Skip link missing at app-shell scope |
+| **Minor** | Partial compliance, edge state, or inconsistency | Heading level skip inside a card; redundant `tabIndex={0}` on region; inconsistent label pattern (Items vs Incidents forms); Skip link (component-scope only) |
 | **Suggestion** | AAA, future-proofing, tooling, or test coverage | route-change focus management; axe in CI; AAA focus appearance (2.4.13) |
 
 Each finding must include:
