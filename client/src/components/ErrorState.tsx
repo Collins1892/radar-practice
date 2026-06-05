@@ -1,35 +1,33 @@
 import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
+
 type ErrorStateProps = {
   title?: string;
   message?: string;
-  onRetry?: () => void;
+  onTryAgain?: () => void;
 };
 
 export const ErrorState = ({
   title = 'Something went wrong',
   message,
-  onRetry,
+  onTryAgain,
 }: ErrorStateProps): React.ReactElement => {
   return (
     <div
       role="alert"
       className="flex flex-col items-center justify-center gap-3 py-8 text-center"
     >
-      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-lg font-semibold text-foreground">{title}</p>
 
       {message ? (
         <p className="max-w-md text-sm text-muted-foreground">{message}</p>
       ) : null}
 
-      {onRetry ? (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="rounded-lg bg-[var(--app-accent)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-        >
-          Retry
-        </button>
+      {onTryAgain ? (
+        <Button type="button" onClick={onTryAgain}>
+          Try again
+        </Button>
       ) : null}
     </div>
   );

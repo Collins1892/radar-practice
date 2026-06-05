@@ -206,7 +206,7 @@ export const componentRegistry: ComponentEntry[] = [
         <ErrorState
           title="Could not load data"
           message="Please try again in a moment."
-          onRetry={() => void 0}
+          onTryAgain={() => void 0}
         />
       </div>
     ),

@@ -6,20 +6,20 @@ import { ErrorState } from './ErrorState';
 describe('ErrorState', () => {
   function renderErrorState(
     overrides: Partial<ComponentProps<typeof ErrorState>> = {},
-  ): ReturnType<typeof render> & { onRetry: ReturnType<typeof vi.fn> } {
-    const { onRetry: overrideOnRetry, ...rest } = overrides;
-    const onRetry = overrideOnRetry ?? vi.fn((): void => {});
+  ): ReturnType<typeof render> & { onTryAgain: ReturnType<typeof vi.fn> } {
+    const { onTryAgain: overrideOnTryAgain, ...rest } = overrides;
+    const onTryAgain = overrideOnTryAgain ?? vi.fn((): void => {});
 
     const view = render(
       <ErrorState
         title="Could not load items"
         message="Cannot reach the server."
-        onRetry={onRetry}
+        onTryAgain={onTryAgain}
         {...rest}
       />,
     );
 
-    return { ...view, onRetry };
+    return { ...view, onTryAgain };
   }
 
   it('displays the error message in an alert region', (): void => {
@@ -34,14 +34,14 @@ describe('ErrorState', () => {
     expect(screen.getByText(message)).toBeInTheDocument();
   });
 
-  it('calls onRetry when the retry button is clicked', (): void => {
+  it('calls onTryAgain when the Try again button is clicked', (): void => {
     // Arrange — defaults via renderErrorState
 
     // Act
-    const { onRetry } = renderErrorState();
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    const { onTryAgain } = renderErrorState();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
     // Assert
-    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(onTryAgain).toHaveBeenCalledTimes(1);
   });
 });

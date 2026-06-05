@@ -81,7 +81,9 @@ describe('IncidentsView', () => {
     expect(alert).toHaveTextContent(
       'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.',
     );
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Try again' }),
+    ).toBeInTheDocument();
   });
 
   it('shows empty state when fetchIncidents returns zero items', async (): Promise<void> => {

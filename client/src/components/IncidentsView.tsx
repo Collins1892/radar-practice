@@ -255,7 +255,7 @@ export function IncidentsView(): JSX.Element {
           <ErrorState
             title="Could not load incidents"
             message={error}
-            onRetry={() => void loadIncidents()}
+            onTryAgain={() => void loadIncidents()}
           />
         ) : tableData.length === 0 ? (
           <EmptyState

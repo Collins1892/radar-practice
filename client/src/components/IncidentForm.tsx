@@ -238,7 +238,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
       <ErrorState
         title="Could not load incident"
         message={loadError}
-        onRetry={() => void loadIncident()}
+        onTryAgain={() => void loadIncident()}
       />
     );
   }

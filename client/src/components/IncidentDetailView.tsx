@@ -105,7 +105,7 @@ export function IncidentDetailView(): JSX.Element {
       <ErrorState
         title="Could not load incident"
         message={error}
-        onRetry={() => void loadIncident()}
+        onTryAgain={() => void loadIncident()}
       />
     );
   }
@@ -115,7 +115,7 @@ export function IncidentDetailView(): JSX.Element {
       <ErrorState
         title="Could not load incident"
         message="No incident data is available."
-        onRetry={() => void loadIncident()}
+        onTryAgain={() => void loadIncident()}
       />
     );
   }
