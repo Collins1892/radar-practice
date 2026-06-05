@@ -19,6 +19,8 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
+        // Border aids separation on light page backgrounds; border-border vs bg-muted
+        // is ~1.16:1 (below SC 1.4.11 3:1). Identification uses text + icon, not border.
         default: 'bg-muted text-foreground border border-border',
         success:
           'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
