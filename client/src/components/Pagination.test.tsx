@@ -73,11 +73,11 @@ describe('Pagination', () => {
       'aria-current',
     );
     expect(
-      screen.getByRole('button', { name: 'Previous page' }),
+      screen.getByRole('button', { name: 'Previous' }),
     ).not.toHaveAttribute('aria-current');
-    expect(
-      screen.getByRole('button', { name: 'Next page' }),
-    ).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('button', { name: 'Next' })).not.toHaveAttribute(
+      'aria-current',
+    );
   });
 
   it('calls onPageChange with the clicked page number', (): void => {
@@ -114,9 +114,7 @@ describe('Pagination', () => {
     renderPagination({ currentPage: 1, totalPages: 5 });
 
     // Assert
-    expect(
-      screen.getByRole('button', { name: 'Previous page' }),
-    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
   });
 
   it('disables the next page button when currentPage equals totalPages', (): void => {
@@ -126,7 +124,7 @@ describe('Pagination', () => {
     renderPagination({ currentPage: 5, totalPages: 5 });
 
     // Assert
-    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
   });
 
   it('calls onPageChange with the next page when the next page button is clicked', (): void => {
@@ -137,7 +135,7 @@ describe('Pagination', () => {
     });
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
 
     // Assert
     expect(onPageChange).toHaveBeenCalledTimes(1);
@@ -152,7 +150,7 @@ describe('Pagination', () => {
     });
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Previous' }));
 
     // Assert
     expect(onPageChange).toHaveBeenCalledTimes(1);

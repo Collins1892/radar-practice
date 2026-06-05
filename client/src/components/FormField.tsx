@@ -12,6 +12,12 @@ type FormFieldProps = {
   htmlFor: string;
   error?: string;
   required?: boolean;
+  /**
+   * `cloneElement` only injects `aria-describedby`, `aria-invalid`, and
+   * `aria-required` onto native DOM children (e.g. `<input>`). When wrapping
+   * Radix components (`Select`, `Popover`), set those attributes directly on
+   * the trigger or button — not on the Radix root, which renders no DOM node.
+   */
   children: ReactElement;
 };
 

@@ -70,10 +70,9 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage - 1)}
           disabled={isPrevDisabled}
-          aria-label="Previous page"
           className={getArrowButtonClassName(isPrevDisabled)}
         >
-          Prev
+          Previous
         </button>
 
         {pageTokens.map((token, index) => {
@@ -114,7 +113,6 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage + 1)}
           disabled={isNextDisabled}
-          aria-label="Next page"
           className={getArrowButtonClassName(isNextDisabled)}
         >
           Next

@@ -110,7 +110,19 @@ describe('DataTable', () => {
 
     // Assert
     expect(
-      screen.getByRole('region', { name: 'Data table' }),
+      screen.getByRole('region', { name: 'Data table, scrollable' }),
+    ).toBeInTheDocument();
+  });
+
+  it('uses the caller-supplied ariaLabel on the scroll wrapper region', (): void => {
+    // Arrange — defaults via renderDataTable
+
+    // Act
+    renderDataTable({ ariaLabel: 'Incidents list' });
+
+    // Assert
+    expect(
+      screen.getByRole('region', { name: 'Incidents list' }),
     ).toBeInTheDocument();
   });
 

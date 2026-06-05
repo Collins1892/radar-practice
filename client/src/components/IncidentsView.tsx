@@ -269,6 +269,7 @@ export function IncidentsView(): JSX.Element {
         ) : (
           <>
             <DataTable<IncidentRow>
+              ariaLabel="Incidents list, scrollable"
               columns={columns}
               data={tableData}
               sortKey={sortKey}

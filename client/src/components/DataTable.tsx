@@ -16,6 +16,8 @@ type DataTableProps<T extends Record<string, unknown>> = {
   sortKey?: Extract<keyof T, string>;
   sortDirection?: SortDirection;
   emptyState?: React.ReactNode;
+  /** Accessible name for the scrollable table region. Override when multiple tables exist on one page. */
+  ariaLabel?: string;
 };
 
 const getDisplayValue = (value: unknown): React.ReactNode => {
@@ -69,6 +71,7 @@ export const DataTable = <T extends Record<string, unknown>>({
   sortKey,
   sortDirection,
   emptyState,
+  ariaLabel = 'Data table, scrollable',
 }: DataTableProps<T>): React.ReactElement => {
   const handleSort = (column: DataTableColumn<T>): void => {
     if (!column.sortable || !onSort) {
@@ -86,7 +89,7 @@ export const DataTable = <T extends Record<string, unknown>>({
       className="overflow-x-auto"
       tabIndex={0}
       role="region"
-      aria-label="Data table"
+      aria-label={ariaLabel}
     >
       <table className="min-w-full divide-y divide-border text-left text-sm">
         <thead className="bg-muted/30">
