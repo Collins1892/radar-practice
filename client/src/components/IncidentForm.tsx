@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 
 export const INCIDENT_CREATE_HEADING = 'Create incident';
 export const INCIDENT_CREATE_SUBTITLE =
-  'Add a new incident to the Incidents API';
+  'Report a new incident to the Incidents API';
 export const INCIDENT_EDIT_HEADING = 'Edit incident';
 export const INCIDENT_EDIT_SUBTITLE =
   'Update an existing incident in the Incidents API';

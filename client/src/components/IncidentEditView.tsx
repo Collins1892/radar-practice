@@ -2,11 +2,7 @@ import type { JSX } from 'react';
 import { useParams } from 'react-router-dom';
 import { parseIncidentId } from '@/api/incidents';
 import { ErrorState } from '@/components/ErrorState';
-import {
-  INCIDENT_EDIT_HEADING,
-  INCIDENT_EDIT_SUBTITLE,
-  IncidentForm,
-} from '@/components/IncidentForm';
+import { INCIDENT_EDIT_HEADING, IncidentForm } from '@/components/IncidentForm';
 import { IncidentPageChrome } from '@/components/IncidentPageChrome';
 
 export function IncidentEditView(): JSX.Element {
@@ -16,10 +12,7 @@ export function IncidentEditView(): JSX.Element {
   if (incidentId === null) {
     return (
       <>
-        <IncidentPageChrome
-          heading={INCIDENT_EDIT_HEADING}
-          subtitle={INCIDENT_EDIT_SUBTITLE}
-        />
+        <IncidentPageChrome heading={INCIDENT_EDIT_HEADING} />
         <ErrorState
           title="Invalid incident"
           message="The incident ID in the URL is not valid."
