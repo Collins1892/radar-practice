@@ -358,7 +358,7 @@ test.describe('items: add item', () => {
 | **CI / PR** | No Playwright in [ci.yml](../../../.github/workflows/ci.yml); do not expect e2e on PR builds |
 | **Chromium only** | `npx playwright install chromium`; no WebKit/Firefox |
 | **Vitest vs Playwright** | `npm test` runs Vitest only — e2e is `npx playwright test` |
-| **Items without API** | List shows error with `Retry` button — not a passing journey test |
+| **Items without API** | List shows error with `Try again` button — not a passing journey test |
 | **Incidents without API** | Error alert with IncidentsApi start message |
 | **Radix / shadcn** | Portals and selects: open trigger, then `getByRole('option')` or `locator.waitFor()` — see [react-test-writer shadcn gotchas](../react-test-writer/SKILL.md) |
 | **Week 5 CI** | Future nightly job may use `webServer` array + `projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]` — only when explicitly requested |
