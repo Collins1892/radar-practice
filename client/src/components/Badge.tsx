@@ -19,7 +19,7 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-muted text-foreground',
+        default: 'bg-muted text-foreground border border-border',
         success:
           'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
         warning:
