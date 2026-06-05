@@ -1,4 +1,6 @@
 import type { JSX } from 'react';
+
+import { Button } from '@/components/ui/button';
 import type { Item } from '../types';
 import './ItemsList.css';
 
@@ -33,13 +35,9 @@ export function ItemsList({
       <div className="items-list-state items-list-error" role="alert">
         <p className="items-list-error-title">Could not load items</p>
         <p className="items-list-error-detail">{errorMessage}</p>
-        <button
-          type="button"
-          className="rounded-lg border border-[var(--app-border)] bg-transparent px-4 py-2 font-semibold text-[var(--text)] transition-colors hover:bg-muted"
-          onClick={onRetry}
-        >
+        <Button type="button" onClick={onRetry}>
           Try again
-        </button>
+        </Button>
       </div>
     );
   }

@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button';
 type ErrorStateProps = {
   title?: string;
   message?: string;
-  onRetry?: () => void;
+  onTryAgain?: () => void;
 };
 
 export const ErrorState = ({
   title = 'Something went wrong',
   message,
-  onRetry,
+  onTryAgain,
 }: ErrorStateProps): React.ReactElement => {
   return (
     <div
@@ -24,8 +24,8 @@ export const ErrorState = ({
         <p className="max-w-md text-sm text-muted-foreground">{message}</p>
       ) : null}
 
-      {onRetry ? (
-        <Button type="button" onClick={onRetry}>
+      {onTryAgain ? (
+        <Button type="button" onClick={onTryAgain}>
           Try again
         </Button>
       ) : null}
