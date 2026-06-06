@@ -80,9 +80,14 @@ client/
   src/App.tsx, main.tsx
   src/App.test.tsx              — App integration tests (mock api.ts)
   src/index.css                 — Tailwind v4 import + theme tokens (@theme, OKLCH)
-  src/components/               — React components
+  src/components/               — hand-authored app components (Badge, LoadingState, EmptyState,
+                                ErrorState, FormField, SelectField, DatePickerField, DataTable,
+                                Pagination, ComponentsView, IncidentsView, IncidentForm,
+                                IncidentCreateView, IncidentDetailView, IncidentEditView,
+                                IncidentPageChrome)
   src/components/ui/            — shadcn/ui generated components (e.g. button.tsx); ESLint-ignored
   src/components/ItemsList.test.tsx
+  src/pageTitle.ts              — per-route document.title helper (SITE_TITLE, formatPageTitle)
   src/lib/utils.ts              — cn() class-merge helper (clsx + tailwind-merge); ESLint-ignored
   src/test/setup.ts             — Vitest setup
   src/api.ts, types.ts
@@ -91,8 +96,15 @@ client/
   src/guards.ts                   — runtime type guards
   src/guards.test.ts              — Vitest unit tests for runtime type guards
   playwright.config.ts            — Playwright config (baseURL, Vite webServer only)
+  e2e/                            — Playwright e2e tests
   e2e/app.spec.ts                 — smoke e2e (reference)
   e2e/pages/                      — page objects (Week 5 journeys)
+
+private/ (agent-readable, not committed)
+  seven-week-plan.md            — master plan, decisions log, daily structure
+  phase-1-foundation.md         — Weeks 1–2 complete
+  phase-2-build.md              — Weeks 3–5, Week 3 complete
+  phase-3-articulate.md         — Weeks 6–7
 ```
 
 Imports use the `@/` path alias (configured in `vite.config.ts` and `tsconfig.app.json`) for `src/`.

@@ -33,19 +33,24 @@ Mirrors microservices direction without over-engineering.
 - `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
-- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView)
+- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome)
 - `client/src/api/incidents.ts` — typed fetch layer for IncidentsApi (fetchIncidents, createIncident, getIncident, updateIncident, shared helpers incidentUserMessage, parseIncidentId)
 - `client/src/componentRegistry.tsx` — registry of all components for the components view (has file-level eslint-disable — see decisions log)
 - `client/src/components/formFieldUtils.ts` — shared form utility (formFieldErrorId)
+- `client/src/pageTitle.ts` — per-route document.title helper (SITE_TITLE, formatPageTitle)
 - `client/src/lib/utils.ts` — shadcn `cn()` utility (vendor, ESLint-ignored)
 - `client/components.json` — shadcn configuration
 - `client/src/**/*.test.{ts,tsx}` — Vitest tests
 - `client/src/test/setup.ts` — Vitest setup
+- `client/e2e/` — Playwright e2e tests
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
 - `.cursor/rules/` — Cursor agent conventions (mirrors CLAUDE.md)
 - `learning-notes.md` — daily observations from the build
-- `private/seven-week-plan.md` — seven-week programme plan (private file: agent-readable, not committed)
+- `private/seven-week-plan.md` — master plan, decisions log, daily structure (private file: agent-readable, not committed)
+- `private/phase-1-foundation.md` — Weeks 1–2 complete (private file: agent-readable, not committed)
+- `private/phase-2-build.md` — Weeks 3–5, Week 3 complete (private file: agent-readable, not committed)
+- `private/phase-3-articulate.md` — Weeks 6–7 (private file: agent-readable, not committed)
 - `private/original-plan.md` — original plan shared with the tech lead (private file: agent-readable, not committed)
 
 ## Tech stack
@@ -86,6 +91,7 @@ Mirrors microservices direction without over-engineering.
 **CSS approach:**
 All components use Tailwind CSS and shadcn/ui from Week 3 onwards. Existing items catalogue components (`App.tsx`, `ItemsList`) are being migrated to Tailwind in Week 3. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
 The global `button {}` rule has been removed from `App.css` — all buttons now carry explicit Tailwind classes.
+Dark mode: `@custom-variant dark` uses the Tailwind v4 block form responding to both `.dark` class and `prefers-color-scheme: dark`. All three sync points (`.dark` class, media query, `@custom-variant`) must be kept in sync when tokens change.
 
 **Tooling:**
 - Node.js 24 (LTS)
@@ -148,8 +154,9 @@ changed library API.
 
 **Frontend — Vitest:**
 - Vitest is the React test runner; run from `client/` with `npm test` (`vitest run`)
-- Test setup file: `client/src/test/setup.ts` — registers jest-dom matchers and `afterEach(cleanup)` from React Testing Library
+- Test setup file: `client/src/test/setup.ts` — registers jest-dom matchers, `afterEach(cleanup)` from React Testing Library, and global `Element.prototype.scrollIntoView = vi.fn()`
 - Vitest config lives in `client/vite.config.ts` — `pool: 'threads'` is required on Windows (the default forks pool times out)
+- Vitest only runs files under `src/` — `e2e/` is excluded via the `include` config
 - Test behaviour not implementation details
 
 **Frontend — component tests** (e.g. `client/src/components/ItemsList.test.tsx`):
@@ -172,6 +179,7 @@ changed library API.
 - Installed with Chromium only. Smoke test: app loads, title correct (`client/e2e/app.spec.ts`)
 - Key user journeys deferred to Week 5
 - Nightly cron schedule deferred to Week 5 — e2e tests do not run on PR builds
+- Run from `client/` with `npx playwright test`; start ItemsApi and IncidentsApi first for journey tests
 
 **CI:**
 - .NET tests and Vitest run on every push and PR to main

@@ -19,6 +19,12 @@ No patient data, no production dependencies.
 - `IncidentsApi/Migrations/` — EF Core migrations
 - `IncidentsApi.Tests/` — xUnit integration tests
 - `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
+- `client/src/pageTitle.ts` — per-route document.title helper (SITE_TITLE, formatPageTitle)
+- `client/e2e/` — Playwright e2e tests
+- `private/seven-week-plan.md` — master plan, decisions log, daily structure (private file: agent-readable, not committed)
+- `private/phase-1-foundation.md` — Weeks 1–2 complete (private file: agent-readable, not committed)
+- `private/phase-2-build.md` — Weeks 3–5, Week 3 complete (private file: agent-readable, not committed)
+- `private/phase-3-articulate.md` — Weeks 6–7 (private file: agent-readable, not committed)
 
 ## Tech stack — Backend
 
@@ -43,13 +49,14 @@ No patient data, no production dependencies.
 - `date-fns` 4.4.0 — date formatting utilities.
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar.
 - ESLint 10.3.0 (typescript-eslint); Prettier 3.8.3 (semicolons, single quotes, trailing commas).
-- Vitest 4.1.7 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1; Playwright (Week 3).
+- Vitest 4.1.7 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1; Playwright 1.60.0 (Chromium only, e2e/; smoke test landed, key journeys Week 5).
 - CSS: OKLCH theme tokens in `src/index.css` under `@theme inline`; compose classes with `cn()`; no new legacy CSS.
+- Dark mode: `@custom-variant dark` uses the Tailwind v4 block form responding to both `.dark` class and `prefers-color-scheme: dark`. All three sync points (`.dark` class, media query, `@custom-variant`) must be kept in sync when tokens change.
 
 ## Component file locations
 
 - `client/src/components/ui/` — shadcn-generated vendor components only (ESLint-ignored). Do not place hand-authored components here.
-- `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView).
+- `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome).
 - `client/src/componentRegistry.tsx` — registry of all components for the components view. Has a file-level `eslint-disable react-refresh/only-export-components` — documented exception pending Week 7 architectural fix.
 - `client/src/components/formFieldUtils.ts` — shared utility (`formFieldErrorId`). Pure module, no JSX.
 
@@ -82,6 +89,9 @@ No patient data, no production dependencies.
 - Generate one test per prompt; integration tests preferred for endpoints.
 - Test behaviour, not implementation details; do not edit or remove existing tests without instruction.
 - Gotchas: Vitest requires `pool: 'threads'` on Windows; `TestWebApplicationFactory` gives each test class its own in-memory SQLite database.
+- Vitest setup: `client/src/test/setup.ts` includes global `Element.prototype.scrollIntoView = vi.fn()`
+- Vitest scoping: Vitest only runs files under `src/` — `e2e/` excluded via `include` config
+- Playwright: run e2e from `client/` with `npx playwright test`; start ItemsApi and IncidentsApi first for journey tests (smoke test needs Vite only)
 
 ## Workflow
 
@@ -91,7 +101,7 @@ Do:
 - Make small, focused changes; run tests after every change and confirm they pass.
 - Match existing patterns; use the repository pattern for all new data access.
 - Add tests for any new endpoint or business logic; verify the build before declaring done.
-- Ask for clarification when ambiguous; check `.claude/skills/` for relevant skills.
+- Ask for clarification when ambiguous; check `.claude/skills/` for relevant skills — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`.
 - All changes via feature branch and PR.
 
 Don't:
