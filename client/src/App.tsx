@@ -1,7 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent, JSX } from 'react';
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
+import {
+  matchPath,
+  Navigate,
+  NavLink,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom';
 import { createItem, fetchItems } from './api';
+import {
+  INCIDENT_CREATE_HEADING,
+  INCIDENT_DETAIL_HEADING,
+  INCIDENT_EDIT_HEADING,
+} from './components/IncidentForm';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
 import { ComponentsView } from './components/ComponentsView';
@@ -12,8 +24,44 @@ import { IncidentsView } from './components/IncidentsView';
 import { componentRegistry } from './componentRegistry';
 import { toUserMessage } from './errors';
 import type { Item } from './types';
+import { formatPageTitle, SITE_TITLE } from '@/pageTitle';
 import { cn } from '@/lib/utils';
 import './App.css';
+
+const skipLinkClassName = cn(
+  'absolute left-[-9999px] top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
+  'focus:left-4 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+);
+
+function resolvePageTitle(pathname: string): string {
+  if (matchPath({ path: '/incidents/create', end: true }, pathname)) {
+    return formatPageTitle(INCIDENT_CREATE_HEADING);
+  }
+  if (matchPath({ path: '/incidents/:id/edit', end: true }, pathname)) {
+    return formatPageTitle(INCIDENT_EDIT_HEADING);
+  }
+  if (matchPath({ path: '/incidents/:id', end: true }, pathname)) {
+    return formatPageTitle(INCIDENT_DETAIL_HEADING);
+  }
+  if (matchPath({ path: '/incidents', end: true }, pathname)) {
+    return formatPageTitle('Incidents');
+  }
+  if (matchPath({ path: '/components', end: true }, pathname)) {
+    return formatPageTitle('Components');
+  }
+  if (matchPath({ path: '/', end: true }, pathname)) {
+    return formatPageTitle('Items');
+  }
+  return SITE_TITLE;
+}
+
+function usePageTitle(): void {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    document.title = resolvePageTitle(pathname);
+  }, [pathname]);
+}
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat(undefined, {
@@ -170,8 +218,13 @@ function ItemsView(): JSX.Element {
 }
 
 function App(): JSX.Element {
+  usePageTitle();
+
   return (
-    <main className="app">
+    <main className="app relative">
+      <a href="#main-content" className={skipLinkClassName}>
+        Skip to main content
+      </a>
       <header>
         <nav
           className="pb-4 flex gap-1 border-b border-border"
@@ -189,18 +242,20 @@ function App(): JSX.Element {
         </nav>
       </header>
 
-      <Routes>
-        <Route path="/" element={<ItemsView />} />
-        <Route path="/incidents/create" element={<IncidentCreateView />} />
-        <Route path="/incidents/:id/edit" element={<IncidentEditView />} />
-        <Route path="/incidents/:id" element={<IncidentDetailView />} />
-        <Route path="/incidents" element={<IncidentsView />} />
-        <Route
-          path="/components"
-          element={<ComponentsView components={componentRegistry} />}
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <div id="main-content" tabIndex={-1}>
+        <Routes>
+          <Route path="/" element={<ItemsView />} />
+          <Route path="/incidents/create" element={<IncidentCreateView />} />
+          <Route path="/incidents/:id/edit" element={<IncidentEditView />} />
+          <Route path="/incidents/:id" element={<IncidentDetailView />} />
+          <Route path="/incidents" element={<IncidentsView />} />
+          <Route
+            path="/components"
+            element={<ComponentsView components={componentRegistry} />}
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
     </main>
   );
 }
