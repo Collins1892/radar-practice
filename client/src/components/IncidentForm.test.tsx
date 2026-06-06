@@ -270,6 +270,17 @@ describe('IncidentForm', () => {
     expect(navigateMock).not.toHaveBeenCalled();
   });
 
+  it('moves focus to the first invalid field when submit validation fails', (): void => {
+    // Arrange
+    renderIncidentFormCreate();
+
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+
+    // Assert
+    expect(screen.getByLabelText(/^Title/)).toHaveFocus();
+  });
+
   it('calls createIncident on valid submit', async (): Promise<void> => {
     // Arrange
     const createdIncident: Incident = {

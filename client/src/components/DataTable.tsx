@@ -9,6 +9,11 @@ type DataTableColumn<T extends Record<string, unknown>> = {
   render?: (value: unknown, row: T) => React.ReactNode;
 };
 
+/**
+ * At least one column should be sortable or render an interactive cell (e.g. a
+ * link or button) so the scroll region remains keyboard-accessible. Without a
+ * focusable descendant, an overflowing table would be unreachable by keyboard.
+ */
 type DataTableProps<T extends Record<string, unknown>> = {
   columns: Array<DataTableColumn<T>>;
   data: T[];
@@ -85,12 +90,7 @@ export const DataTable = <T extends Record<string, unknown>>({
   };
 
   return (
-    <div
-      className="overflow-x-auto"
-      tabIndex={0}
-      role="region"
-      aria-label={ariaLabel}
-    >
+    <div className="overflow-x-auto" role="region" aria-label={ariaLabel}>
       <table className="min-w-full divide-y divide-border text-left text-sm">
         <thead className="bg-muted/30">
           <tr>

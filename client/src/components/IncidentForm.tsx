@@ -1,5 +1,11 @@
 import { format, isValid, parseISO } from 'date-fns';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { FormEvent, JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -135,6 +141,30 @@ function hasFieldErrors(errors: FieldErrors): boolean {
   return Object.keys(errors).length > 0;
 }
 
+// Must stay aligned with validateIncidentForm field sequence — a field added to
+// validation but omitted here would show errors without moving focus.
+const FIELD_ORDER: readonly FieldKey[] = [
+  'title',
+  'description',
+  'location',
+  'severity',
+  'status',
+  'reportedDate',
+];
+
+const FIELD_ELEMENT_IDS: Record<FieldKey, string> = {
+  title: 'incident-title',
+  description: 'incident-description',
+  location: 'incident-location',
+  severity: 'incident-severity',
+  status: 'incident-status',
+  reportedDate: 'incident-reported-date',
+};
+
+function getFirstInvalidFieldKey(errors: FieldErrors): FieldKey | undefined {
+  return FIELD_ORDER.find((key) => errors[key] !== undefined);
+}
+
 const inputClassName =
   'w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground';
 
@@ -158,6 +188,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
   const [submitting, setSubmitting] = useState(false);
   const [loadLoading, setLoadLoading] = useState(isEdit);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const shouldFocusFirstErrorRef = useRef(false);
 
   const loadIncident = useCallback(async (): Promise<void> => {
     if (!isEdit || incidentId === undefined) return;
@@ -186,6 +217,20 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
     }
   }, [isEdit, loadIncident]);
 
+  useLayoutEffect(() => {
+    if (!shouldFocusFirstErrorRef.current) return;
+    shouldFocusFirstErrorRef.current = false;
+
+    const firstKey = getFirstInvalidFieldKey(fieldErrors);
+    if (firstKey === undefined) return;
+
+    const element = document.getElementById(FIELD_ELEMENT_IDS[firstKey]);
+    if (!(element instanceof HTMLElement)) return;
+
+    element.focus();
+    element.scrollIntoView({ block: 'nearest' });
+  }, [fieldErrors]);
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
   ): Promise<void> {
@@ -201,6 +246,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
     });
 
     if (hasFieldErrors(errors)) {
+      shouldFocusFirstErrorRef.current = true;
       setFieldErrors(errors);
       setSubmitError(null);
       return;
@@ -277,12 +323,12 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
         >
           <FormField
             label="Title"
-            htmlFor="incident-title"
+            htmlFor={FIELD_ELEMENT_IDS.title}
             required
             error={fieldErrors.title}
           >
             <input
-              id="incident-title"
+              id={FIELD_ELEMENT_IDS.title}
               name="title"
               type="text"
               value={title}
@@ -295,12 +341,12 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
 
           <FormField
             label="Description"
-            htmlFor="incident-description"
+            htmlFor={FIELD_ELEMENT_IDS.description}
             required
             error={fieldErrors.description}
           >
             <textarea
-              id="incident-description"
+              id={FIELD_ELEMENT_IDS.description}
               name="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -316,12 +362,12 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
 
           <FormField
             label="Location"
-            htmlFor="incident-location"
+            htmlFor={FIELD_ELEMENT_IDS.location}
             required
             error={fieldErrors.location}
           >
             <input
-              id="incident-location"
+              id={FIELD_ELEMENT_IDS.location}
               name="location"
               type="text"
               value={location}
@@ -334,7 +380,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
 
           <SelectField
             label="Severity"
-            id="incident-severity"
+            id={FIELD_ELEMENT_IDS.severity}
             value={severity}
             onValueChange={setSeverity}
             options={SEVERITY_OPTIONS}
@@ -345,7 +391,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
 
           <SelectField
             label="Status"
-            id="incident-status"
+            id={FIELD_ELEMENT_IDS.status}
             value={status}
             onValueChange={setStatus}
             options={STATUS_OPTIONS}
@@ -356,7 +402,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
 
           <DatePickerField
             label="Reported date"
-            id="incident-reported-date"
+            id={FIELD_ELEMENT_IDS.reportedDate}
             value={reportedDate}
             onChange={setReportedDate}
             placeholder="Pick reported date"
