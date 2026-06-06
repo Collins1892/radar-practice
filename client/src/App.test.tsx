@@ -21,6 +21,7 @@ const renderApp = (initialEntries: string[] = ['/']): void => {
 
 describe('App', () => {
   beforeEach((): void => {
+    document.title = 'Radar Practice';
     vi.mocked(fetchItems).mockReset();
     vi.mocked(createItem).mockReset();
   });

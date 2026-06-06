@@ -92,10 +92,10 @@ export function IncidentDetailView(): JSX.Element {
 
   // Refines the generic "Incident detail | Radar Practice" title from usePageTitle in App.tsx once incident data loads.
   useEffect(() => {
-    if (incident !== null) {
+    if (incident !== null && incident.id === incidentId) {
       document.title = formatPageTitle(incident.title);
     }
-  }, [incident]);
+  }, [incident, incidentId]);
 
   if (incidentId === null) {
     return (
