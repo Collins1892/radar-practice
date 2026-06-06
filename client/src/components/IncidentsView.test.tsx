@@ -182,6 +182,28 @@ describe('IncidentsView', () => {
     expect(alert).not.toHaveTextContent('Could not load incidents');
   });
 
+  it('shows inline error alert instead of EmptyState when refetch rejects after an empty page result', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(emptyPagedResult)
+      .mockRejectedValueOnce(
+        new ApiClientError('Network request failed', 'network'),
+      );
+
+    // Act
+    renderIncidentsView();
+    await screen.findByText('No incidents found');
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+
+    // Assert
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(
+      'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.',
+    );
+    expect(screen.queryByText('No incidents found')).not.toBeInTheDocument();
+  });
+
   it('clears inline error alert and keeps DataTable when refetch succeeds after a refetch error', async (): Promise<void> => {
     // Arrange
     vi.mocked(fetchIncidents)
