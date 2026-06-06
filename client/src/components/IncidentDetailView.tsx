@@ -16,6 +16,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { IncidentPageChrome } from '@/components/IncidentPageChrome';
 import { LoadingState } from '@/components/LoadingState';
 import { Button } from '@/components/ui/button';
+import { formatPageTitle } from '@/pageTitle';
 
 function severityBadgeVariant(
   severity: IncidentSeverity,
@@ -88,6 +89,13 @@ export function IncidentDetailView(): JSX.Element {
       void loadIncident();
     }
   }, [incidentId, loadIncident]);
+
+  // Refines the generic "Incident detail | Radar Practice" title from usePageTitle in App.tsx once incident data loads.
+  useEffect(() => {
+    if (incident !== null && incident.id === incidentId) {
+      document.title = formatPageTitle(incident.title);
+    }
+  }, [incident, incidentId]);
 
   if (incidentId === null) {
     return (

@@ -11,9 +11,9 @@ vi.mock('./api', () => ({
   createItem: vi.fn(),
 }));
 
-const renderApp = (): void => {
+const renderApp = (initialEntries: string[] = ['/']): void => {
   render(
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter initialEntries={initialEntries}>
       <App />
     </MemoryRouter>,
   );
@@ -21,8 +21,44 @@ const renderApp = (): void => {
 
 describe('App', () => {
   beforeEach((): void => {
+    document.title = 'Radar Practice';
     vi.mocked(fetchItems).mockReset();
     vi.mocked(createItem).mockReset();
+  });
+
+  it('renders skip link targeting main content', (): void => {
+    // Arrange
+    vi.mocked(fetchItems).mockResolvedValue([]);
+
+    // Act
+    renderApp();
+
+    // Assert
+    const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
+    expect(skipLink).toHaveAttribute('href', '#main-content');
+    expect(document.getElementById('main-content')).toBeInTheDocument();
+  });
+
+  it('sets document title to Items | Radar Practice at /', (): void => {
+    // Arrange
+    vi.mocked(fetchItems).mockResolvedValue([]);
+
+    // Act
+    renderApp();
+
+    // Assert
+    expect(document.title).toBe('Items | Radar Practice');
+  });
+
+  it('sets document title to Create incident | Radar Practice at /incidents/create', (): void => {
+    // Arrange
+    // (none)
+
+    // Act
+    renderApp(['/incidents/create']);
+
+    // Assert
+    expect(document.title).toBe('Create incident | Radar Practice');
   });
 
   it('loads and displays items after mount', async (): Promise<void> => {
