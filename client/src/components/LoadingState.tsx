@@ -1,17 +1,25 @@
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 type LoadingStateProps = {
   message?: string;
+  variant?: 'block' | 'overlay';
 };
 
 export const LoadingState = ({
   message = 'Loading...',
+  variant = 'block',
 }: LoadingStateProps): React.ReactElement => {
   return (
     <div
       role="status"
       aria-live="polite"
-      className="flex flex-col items-center justify-center gap-3 py-8 text-muted-foreground"
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 text-muted-foreground',
+        variant === 'overlay'
+          ? 'pointer-events-none absolute inset-0 z-10 bg-background/60'
+          : 'py-8',
+      )}
     >
       <div
         aria-hidden="true"

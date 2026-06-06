@@ -159,10 +159,13 @@ export const componentRegistry: ComponentEntry[] = [
   {
     name: 'LoadingState',
     description:
-      'Centred loading spinner with accessible status role and optional message for background operations.',
+      'Accessible loading spinner with block (centred) or overlay (absolute backdrop) variants; role="status" and aria-live="polite".',
     preview: (
-      <div className="w-full py-6">
+      <div className="relative w-full py-6">
         <LoadingState message="Fetching latest items..." />
+        <div className="relative mt-6 min-h-24 rounded-lg border border-dashed border-border">
+          <LoadingState variant="overlay" message="Updating incidents…" />
+        </div>
       </div>
     ),
   },

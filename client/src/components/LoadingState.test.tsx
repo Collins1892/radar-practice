@@ -30,4 +30,15 @@ describe('LoadingState', () => {
     // Assert
     expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
   });
+
+  it('exposes overlay variant as a polite status region', (): void => {
+    // Arrange — defaults via renderLoadingState
+
+    // Act
+    renderLoadingState({ variant: 'overlay', message: 'Updating incidents…' });
+
+    // Assert
+    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByText('Updating incidents…')).toBeInTheDocument();
+  });
 });
