@@ -141,6 +141,8 @@ function hasFieldErrors(errors: FieldErrors): boolean {
   return Object.keys(errors).length > 0;
 }
 
+// Must stay aligned with validateIncidentForm field sequence — a field added to
+// validation but omitted here would show errors without moving focus.
 const FIELD_ORDER: readonly FieldKey[] = [
   'title',
   'description',
