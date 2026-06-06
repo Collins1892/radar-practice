@@ -90,7 +90,7 @@ These are practical lessons from building this project with Claude Code (termina
 
 **Cursor vs Claude Code**
 - **Cursor** excels when full workspace context matters — wiring the frontend to the backend, adding typed error handling, and verifying changes in-editor.
-- **Claude Code** suits terminal-driven workflows — generating projects, running tests, and iterating on backend logic with latest explicit accept/reject control.
+- **Claude Code** suits terminal-driven workflows — generating projects, running tests, and iterating on backend logic with explicit accept/reject control.
 - Both benefit from the same discipline: small prompts, verify output, read the diff before committing.
 
 **Context7 MCP**
@@ -167,7 +167,7 @@ cd client
 npx playwright test
 ```
 
-Requires both APIs and the Vite dev server running. Currently a smoke test only — key user journeys land in Week 5.
+Currently a smoke test only (app loads, title correct) — requires only the Vite dev server. Key user journeys (Week 5) will require ItemsApi (5133) and IncidentsApi (5134).
 
 ### Run the frontend
 

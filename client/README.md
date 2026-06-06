@@ -34,7 +34,7 @@ Runs the Vitest suite — component, integration, and unit tests (125 tests acro
 npx playwright test
 ```
 
-Runs Playwright e2e tests from `client/e2e/`. Requires both APIs and the Vite dev server running. Key user journeys deferred to Week 5 — currently a smoke test only.
+Runs Playwright e2e tests from `client/e2e/`. Currently a smoke test only (app loads, title correct) — requires only the Vite dev server. Key user journeys (Week 5) will require ItemsApi (5133) and IncidentsApi (5134).
 
 ## Documentation
 
