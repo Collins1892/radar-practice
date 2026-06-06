@@ -126,6 +126,19 @@ describe('DataTable', () => {
     ).toBeInTheDocument();
   });
 
+  it('does not add a tab stop on the scroll wrapper region', (): void => {
+    // Arrange — defaults via renderDataTable
+
+    // Act
+    renderDataTable();
+
+    // Assert
+    const region = screen.getByRole('region', {
+      name: 'Data table, scrollable',
+    });
+    expect(region).not.toHaveAttribute('tabindex', '0');
+  });
+
   it('shows default empty message when data is empty', (): void => {
     // Arrange — defaults via renderDataTable
 
