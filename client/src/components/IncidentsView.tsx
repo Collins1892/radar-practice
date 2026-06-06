@@ -211,6 +211,10 @@ export function IncidentsView(): JSX.Element {
   const tableData: IncidentRow[] = result?.items ?? [];
   const isInitialLoad = loading && result === null && error === null;
   const isRefetching = loading && result !== null;
+  const showEmpty =
+    !isRefetching &&
+    tableData.length === 0 &&
+    (error === null || result === null);
 
   return (
     <>
@@ -258,9 +262,7 @@ export function IncidentsView(): JSX.Element {
             message={error}
             onTryAgain={() => void loadIncidents()}
           />
-        ) : !isRefetching &&
-          tableData.length === 0 &&
-          (error === null || result === null) ? (
+        ) : showEmpty ? (
           <EmptyState
             title="No incidents found"
             message={
