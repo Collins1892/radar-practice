@@ -91,6 +91,7 @@ No patient data, no production dependencies.
 - Gotchas: Vitest requires `pool: 'threads'` on Windows; `TestWebApplicationFactory` gives each test class its own in-memory SQLite database.
 - Vitest setup: `client/src/test/setup.ts` includes global `Element.prototype.scrollIntoView = vi.fn()`
 - Vitest scoping: Vitest only runs files under `src/` — `e2e/` excluded via `include` config
+- Playwright: run e2e from `client/` with `npx playwright test`; start ItemsApi and IncidentsApi first for journey tests (smoke test needs Vite only)
 
 ## Workflow
 
