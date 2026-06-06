@@ -137,6 +137,81 @@ describe('IncidentsView', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('keeps DataTable mounted and announces refetch status when severity filter changes', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockImplementation(() => new Promise(() => {}));
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Incidents list, scrollable' });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+
+    // Assert
+    expect(
+      screen.getByRole('region', { name: 'Incidents list, scrollable' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Updating incidents…');
+    expect(screen.queryByText('Loading incidents…')).not.toBeInTheDocument();
+  });
+
+  it('keeps DataTable mounted and shows inline error alert when refetch rejects', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockRejectedValueOnce(
+        new ApiClientError('Network request failed', 'network'),
+      );
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Incidents list, scrollable' });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+
+    // Assert
+    expect(
+      screen.getByRole('region', { name: 'Incidents list, scrollable' }),
+    ).toBeInTheDocument();
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(
+      'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.',
+    );
+    expect(alert).not.toHaveTextContent('Could not load incidents');
+  });
+
+  it('clears inline error alert and keeps DataTable when refetch succeeds after a refetch error', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockRejectedValueOnce(
+        new ApiClientError('Network request failed', 'network'),
+      )
+      .mockResolvedValueOnce(populatedPagedResult);
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Incidents list, scrollable' });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+    await screen.findByRole('alert');
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(
+      await screen.findByRole('option', { name: 'All severities' }),
+    );
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole('region', { name: 'Incidents list, scrollable' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Spill in corridor B')).toBeInTheDocument();
+  });
+
   it('calls fetchIncidents with severity High and page 1 when severity filter is selected', async (): Promise<void> => {
     // Arrange
     vi.mocked(fetchIncidents)
