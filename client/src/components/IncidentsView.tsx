@@ -118,7 +118,6 @@ export function IncidentsView(): JSX.Element {
       setResult(data);
     } catch (err) {
       setError(incidentUserMessage(err, 'loading'));
-      setResult(null);
     } finally {
       setLoading(false);
     }
@@ -210,6 +209,12 @@ export function IncidentsView(): JSX.Element {
   );
 
   const tableData: IncidentRow[] = result?.items ?? [];
+  const isInitialLoad = loading && result === null && error === null;
+  const isRefetching = loading && result !== null;
+  const showEmpty =
+    !isRefetching &&
+    tableData.length === 0 &&
+    (error === null || result === null);
 
   return (
     <>
@@ -249,15 +254,15 @@ export function IncidentsView(): JSX.Element {
           </div>
         </div>
 
-        {loading ? (
+        {isInitialLoad ? (
           <LoadingState message="Loading incidents…" />
-        ) : error ? (
+        ) : error && result === null ? (
           <ErrorState
             title="Could not load incidents"
             message={error}
             onTryAgain={() => void loadIncidents()}
           />
-        ) : tableData.length === 0 ? (
+        ) : showEmpty ? (
           <EmptyState
             title="No incidents found"
             message={
@@ -267,7 +272,15 @@ export function IncidentsView(): JSX.Element {
             }
           />
         ) : (
-          <>
+          <div className="relative" aria-busy={isRefetching || undefined}>
+            {error !== null && result !== null ? (
+              <p className="mb-4 text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            ) : null}
+            {isRefetching ? (
+              <LoadingState variant="overlay" message="Updating incidents…" />
+            ) : null}
             <DataTable<IncidentRow>
               ariaLabel="Incidents list, scrollable"
               columns={columns}
@@ -285,7 +298,7 @@ export function IncidentsView(): JSX.Element {
                 />
               </div>
             ) : null}
-          </>
+          </div>
         )}
       </section>
     </>
