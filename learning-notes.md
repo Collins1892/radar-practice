@@ -1,3 +1,106 @@
+## Day 16 — 6 June 2026
+
+### Summary
+
+Week 3 Day 6 (Saturday). Four WCAG PRs merged closing the incident module accessibility work: page chrome on interim states (PR #58), refetch focus loss (PR #59), skip link and page titles (PR #60), validation focus and DataTable tab stop (PR #61). 125 tests. Browser session confirmed all fixes working. CTO email received — role publishing early next week, fast-track interview focused on AI-first development demo.
+
+### WCAG work — four layers confirmed
+
+Days 15–16 confirmed that WCAG accessibility operates in four distinct layers, each building on the previous:
+
+1. **Component layer** (PRs #55–57) — Badge, state components, form/data components. Fast, targeted fixes. The building blocks.
+2. **Screen layer** (PRs #58–59) — How components compose together on a screen. State machine complexity surfaces here. Focus loss on refetch required a meaningful architectural change (isInitialLoad / isRefetching split, overlay LoadingState).
+3. **App shell layer** (PR #60) — Skip link, per-route document.title. Affects every route. Dynamic detail title required two-owner coordination between App.tsx and IncidentDetailView.
+4. **Interaction layer** (PR #61) — Validation focus, DataTable tab stop. Small targeted changes with disproportionate impact on keyboard users.
+
+Each layer is meaningfully different in scope and approach. Component fixes are additive; screen fixes require state machine reasoning; shell fixes affect every route; interaction fixes require focus management patterns.
+
+### WCAG underestimation
+
+The original plan allocated ~3h for the WCAG final pass. The actual work ran across two full days (Days 15–16). Component layer is fast — screen and shell layer is substantially more complex. Budget accordingly in future projects. Noted in the decisions log.
+
+### wcag skill timing
+
+Building the wcag skill before screen-level feature work would have been more efficient. The skill is a build-guide, not just a checker — if it had existed before the incident module was built, components and screens would have been built correctly from the start rather than retrofitted. Rule: build-guide skills before features; test-writer skills after real code exists.
+
+### Tailwind v4 dark mode — @custom-variant block form
+
+The dark variant must respond to both the `.dark` class and OS `prefers-color-scheme`. Tailwind v4 requires the block form with `@slot` — the single-line selector form silently no-ops for media queries. Two failed attempts (inline selector, then `&:where(@media ...)`) before the correct block form was found via Context7. The failure was silent in both cases — no error, just no effect.
+
+### IncidentsView refetch — overlay pattern
+
+The table-unmount-on-refetch problem required splitting a single `loading` flag into three derived booleans: `isInitialLoad`, `isRefetching`, and `showEmpty`. The overlay `LoadingState` variant keeps the table mounted while signalling activity via `role="status"`, `aria-live="polite"`, and `aria-busy` on the wrapper. `pointer-events-none` preserves keyboard focus while blocking mouse interaction on stale data. Refetch failure now keeps stale table visible with an inline `role="alert"` rather than clearing `result` — a meaningful UX improvement discovered during the review process.
+
+### Page chrome pattern
+
+`IncidentPageChrome` — shared h1 + back link component — emerged from the WCAG audit finding that detail and edit routes had no heading or navigation during loading/error/invalid states. Create mode had the pattern already; the fix was making it consistent. The component is small (~30 lines) but solves a real screen-level accessibility gap. Shared constants (`INCIDENT_CREATE_HEADING`, `INCIDENT_EDIT_HEADING`, `INCIDENT_DETAIL_HEADING`) ensure JSX ids and focus targets stay in sync.
+
+### What I would not trust the agent to do unsupervised
+
+- Get the Tailwind v4 `@custom-variant` block form syntax correct without Context7 — two attempts failed silently before the correct form was found
+- Identify that refetch focus loss required a state machine split rather than a simple CSS fix — the architectural approach needed human direction
+- Know that `pointer-events-none` was the right choice for the overlay (preserves keyboard focus, blocks mouse) — the distinction between keyboard and pointer event handling needed explicit framing
+
+### Ideas and observations
+
+- 125 tests, 5 skills, 61 PRs, WCAG 2.2 AA across four layers — all in 16 working days. The compound effect is now very visible.
+- The four-layer WCAG model is a strong Week 6 talking point — it demonstrates systematic thinking, not just ticking boxes.
+- Future idea (Week 8+): use the wcag skill as the foundation for an automated accessibility audit pipeline — scan an existing project, generate a prioritised findings report, drive fixes through targeted agent prompts.
+
+---
+
+## Day 15 — 5 June 2026
+
+### Summary
+
+Week 3 Day 5 (Friday). Six PRs merged: playwright-test-writer skill (PR #53), WCAG 2.2 AA skill (PR #54), WCAG pass Badge (PR #55), WCAG pass state components (PR #56), WCAG pass form and data components (PR #57), WCAG incident page chrome (PR #58). Playwright setup and smoke test also landed the previous evening. Browser session deferred to Day 16. Long day — started mid-morning and worked into the evening.
+
+### Playwright setup
+
+Installed `@playwright/test` 1.60.0 with Chromium only. `playwright.config.ts` with Vite dev server (`webServer`), `baseURL`, `reuseExistingServer: !process.env.CI`. Smoke test: app loads, title correct. Key decision: e2e tests do not run on PR builds — slow, flaky tests in the PR build are an anti-pattern that frustrates developers. Nightly cron deferred to Week 5 when key user journeys land. Vitest scoped to `src/` only to prevent Playwright test files being picked up by the wrong runner.
+
+### playwright-test-writer skill
+
+Built into `.claude/skills/playwright-test-writer/SKILL.md`. Covers: config, `baseURL`, Vite-only `webServer`, API wiring (Items via proxy, Incidents via direct CORS), page object pattern for Week 5, journey catalog. Key gotcha documented: Items API uses Vite proxy, IncidentsApi uses direct CORS fetch — agents will get this wrong without explicit documentation. Skill is Week 5-ready even though journeys haven't been written yet.
+
+### WCAG 2.2 AA skill
+
+Built into `.claude/skills/wcag/SKILL.md` — the fifth repo skill. Dual-mode: audit existing code (findings-only report) and build guide (new components). Full WCAG 2.2 Level AA spec across all four principles. Radix/shadcn coverage matrix distinguishes what primitives handle automatically from what app code must verify. 13-step systematic checklist. Blocker/Major/Minor/Suggestion severity calibration with repo-specific examples. Notable: built against WCAG 2.2 not 2.1 — the difference is meaningful in healthcare (2.5.8 target size, 2.4.11 focus not obscured, 3.3.8 accessible authentication).
+
+### WCAG component passes (PRs #55–57)
+
+Three PRs covering nine components:
+
+**Badge (PR #55):** One Blocker — default variant light-mode text contrast was 4.35:1, below the 4.5:1 AA minimum. Fixed by switching from `text-muted-foreground` to `text-foreground`. All semantic variants already passed (6.78:1–7.15:1 light, 8.15:1–10.39:1 dark). Decorative borders removed (1.1:1–1.6:1 against fill, below 3:1 SC 1.4.11 threshold). Default variant retains a border for visual boundary on light backgrounds — documented inline as a conscious tradeoff (border-to-fill ratio is low, but identification uses text + icon not border).
+
+**State components (PR #56):** `h3` → styled `p` in EmptyState and ErrorState (orphaned heading-level skip). ErrorState migrated from custom `bg-[var(--app-accent)]` button to shadcn Button (token-based colours, standard focus ring). "Retry" renamed to "Try again" across ErrorState for consistency with ItemsList. Dark mode fixed: `@custom-variant dark` updated to Tailwind v4 block form responding to both `.dark` class and OS preference. `setResult(null)` removed from IncidentsView catch to keep stale table visible on refetch failure.
+
+**Form and data components (PR #57):** Pagination "Prev" renamed to "Previous" (SC 2.5.3 Label in Name — visible text must be contained in accessible name). DataTable `ariaLabel` prop added for contextual naming when multiple tables on a page. `IncidentsView` passes `ariaLabel="Incidents list, scrollable"`. DataTable JSDoc documents the keyboard contract — at least one sortable or interactive column required for keyboard accessibility of overflowing content.
+
+### WCAG incident page chrome (PR #58)
+
+All four interim states on detail and edit routes (loading, error, invalid ID, null incident) now render `IncidentPageChrome` — h1 + back link — above the state component. Create mode already had this pattern; the fix made it consistent. Invalid ID states omit the subtitle (no Incident #id to display). Edit interim states show "Edit incident" chrome; detail interim states show "Incident detail" + "Incident #id" subtitle. Heading/subtitle strings exported as named constants from `IncidentForm.tsx` (`INCIDENT_CREATE_HEADING`, `INCIDENT_EDIT_HEADING`, `INCIDENT_DETAIL_HEADING`) to keep JSX ids and focus targets in sync.
+
+### Two-review discipline — scale
+
+Day 15 was the most extensive test of the two-review pattern. Every PR went through both Claude Code `/review` and Cursor review. Findings were consistently different between the tools — Claude Code strong on factual accuracy (contrast ratios, WCAG SC mapping, test coverage gaps); Cursor strong on code conventions, DRY, and internal consistency. Neither alone was complete on any PR. Total review cycles across the six PRs: approximately 18 individual review runs.
+
+### WCAG skill before feature work
+
+The wcag skill took ~2h to build. If it had existed before the incident module, the WCAG pass would have been much faster. The audit identified gaps that required retrofitting — page chrome, refetch focus loss, dark mode tokens — that a build-guide pass upfront would have prevented. Lesson recorded in decisions log: build-guide skills before features, test-writer skills after real code exists.
+
+### What I would not trust the agent to do unsupervised
+
+- Correctly identify which Tailwind v4 form is valid for `@custom-variant` with media queries — two failed silently
+- Deduplicate heading/subtitle strings across form and view files without explicit instruction — INCIDENT_CREATE_SUBTITLE changed silently during extraction
+- Choose the right severity for accessibility findings without the wcag skill calibration table — early drafts were over-reporting Suggestions as Majors
+
+### Ideas and observations
+
+- Five skills in the repo by end of Day 15 (dotnet-test-writer, react-test-writer, playwright-test-writer, code-reviewer, wcag). Each skill is a reusable agent pattern — the portfolio value compounds with each addition.
+- The wcag skill audit of five complex components in one pass (PR #57) with zero blockers and zero majors is strong evidence that the component library is well-built. The audit confirmed it; it didn't just generate noise.
+- Grouping simple components (Badge, LoadingState, EmptyState, ErrorState) vs complex (FormField, SelectField, DatePickerField, DataTable, Pagination) for WCAG audits worked well — simple batch validates the skill before complex batch where Radix gotchas matter most.
+
 ## Day 14 — 4 June 2026
 
 ### Summary
@@ -215,15 +318,6 @@ end of day to capture decisions and update CLAUDE.md and .cursor/rules.
   not just when failures appear
 - Lesson: save frontier model quota for complex tasks (DataTable, DatePicker);
   use manual edits or Auto mode for simple single-file changes
-
-### CTO progress update
-
-- Email sent mid-afternoon with progress update
-- Led with skill-specific agents work (his exact advice from 18 May)
-- Mentioned the two-independent-reviews bug catch as a best-practices example
-- Light, personal tone — written in own voice after multiple drafts
-- Key facts correct: React 19, WCAG, skill benchmarks, Claude Project setup
-- No repo link yet — Week 7 reveal when the repo is at its strongest
 
 ### What I would not trust the agent to do unsupervised
 
@@ -566,8 +660,6 @@ tokens held up well throughout the day.
 ### Claude Project setup
 
 - Project created: "Radar Practice — Agentic Learning"
-- Files: `seven-week-plan.md`, `jd.md`, `cv.md`, `learning-notes.md`,
-  `cto-emails.md`
 - RAG verified — correctly reads context from attached files
 - From Day 10 onwards, daily sessions run inside the Project
 - End of day pattern: notes PR merged, update Project files, verify,

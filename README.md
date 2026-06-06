@@ -38,17 +38,26 @@ radar-practice/
 ├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT /incidents, GET /incidents/{id}), EF Core + SQLite
 ├── IncidentsApi.Tests/    # xUnit integration tests (23 tests)
 ├── client/                # React + TypeScript + Vite frontend
-│   ├── src/api/incidents.ts          # Typed fetch layer for IncidentsApi
-│   ├── src/components/IncidentsView.tsx      # Incident list with filters, sort, pagination
-│   ├── src/components/IncidentForm.tsx       # Shared create/edit form (mode prop)
+│   ├── src/api/incidents.ts               # Typed fetch layer for IncidentsApi
+│   ├── src/components/IncidentsView.tsx   # Incident list with filters, sort, pagination
+│   ├── src/components/IncidentForm.tsx    # Shared create/edit form (mode prop)
 │   ├── src/components/IncidentCreateView.tsx # Thin wrapper — mode=create
 │   ├── src/components/IncidentDetailView.tsx # Read-only detail view
 │   ├── src/components/IncidentEditView.tsx   # Thin wrapper — mode=edit
-│   ├── src/App.test.tsx              # Vitest App integration tests
-│   ├── src/components/ItemsList.test.tsx     # Vitest component tests
-│   ├── src/guards.test.ts            # Vitest unit tests
-│   ├── src/errors.test.ts            # Vitest unit tests
-│   └── src/test/setup.ts             # Vitest setup
+│   ├── src/components/IncidentPageChrome.tsx # Shared page chrome (h1 + back link)
+│   ├── src/pageTitle.ts                   # Per-route document.title helper
+│   ├── src/App.test.tsx                   # Vitest App integration tests
+│   ├── src/components/ItemsList.test.tsx  # Vitest component tests
+│   ├── src/guards.test.ts                 # Vitest unit tests
+│   ├── src/errors.test.ts                 # Vitest unit tests
+│   ├── src/test/setup.ts                  # Vitest setup
+│   └── e2e/app.spec.ts                    # Playwright smoke test
+├── .claude/skills/        # Repo-level agent skills
+│   ├── dotnet-test-writer/
+│   ├── react-test-writer/
+│   ├── playwright-test-writer/
+│   ├── code-reviewer/
+│   └── wcag/
 ├── .github/workflows/     # GitHub Actions CI
 └── learning-notes.md      # Daily observations from the build
 ```
@@ -59,7 +68,7 @@ radar-practice/
 | Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
 | Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 23 IncidentsApi tests |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom |
-| Frontend tests | Vitest, `@testing-library/react` — 111 tests across 19 files |
+| Frontend tests | Vitest, `@testing-library/react` — 125 tests across 20 files; Playwright e2e (smoke test, key journeys Week 5) |
 | CI | GitHub Actions — `dotnet test` (both APIs) and `npm test` (Vitest) on push/PR to `main` |
 
 > **Note:** Each API uses its own SQLite database (`app.db` for items, `incidents.db` for incidents). Both are local only and not committed.
@@ -81,17 +90,28 @@ These are practical lessons from building this project with Claude Code (termina
 
 **Cursor vs Claude Code**
 - **Cursor** excels when full workspace context matters — wiring the frontend to the backend, adding typed error handling, and verifying changes in-editor.
-- **Claude Code** suits terminal-driven workflows — generating projects, running tests, and iterating on backend logic with explicit accept/reject control.
+- **Claude Code** suits terminal-driven workflows — generating projects, running tests, and iterating on backend logic with latest explicit accept/reject control.
 - Both benefit from the same discipline: small prompts, verify output, read the diff before committing.
 
 **Context7 MCP**
 — fetches live library documentation into agent context so agents work from current API references rather than training-data snapshots.
 
+**Skill-specific agents (`.claude/skills/`)**
+- Five repo-level skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`.
+- Skills are built after real code exists — the agent reads real patterns before writing anything.
+- Skills drive consistent output across sessions and developers — the direct fix for the confirmed Core team reusable-patterns problem.
+
 **Two independent reviews catch different things**
 - Claude Code `/review` and Cursor review consistently flag different issues on the same diff. Running both for significant PRs is now a firm discipline — neither alone is complete.
 
+**WCAG 2.2 AA — layered accessibility approach**
+- Accessibility was built in four layers: component primitives, screen composition, app shell, and interaction patterns.
+- A dedicated `wcag` skill drives systematic audits — one component or screen at a time, findings-only report, then targeted fix prompts.
+- Building the wcag skill before screen-level work would have been more efficient — components would have been built correctly from the start rather than retrofitted.
+- WCAG at screen and shell level is substantially more work than component-level fixes. Budget accordingly.
+
 **Radix/shadcn testing gotchas**
-- Radix Select requires `Element.prototype.scrollIntoView = vi.fn()` in jsdom tests.
+- Radix Select requires `Element.prototype.scrollIntoView = vi.fn()` in jsdom tests (now global in `setup.ts`).
 - Any component using `Link`, `NavLink`, or `useNavigate` must be wrapped in `MemoryRouter` in tests.
 - UTC date serialization: use `format(date, 'yyyy-MM-dd')` (local date) not UTC getters — affects users in UTC+ timezones.
 
@@ -139,6 +159,15 @@ From `client/`:
 cd client
 npm test
 ```
+
+### Run e2e tests
+
+```bash
+cd client
+npx playwright test
+```
+
+Requires both APIs and the Vite dev server running. Currently a smoke test only — key user journeys land in Week 5.
 
 ### Run the frontend
 
