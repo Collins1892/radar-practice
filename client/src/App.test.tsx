@@ -26,7 +26,7 @@ describe('App', () => {
     vi.mocked(createItem).mockReset();
   });
 
-  it('renders skip link targeting main content as first focusable element', (): void => {
+  it('renders skip link targeting main content', (): void => {
     // Arrange
     vi.mocked(fetchItems).mockResolvedValue([]);
 
