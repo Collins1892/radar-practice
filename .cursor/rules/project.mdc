@@ -56,7 +56,7 @@ No patient data, no production dependencies.
 ## Component file locations
 
 - `client/src/components/ui/` — shadcn-generated vendor components only (ESLint-ignored). Do not place hand-authored components here.
-- `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentPageChrome).
+- `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome).
 - `client/src/componentRegistry.tsx` — registry of all components for the components view. Has a file-level `eslint-disable react-refresh/only-export-components` — documented exception pending Week 7 architectural fix.
 - `client/src/components/formFieldUtils.ts` — shared utility (`formFieldErrorId`). Pure module, no JSX.
 
