@@ -98,7 +98,7 @@ These are practical lessons from building this project with Claude Code (termina
 
 **Skill-specific agents (`.claude/skills/`)**
 - Five repo-level skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`.
-- Skills are built after real code exists — the agent reads real patterns before writing anything.
+- Test-writer skills are built after real code exists — the agent reads real patterns before writing anything. Build-guide skills (e.g. wcag) should be built before feature work to prevent retrofitting.
 - Skills drive consistent output across sessions and developers — the direct fix for the confirmed Core team reusable-patterns problem.
 
 **Two independent reviews catch different things**
@@ -180,6 +180,8 @@ npm run dev
 Open `http://localhost:5173`. Vite proxies `/items` requests to the API on port 5133.
 
 To call the API directly from the browser (without the proxy), copy `client/.env.example` to `client/.env` and uncomment `VITE_API_URL`. The API already allows CORS from `http://localhost:5173`.
+
+Incidents routes require IncidentsApi running on port 5134 (direct CORS fetch — not proxied like `/items`).
 
 ### CI
 
