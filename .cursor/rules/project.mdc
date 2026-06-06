@@ -49,7 +49,7 @@ No patient data, no production dependencies.
 - `date-fns` 4.4.0 — date formatting utilities.
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar.
 - ESLint 10.3.0 (typescript-eslint); Prettier 3.8.3 (semicolons, single quotes, trailing commas).
-- Vitest 4.1.7 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1; Playwright (Week 3).
+- Vitest 4.1.7 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1; Playwright 1.60.0 (Chromium only, e2e/; smoke test landed, key journeys Week 5).
 - CSS: OKLCH theme tokens in `src/index.css` under `@theme inline`; compose classes with `cn()`; no new legacy CSS.
 - Dark mode: `@custom-variant dark` uses the Tailwind v4 block form responding to both `.dark` class and `prefers-color-scheme: dark`. All three sync points (`.dark` class, media query, `@custom-variant`) must be kept in sync when tokens change.
 
