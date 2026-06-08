@@ -101,7 +101,7 @@ Do:
 - Make small, focused changes; run tests after every change and confirm they pass.
 - Match existing patterns; use the repository pattern for all new data access.
 - Add tests for any new endpoint or business logic; verify the build before declaring done.
-- Ask for clarification when ambiguous; check `.claude/skills/` for relevant skills — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`.
+- Ask for clarification when ambiguous; check `.claude/skills/` for relevant skills — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`.
 - All changes via feature branch and PR.
 
 Don't:

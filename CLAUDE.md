@@ -206,7 +206,7 @@ changed library API.
 - Ask for clarification if a task is ambiguous rather than guessing
 - Use descriptive commit messages when asked to commit
 - Follow the TypeScript conventions defined above — no any, explicit return types
-- Check `.claude/skills/` for relevant skills before starting a task — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`
+- Check `.claude/skills/` for relevant skills before starting a task — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`
 - Place hand-authored components in `client/src/components/` — never in `client/src/components/ui/` (shadcn vendor directory)
 
 ## What the agent should not do
