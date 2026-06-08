@@ -25,6 +25,7 @@ import { componentRegistry } from './componentRegistry';
 import { toUserMessage } from './errors';
 import type { Item } from './types';
 import { formatPageTitle, SITE_TITLE } from '@/pageTitle';
+import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 import './App.css';
 
@@ -256,6 +257,7 @@ function App(): JSX.Element {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+      <Toaster />
     </main>
   );
 }

@@ -419,6 +419,34 @@ See `componentRegistry.tsx` (`DataTable<IncidentPreviewRow>`) for a working exam
 - **Portaled content** (Select dropdown, Popover calendar): open the trigger first, then use `findBy*` for content rendered in a portal.
 - **`FormField` + native inputs:** `cloneElement` injects aria onto a single child — works for `<input>`, not for Radix roots without DOM.
 
+## Sonner gotchas
+
+- **Mock `sonner` at the top of test files** when asserting `toast.*` calls without rendering toasts — isolate forms that trigger toasts without testing toast UI:
+
+  ```typescript
+  vi.mock('sonner', () => ({
+    toast: {
+      success: vi.fn(),
+      warning: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+    },
+  }));
+  ```
+
+- **`window.matchMedia` mock in `setup.ts`:** already global in [`client/src/test/setup.ts`](../../../client/src/test/setup.ts) — required because Sonner's `<Toaster />` reads `prefers-color-scheme` on mount. Do not duplicate per test file.
+
+- **Fake timers + `runOnlyPendingTimersAsync`:** Sonner defers toast mount/unmount with `setTimeout(0)` (and a 200ms unmount delay). With `vi.useFakeTimers()`, flush after click and after timer advances:
+
+  ```typescript
+  await act(async (): Promise<void> => {
+    fireEvent.click(screen.getByRole('button', { name: 'Success' }));
+    await vi.runOnlyPendingTimersAsync();
+  });
+  ```
+
+  Render `<Toaster />` alongside the component under test when asserting toast DOM (see [`ToastPreview.test.tsx`](../../../client/src/components/ToastPreview.test.tsx)).
+
 ## Vitest and RTL gotchas
 
 - **Setup:** `client/src/test/setup.ts` registers `@testing-library/jest-dom/vitest` and runs `cleanup()` after each test — do not skip cleanup by rendering outside RTL.

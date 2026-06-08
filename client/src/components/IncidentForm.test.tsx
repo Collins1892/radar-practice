@@ -9,9 +9,24 @@ import {
   type Incident,
 } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
-import { INCIDENT_EDIT_HEADING, IncidentForm } from './IncidentForm';
+import { toast } from 'sonner';
+import {
+  INCIDENT_CREATE_SUCCESS_MESSAGE,
+  INCIDENT_EDIT_HEADING,
+  INCIDENT_EDIT_SUCCESS_MESSAGE,
+  IncidentForm,
+} from './IncidentForm';
 
 const navigateMock = vi.hoisted(() => vi.fn());
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    warning: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  },
+}));
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
@@ -102,6 +117,7 @@ describe('IncidentForm', () => {
     vi.mocked(createIncident).mockReset();
     vi.mocked(getIncident).mockReset();
     vi.mocked(updateIncident).mockReset();
+    vi.mocked(toast.success).mockReset();
     navigateMock.mockReset();
     Element.prototype.scrollIntoView = vi.fn();
   });
@@ -241,6 +257,7 @@ describe('IncidentForm', () => {
     // Assert
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledWith('/incidents');
+      expect(toast.success).toHaveBeenCalledWith(INCIDENT_EDIT_SUCCESS_MESSAGE);
     });
   });
 
@@ -268,6 +285,7 @@ describe('IncidentForm', () => {
     // Assert
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
   });
 
   it('moves focus to the first invalid field when submit validation fails', (): void => {
@@ -302,6 +320,9 @@ describe('IncidentForm', () => {
     // Assert
     await waitFor(() => {
       expect(createIncident).toHaveBeenCalledTimes(1);
+      expect(toast.success).toHaveBeenCalledWith(
+        INCIDENT_CREATE_SUCCESS_MESSAGE,
+      );
     });
   });
 });

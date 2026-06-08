@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import type { ReactElement } from 'react';
+import { toast } from 'sonner';
 import type { ComponentEntry } from './components/ComponentsView';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/Badge';
 import { DatePickerField } from '@/components/DatePickerField';
 import { DataTable } from '@/components/DataTable';
@@ -111,6 +113,43 @@ function DataTablePreview(): ReactElement {
         }}
         emptyState={<span>No incidents found.</span>}
       />
+    </div>
+  );
+}
+
+function ToastPreview(): ReactElement {
+  return (
+    <div className="flex flex-wrap gap-2 rounded-lg border border-dashed border-border p-4">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => toast.success('Incident saved successfully.')}
+      >
+        Success
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => toast.warning('Reported date is in the past.')}
+      >
+        Warning
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() =>
+          toast.error('Could not save incident. Please try again.')
+        }
+      >
+        Error
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => toast.info('Changes are saved to the Incidents API.')}
+      >
+        Info
+      </Button>
     </div>
   );
 }
@@ -279,5 +318,11 @@ export const componentRegistry: ComponentEntry[] = [
     description:
       'FormField-wrapped date picker using a Popover trigger button and Calendar single-date selection.',
     preview: <DatePickerFieldPreview />,
+  },
+  {
+    name: 'Toast',
+    description:
+      'Sonner toast notifications with four variants (success, warning, error, info), each with a distinct icon and accessible colour pairing. Auto-dismiss after 3 seconds with a manual close button.',
+    preview: <ToastPreview />,
   },
 ];

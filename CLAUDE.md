@@ -87,6 +87,7 @@ Mirrors microservices direction without over-engineering.
 - `@playwright/test` 1.60.0 — e2e tests, Chromium only. Key user journeys deferred to Week 5.
 - `date-fns` 4.4.0 — date formatting utilities
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar
+- `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level
 
 **CSS approach:**
 All components use Tailwind CSS and shadcn/ui from Week 3 onwards. Existing items catalogue components (`App.tsx`, `ItemsList`) are being migrated to Tailwind in Week 3. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
