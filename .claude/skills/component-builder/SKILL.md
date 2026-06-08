@@ -344,7 +344,7 @@ type IncidentRow = Incident & Record<string, unknown>;
 5. **Load state** (edit mode): separate `loadLoading` / `loadError` from submit state.
 6. **Submit handler**: validate → focus first error → API call → navigate or show `submitError`.
 7. **Page chrome**: `IncidentPageChrome` with exported heading constants.
-8. **User-safe errors**: `incidentUserMessage(err, 'loading' | 'create' | 'update')` from API layer — never expose stack traces.
+8. **User-safe errors**: `incidentUserMessage(err, 'loading' | 'creating' | 'updating')` from API layer — never expose stack traces.
 
 **Focus-first-error pattern** (from `IncidentForm.tsx`):
 
@@ -469,7 +469,7 @@ Hand-authored components call typed modules — never inline `fetch` in primitiv
 | API | Module | User messages |
 |-----|--------|---------------|
 | Items | [`api.ts`](../../../client/src/api.ts) | `toUserMessage(err, 'load' \| 'create')` from [`errors.ts`](../../../client/src/errors.ts) |
-| Incidents | [`api/incidents.ts`](../../../client/src/api/incidents.ts) | `incidentUserMessage(err, 'loading' \| 'create' \| 'update')` |
+| Incidents | [`api/incidents.ts`](../../../client/src/api/incidents.ts) | `incidentUserMessage(err, 'loading' \| 'creating' \| 'updating')` |
 
 **Rules:**
 
@@ -525,7 +525,7 @@ When a new screen or shell needs routing:
 
 1. Create the component in `client/src/components/`.
 2. Import and add `<Route>` in [`App.tsx`](../../../client/src/App.tsx).
-3. Add `resolvePageTitle` entry if the page needs a specific `document.title`.
+3. Add a matchPath branch in resolvePageTitle (in App.tsx) if the page needs a specific document.title.
 4. Optionally add `NavLink` for top-level discovery.
 5. Run `npm test` — add tests via [react-test-writer](../react-test-writer/SKILL.md) when asked.
 
@@ -541,7 +541,7 @@ When a new screen or shell needs routing:
 8. **Accessibility pass** — run the [essentials checklist](#accessibility-essentials); defer deep audit to [wcag](../wcag/SKILL.md).
 9. **Run `npm test`** from `client/` and fix regressions.
 10. **Summarise** what was built, which files changed, and test result.
-11. **Offer follow-ups** — test (react-test-writer), WCAG audit (wcag), or code review (code-reviewer).
+11. **Offer follow-ups** — test (react-test-writer), journey tests (playwright-test-writer), WCAG audit (wcag), or code review (code-reviewer).
 
 ### Build flow
 
