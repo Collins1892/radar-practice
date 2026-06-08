@@ -1,3 +1,6 @@
+// Intentional divergences from the shadcn default: custom lucide icons,
+// token-driven rich colours via --sonner-* CSS variables in index.css,
+// and DRY position / duration / closeButton defaults on this wrapper.
 import * as React from 'react';
 import {
   AlertTriangle,

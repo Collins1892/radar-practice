@@ -223,7 +223,6 @@ function App(): JSX.Element {
 
   return (
     <main className="app relative">
-      <Toaster />
       <a href="#main-content" className={skipLinkClassName}>
         Skip to main content
       </a>
@@ -258,6 +257,7 @@ function App(): JSX.Element {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+      <Toaster />
     </main>
   );
 }
