@@ -1,3 +1,63 @@
+## Day 17 — 8 June 2026
+
+### Summary
+
+Week 4 Day 1 (Monday). Late start due to errands. CTO email sent confirming readiness to apply when role publishes, with progress update promised for Friday. Two PRs merged: component-builder skill (PR #63) and Sonner toast SC 4.1.3 (PR #64). 129 tests, 6 skills. Slash command exploration. Custom slash commands deferred to Wednesday.
+
+### component-builder skill (PR #63)
+
+Sixth project skill — covers all React building block types in the repo. Built by Cursor Auto from a task prompt (no `/skill-creator` command in v2.1.168). Three review passes before merge: Claude Code `/review`, Cursor review, then Claude Code on the final PR. Each pass caught different issues — confirms neither tool alone is complete on skill files as much as on code files.
+
+Major finding from Cursor that Claude Code missed: `incidentUserMessage` verb literals documented as `'create'` / `'update'` when the actual TypeScript type uses `'creating'` / `'updating'`. Would have caused TypeScript failures in any agent following the skill. Fixed before merge.
+
+Cursor Auto went beyond the specified scope and wrote the file without plan mode approval — clean branch saved it from being a problem. Scope instructions need to be more explicit with Cursor Auto.
+
+### Review order — Cursor first, then Claude Code
+
+Changed today from Claude Code first to Cursor first. Both tools consistently catch different things. Cursor stronger on code conventions, DRY, and internal consistency. Claude Code stronger on factual accuracy, WCAG SC mapping, and test coverage gaps.
+
+### Sonner toast — SC 4.1.3 (PR #64)
+
+Plugged the accessibility gap where create/edit success redirected silently with no confirmation for screen reader users. Sonner via shadcn CLI. Four variants (success, warning, error, info) with Badge-aligned colours, lucide icons, 3s auto-dismiss, close button bottom-right.
+
+**Key findings:**
+
+- `next-themes` added by shadcn CLI but unused — generated `sonner.tsx` imports `useTheme` from `next-themes` by default. This project doesn't use Next.js. Fix: hardcode `theme="system"`. Always check for unused dependencies after shadcn CLI installs.
+- **CSS variable specificity** — Sonner's inline style CSS variables (`--success-bg` etc.) override Tailwind `classNames`. `toastOptions.classNames` for colours silently loses. Fix: define `--sonner-*` variables in `index.css` across all three dark mode sync points and wire through the `style` prop with `richColors` enabled.
+- **`<Toaster />` DOM placement** — must sit after the skip link in DOM order. When placed first, the toast close button becomes the first Tab stop instead of the skip link (WCAG 2.4.1).
+- **Sonner uses `aria-live="polite"` for all variants** including error. No assertive live region. Acceptable for this project but a known limitation for more critical error contexts.
+
+**Test patterns:**
+- Mock `sonner` at the top of test files: `vi.mock('sonner', () => ({ toast: { success: vi.fn(), warning: vi.fn(), error: vi.fn(), info: vi.fn() } }))`
+- `window.matchMedia` mock required in `setup.ts` — Sonner reads `prefers-color-scheme` on mount
+- `vi.useFakeTimers()` + `runOnlyPendingTimersAsync` needed to flush Sonner's `setTimeout(0)` mount and unmount delays
+- **Mock pollution** — negative `toast.success` assertions fail without `vi.mocked(toast.success).mockReset()` in `beforeEach`
+- Two tests per prompt now produced reliable output — the one-test-at-a-time rule was context-dependent on project maturity
+
+### Slash command exploration
+
+Explored Claude Code built-in commands in a fresh session: `/skills` (8 skills, ~1,310 tokens total per session), `/loop` (self-paced to 30min heartbeat when no interval given; session-bound — stops when Claude Code closes), `/memory` (project / user / auto-memory; user memory empty; auto-memory folder empty on fresh session). `/compact` requires existing messages to run.
+
+`/loop` is not a cron replacement — ephemeral in-session monitoring only. GitHub Actions is the right tool for durable scheduling. Noted to explore `/loop` + `/review` during the worktrees/multi-agent session.
+
+### Decision: stop recording test counts in README
+
+Hardcoded test counts become maintenance toil as the suite grows. CI badge is the live proof. Removed from root README. client/README.md to follow.
+
+### What I would not trust the agent to do unsupervised
+
+- Respect "no other changes" scope instructions — Cursor applied additional audit fixes beyond the four specified
+- Know that `next-themes` is unused after shadcn Sonner CLI install — requires explicit check
+- Place `<Toaster />` correctly in DOM order without explicit instruction — defaulted before the skip link
+- Know that Sonner CSS variables override `toastOptions.classNames` — silent failure with no error
+- Respect plan mode in Cursor Auto — plan mode is ignored, direct execution assumed
+
+### Ideas and observations
+
+- Three review passes on a documentation file caught a Major, two Minors, and multiple Suggestions. Documentation quality is as reviewable as code — the discipline applies equally.
+- The component-builder skill is the strongest single portfolio piece from Week 4 Day 1 — a universal React build guide that directly solves the Core team reusable patterns problem.
+- 129 tests, 6 skills, PRs #63–#65 in one day. Still accelerating despite a late start.
+
 ## Day 16 — 6 June 2026
 
 ### Summary

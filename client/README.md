@@ -26,7 +26,7 @@ Items API must be running on port 5133. Incidents API must be running on port 51
 npm test
 ```
 
-Runs the Vitest suite — component, integration, and unit tests (129 tests across 21 files).
+Runs the Vitest suite — component, integration, and unit tests.
 
 ## E2E tests
 
