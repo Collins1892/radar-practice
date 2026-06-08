@@ -457,7 +457,7 @@ export function IncidentEditView(): JSX.Element {
 
 1. Add `Route` in `App.tsx` — **specific routes before parametric ones** (`/incidents/create` before `/incidents/:id`).
 2. Add `NavLink` if the view is top-level navigation.
-3. Add a matchPath branch in resolvePageTitle (in App.tsx) for document.title.
+3. Add a matchPath branch in resolvePageTitle (in App.tsx) if the page needs a specific document.title.
 4. Export heading constants from the feature form/screen if `App.tsx` needs them for titles.
 5. Preserve skip link (`href="#main-content"`) and `id="main-content"` landmark.
 6. Nav uses `aria-label="Views"`.
@@ -531,7 +531,7 @@ When a new screen or shell needs routing:
 
 ## Workflow for each build request
 
-1. **Confirm scope** — one component, screen, or feature slice; clarify create vs edit vs read-only if ambiguous.
+1. **Confirm scope** — one component, screen, or feature slice; clarify create vs edit vs read-only if ambiguous. For screens or feature forms spanning multiple files, use Plan mode before implementing.
 2. **Classify** — use the [taxonomy](#component-taxonomy) to pick the component type.
 3. **Skim `CLAUDE.md`** if not already in context.
 4. **Read the positive reference** for that type (table above) — match its structure before writing.
@@ -575,4 +575,4 @@ flowchart TD
 | [playwright-test-writer](../playwright-test-writer/SKILL.md) | Browser journey tests (Week 5) |
 | [code-reviewer](../code-reviewer/SKILL.md) | Full-stack or frontend review of finished code (advisory only) |
 
-**Typical sequence:** **component-builder** → **react-test-writer** (tests) → **wcag** (audit) → **code-reviewer** (merge readiness).
+**Typical sequence:** **component-builder** → **react-test-writer** (tests) → **playwright-test-writer** (journeys) → **wcag** (audit) → **code-reviewer** (merge readiness).
