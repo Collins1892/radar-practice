@@ -20,7 +20,7 @@ Mirrors microservices direction without over-engineering.
 
 **Repo layout:**
 - `ItemsApi/` — .NET 8 minimal API
-- `ItemsApi/Data/AppDbContext.cs` — shared EF Core DbContext
+- `ItemsApi/Data/AppDbContext.cs` — EF Core DbContext for ItemsApi (`DbSet<Item>` only)
 - `ItemsApi/Repositories/EfItemsRepository.cs` — EF Core repository implementation
 - `ItemsApi/Migrations/` — EF Core migrations
 - `ItemsApi.Tests/` — xUnit integration tests
@@ -34,7 +34,11 @@ Mirrors microservices direction without over-engineering.
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
 - `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome)
+- `client/src/api.ts` — typed fetch layer for ItemsApi (fetchItems, createItem)
 - `client/src/api/incidents.ts` — typed fetch layer for IncidentsApi (fetchIncidents, createIncident, getIncident, updateIncident, shared helpers incidentUserMessage, parseIncidentId)
+- `client/src/types.ts` — shared TypeScript types (e.g. `Item`, `CreateItemRequest`)
+- `client/src/errors.ts` — `ApiClientError` and `toUserMessage` error mapping
+- `client/src/guards.ts` — runtime type guards for API response parsing
 - `client/src/componentRegistry.tsx` — registry of all components for the components view (has file-level eslint-disable — see decisions log)
 - `client/src/components/formFieldUtils.ts` — shared form utility (formFieldErrorId)
 - `client/src/pageTitle.ts` — per-route document.title helper (SITE_TITLE, formatPageTitle)
@@ -49,7 +53,7 @@ Mirrors microservices direction without over-engineering.
 - `learning-notes.md` — daily observations from the build
 - `private/seven-week-plan.md` — master plan, decisions log, daily structure (private file: agent-readable, not committed)
 - `private/phase-1-foundation.md` — Weeks 1–2 complete (private file: agent-readable, not committed)
-- `private/phase-2-build.md` — Weeks 3–5, Week 3 complete (private file: agent-readable, not committed)
+- `private/phase-2-build.md` — Weeks 3–5, Week 3 complete; Week 4 in progress (private file: agent-readable, not committed)
 - `private/phase-3-articulate.md` — Weeks 6–7 (private file: agent-readable, not committed)
 - `private/original-plan.md` — original plan shared with the tech lead (private file: agent-readable, not committed)
 
@@ -90,7 +94,7 @@ Mirrors microservices direction without over-engineering.
 - `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level
 
 **CSS approach:**
-All components use Tailwind CSS and shadcn/ui from Week 3 onwards. Existing items catalogue components (`App.tsx`, `ItemsList`) are being migrated to Tailwind in Week 3. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
+New components use Tailwind CSS and shadcn/ui. Items catalogue components (`App.tsx`, `ItemsList`) are partially migrated — some Tailwind classes are in use, but `ItemsList.css` and legacy classes in `App.css` remain. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
 The global `button {}` rule has been removed from `App.css` — all buttons now carry explicit Tailwind classes.
 Dark mode: `@custom-variant dark` uses the Tailwind v4 block form responding to both `.dark` class and `prefers-color-scheme: dark`. All three sync points (`.dark` class, media query, `@custom-variant`) must be kept in sync when tokens change.
 

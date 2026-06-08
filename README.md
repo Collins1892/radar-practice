@@ -31,6 +31,8 @@ The domain is a simple **items catalogue** — no patient data, no production de
 
 ## Architecture
 
+Illustrative layout — not an exhaustive file inventory. See [CLAUDE.md](CLAUDE.md) for the full agent-oriented repo map.
+
 ```
 radar-practice/
 ├── ItemsApi/              # .NET 8 minimal API (GET/POST /items), EF Core + SQLite
@@ -57,7 +59,8 @@ radar-practice/
 │   ├── react-test-writer/
 │   ├── playwright-test-writer/
 │   ├── code-reviewer/
-│   └── wcag/
+│   ├── wcag/
+│   └── component-builder/
 ├── .github/workflows/     # GitHub Actions CI
 └── learning-notes.md      # Daily observations from the build
 ```
@@ -67,8 +70,8 @@ radar-practice/
 | Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`) |
 | Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
 | Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 23 IncidentsApi tests |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom |
-| Frontend tests | Vitest, `@testing-library/react` — 125 tests across 20 files; Playwright e2e (smoke test, key journeys Week 5) |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes include `/`, `/components`, `/incidents`, and incident create/detail/edit |
+| Frontend tests | Vitest, `@testing-library/react`; Playwright e2e (smoke test, key journeys Week 5) |
 | CI | GitHub Actions — `dotnet test` (both APIs) and `npm test` (Vitest) on push/PR to `main` |
 
 > **Note:** Each API uses its own SQLite database (`app.db` for items, `incidents.db` for incidents). Both are local only and not committed.
@@ -97,7 +100,7 @@ These are practical lessons from building this project with Claude Code (termina
 — fetches live library documentation into agent context so agents work from current API references rather than training-data snapshots.
 
 **Skill-specific agents (`.claude/skills/`)**
-- Five repo-level skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`.
+- Six repo-level skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`.
 - Test-writer skills are built after real code exists — the agent reads real patterns before writing anything. Build-guide skills (e.g. wcag) should be built before feature work to prevent retrofitting.
 - Skills drive consistent output across sessions and developers — the direct fix for the confirmed Core team reusable-patterns problem.
 
@@ -179,9 +182,12 @@ npm run dev
 
 Open `http://localhost:5173`. Vite proxies `/items` requests to the API on port 5133.
 
-To call the API directly from the browser (without the proxy), copy `client/.env.example` to `client/.env` and uncomment `VITE_API_URL`. The API already allows CORS from `http://localhost:5173`.
+To call the APIs directly from the browser (without the Vite proxy), copy `client/.env.example` to `client/.env` and uncomment as needed:
 
-Incidents routes require IncidentsApi running on port 5134 (direct CORS fetch — not proxied like `/items`).
+- `VITE_API_URL=http://localhost:5133` — Items API base URL (defaults to empty string so `/items` uses the Vite proxy)
+- `VITE_INCIDENTS_API_URL=http://localhost:5134` — Incidents API base URL (defaults to `http://localhost:5134` if unset)
+
+Both APIs allow CORS from `http://localhost:5173`. Incidents routes use direct CORS fetch — not proxied like `/items`.
 
 ### CI
 
