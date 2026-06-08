@@ -449,3 +449,9 @@ When **appending** to an existing file, insert the new `it` inside the relevant 
 5. If the file exists, show only the new `it` (and any new helper) with a clear note about where to insert it. If it is a new file, show the complete file.
 6. Run `npm test` from `client/` after writing each test and confirm all tests pass before asking for the next one.
 7. Confirm what was written and the test result, then ask: "Which test would you like next?"
+
+## Related skills
+
+| Skill | When to use |
+|-------|-------------|
+| [component-builder](../component-builder/SKILL.md) | Build hand-authored React UI components before writing tests/audits. |

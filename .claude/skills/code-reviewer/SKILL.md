@@ -233,3 +233,9 @@ flowchart TD
   context7 -->|no| report
   report --> noedit
 ```
+
+## Related skills
+
+| Skill | When to use |
+|-------|-------------|
+| [component-builder](../component-builder/SKILL.md) | Build hand-authored React UI components (one cohesive slice) before tests/audits/review. |

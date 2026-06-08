@@ -471,6 +471,7 @@ I have not made any code changes.
 | Skill | When to use instead |
 |-------|---------------------|
 | [code-reviewer](../code-reviewer/SKILL.md) | Full-stack review including TypeScript conventions, EF Core, and general frontend rules — not a dedicated WCAG pass |
+| [component-builder](../component-builder/SKILL.md) | Build hand-authored React UI building blocks — not a dedicated WCAG audit pass. |
 | [react-test-writer](../react-test-writer/SKILL.md) | Writing Vitest accessibility assertions after fixes are implemented |
 | [playwright-test-writer](../playwright-test-writer/SKILL.md) | Browser-level journey accessibility checks (Week 5) |
 
