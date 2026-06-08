@@ -149,7 +149,7 @@ Apply to **every** hand-authored component:
 
 - No `any`; no non-null assertion (`!`).
 - Explicit return types on all functions: `React.ReactElement`, `JSX.Element`, or `void` / `Promise<void>` as appropriate.
-- Prefer React.ReactElement for new components; JSX.Element is retained for route shells to match existing neighbours.
+- Prefer React.ReactElement for primitives, form fields, and data-display components; JSX.Element is retained across feature forms, screens, page chrome, and route shells to match existing neighbours.
 - Semicolons on, single quotes, trailing commas (Prettier).
 - No `console.log` or `debugger`.
 - Export named components (prefer `export function X` or `export const X` — match neighbours in the same file).
