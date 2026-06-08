@@ -1,6 +1,6 @@
 ---
 name: component-builder
-description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use whenever the user asks to create, add, scaffold, or implement a React component, form, page, view, or UI building block. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after every change that affects behaviour.
+description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use whenever the user asks to create, add, scaffold, or implement a React component, form, page, view, or UI building block. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after every change that affects behaviour.
 ---
 
 # Component Builder
@@ -149,6 +149,7 @@ Apply to **every** hand-authored component:
 
 - No `any`; no non-null assertion (`!`).
 - Explicit return types on all functions: `React.ReactElement`, `JSX.Element`, or `void` / `Promise<void>` as appropriate.
+- Prefer React.ReactElement for new components; JSX.Element is retained for route shells to match existing neighbours.
 - Semicolons on, single quotes, trailing commas (Prettier).
 - No `console.log` or `debugger`.
 - Export named components (prefer `export function X` or `export const X` — match neighbours in the same file).
@@ -456,7 +457,7 @@ export function IncidentEditView(): JSX.Element {
 
 1. Add `Route` in `App.tsx` — **specific routes before parametric ones** (`/incidents/create` before `/incidents/:id`).
 2. Add `NavLink` if the view is top-level navigation.
-3. Add `matchPath` branch in `resolvePageTitle` for `document.title`.
+3. Add a matchPath branch in resolvePageTitle (in App.tsx) for document.title.
 4. Export heading constants from the feature form/screen if `App.tsx` needs them for titles.
 5. Preserve skip link (`href="#main-content"`) and `id="main-content"` landmark.
 6. Nav uses `aria-label="Views"`.
