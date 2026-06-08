@@ -8,9 +8,17 @@ import {
 } from 'lucide-react';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
 
-const Toaster = ({ ...props }: ToasterProps): React.ReactElement => {
+const Toaster = ({
+  position = 'bottom-right',
+  duration = 3000,
+  closeButton = true,
+  ...props
+}: ToasterProps): React.ReactElement => {
   return (
     <Sonner
+      position={position}
+      duration={duration}
+      closeButton={closeButton}
       theme="system"
       richColors
       className="toaster group"

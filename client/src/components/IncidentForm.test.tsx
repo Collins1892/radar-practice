@@ -117,6 +117,7 @@ describe('IncidentForm', () => {
     vi.mocked(createIncident).mockReset();
     vi.mocked(getIncident).mockReset();
     vi.mocked(updateIncident).mockReset();
+    vi.mocked(toast.success).mockReset();
     navigateMock.mockReset();
     Element.prototype.scrollIntoView = vi.fn();
   });
@@ -284,6 +285,7 @@ describe('IncidentForm', () => {
     // Assert
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
   });
 
   it('moves focus to the first invalid field when submit validation fails', (): void => {

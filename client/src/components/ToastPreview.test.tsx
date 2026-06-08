@@ -19,7 +19,7 @@ function getToastPreview(): ReactElement {
 function renderToastPreview(): ReturnType<typeof render> {
   return render(
     <>
-      <Toaster position="bottom-right" duration={3000} closeButton />
+      <Toaster />
       {getToastPreview()}
     </>,
   );

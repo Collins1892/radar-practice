@@ -223,7 +223,7 @@ function App(): JSX.Element {
 
   return (
     <main className="app relative">
-      <Toaster position="bottom-right" duration={3000} closeButton />
+      <Toaster />
       <a href="#main-content" className={skipLinkClassName}>
         Skip to main content
       </a>
