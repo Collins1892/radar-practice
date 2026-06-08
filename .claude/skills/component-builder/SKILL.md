@@ -64,6 +64,7 @@ Versions aligned with [`CLAUDE.md`](../../../CLAUDE.md) and [`client/package.jso
 | react-router-dom | 7.16.0 | routing, `Link`, `useParams`, `useNavigate` |
 | date-fns | 4.4.0 | date formatting in display and API payloads |
 | react-day-picker | 10.0.1 | `autoFocus` on Calendar (not `initialFocus`) |
+| sonner | 2.0.7 | toast notifications via `toast.success` / `toast.warning` / `toast.error` / `toast.info`; mount `<Toaster />` from `@/components/ui/sonner` at app shell level |
 | Vitest | 4.1.7 | run after behavioural changes |
 
 Imports from `src/` use the `@/` alias (e.g. `@/components/Badge`, `@/lib/utils`, `@/api/incidents`).

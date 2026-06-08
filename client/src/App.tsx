@@ -25,6 +25,7 @@ import { componentRegistry } from './componentRegistry';
 import { toUserMessage } from './errors';
 import type { Item } from './types';
 import { formatPageTitle, SITE_TITLE } from '@/pageTitle';
+import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 import './App.css';
 
@@ -222,6 +223,7 @@ function App(): JSX.Element {
 
   return (
     <main className="app relative">
+      <Toaster position="bottom-right" duration={3000} closeButton />
       <a href="#main-content" className={skipLinkClassName}>
         Skip to main content
       </a>
