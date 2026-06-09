@@ -43,16 +43,9 @@ export function DatePickerField({
     }
   }, [disabled]);
 
-  function handleOpenChange(nextOpen: boolean): void {
-    if (disabled) {
-      return;
-    }
-    setOpen(nextOpen);
-  }
-
   return (
     <FormField label={label} htmlFor={id} error={error} required={required}>
-      <Popover open={open} onOpenChange={handleOpenChange}>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             id={id}
