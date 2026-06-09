@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { JSX } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { format, isValid, parseISO } from 'date-fns';
 import {
   getIncident,
   incidentUserMessage,
@@ -9,6 +8,7 @@ import {
   type Incident,
 } from '@/api/incidents';
 import {
+  formatReportedDate,
   formatStatusLabel,
   severityBadgeVariant,
   statusBadgeVariant,
@@ -23,11 +23,6 @@ import { IncidentPageChrome } from '@/components/IncidentPageChrome';
 import { LoadingState } from '@/components/LoadingState';
 import { Button } from '@/components/ui/button';
 import { formatPageTitle } from '@/pageTitle';
-
-function formatReportedDate(value: string): string {
-  const parsed = parseISO(value.slice(0, 10));
-  return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : String(value);
-}
 
 export function IncidentDetailView(): JSX.Element {
   const { id } = useParams();

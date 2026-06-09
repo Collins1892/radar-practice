@@ -41,7 +41,7 @@ Mirrors microservices direction without over-engineering.
 - `client/src/guards.ts` — runtime type guards for API response parsing
 - `client/src/componentRegistry.tsx` — registry of all components for the components view (has file-level eslint-disable — see decisions log)
 - `client/src/components/formFieldUtils.ts` — shared form utility (formFieldErrorId)
-- `client/src/components/incidentDisplay.ts` — shared incident display helpers — badge variants, status label, severity/status/filter option lists
+- `client/src/components/incidentDisplay.ts` — shared incident display helpers — badge variants, status label, reported-date formatter, severity/status/filter option lists
 - `client/src/pageTitle.ts` — per-route document.title helper (SITE_TITLE, formatPageTitle)
 - `client/src/lib/utils.ts` — shadcn `cn()` utility (vendor, ESLint-ignored)
 - `client/components.json` — shadcn configuration

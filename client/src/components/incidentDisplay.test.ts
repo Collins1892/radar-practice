@@ -6,6 +6,7 @@ import {
   SEVERITY_OPTIONS,
   STATUS_FORM_OPTIONS,
   STATUS_OPTIONS,
+  formatReportedDate,
   formatStatusLabel,
   severityBadgeVariant,
   statusBadgeVariant,
@@ -72,6 +73,41 @@ describe('statusBadgeVariant', () => {
 
     // Assert
     expect(result).toBe(expected);
+  });
+});
+
+describe('formatReportedDate', () => {
+  it('formats an ISO datetime string as dd MMM yyyy', (): void => {
+    // Arrange
+    const value = '2026-01-15T00:00:00.000Z';
+
+    // Act
+    const result = formatReportedDate(value);
+
+    // Assert
+    expect(result).toBe('15 Jan 2026');
+  });
+
+  it('formats a date-only string as dd MMM yyyy', (): void => {
+    // Arrange
+    const value = '2026-01-15';
+
+    // Act
+    const result = formatReportedDate(value);
+
+    // Assert
+    expect(result).toBe('15 Jan 2026');
+  });
+
+  it('returns the original value when it cannot be parsed', (): void => {
+    // Arrange
+    const value = 'not-a-date';
+
+    // Act
+    const result = formatReportedDate(value);
+
+    // Assert
+    expect(result).toBe('not-a-date');
   });
 });
 

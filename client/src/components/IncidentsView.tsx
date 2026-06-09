@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { JSX } from 'react';
 import { Link } from 'react-router-dom';
-import { format, isValid, parseISO } from 'date-fns';
 import {
   fetchIncidents,
   incidentUserMessage,
@@ -21,6 +20,7 @@ import {
   INCIDENT_ALL_FILTER,
   SEVERITY_OPTIONS,
   STATUS_OPTIONS,
+  formatReportedDate,
   formatStatusLabel,
   severityBadgeVariant,
   statusBadgeVariant,
@@ -33,11 +33,6 @@ type SortDirection = 'asc' | 'desc';
 type IncidentRow = Incident & Record<string, unknown>;
 
 const PAGE_SIZE = 25;
-
-function formatReportedDate(value: string): string {
-  const parsed = parseISO(value.slice(0, 10));
-  return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : String(value);
-}
 
 export function IncidentsView(): JSX.Element {
   const [severityFilter, setSeverityFilter] =
