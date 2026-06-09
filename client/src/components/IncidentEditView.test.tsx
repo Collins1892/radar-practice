@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getIncident } from '@/api/incidents';
-import { INCIDENT_EDIT_HEADING } from '@/components/IncidentForm';
+import { INCIDENT_EDIT_HEADING } from '@/components/incidentPageCopy';
 import { IncidentEditView } from './IncidentEditView';
 
 vi.mock('@/api/incidents', async (importOriginal) => {

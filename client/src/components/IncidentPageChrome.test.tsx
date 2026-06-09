@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
+import { INCIDENT_DETAIL_HEADING } from '@/components/incidentPageCopy';
 import { IncidentPageChrome } from './IncidentPageChrome';
 
 describe('IncidentPageChrome', () => {
@@ -10,14 +11,14 @@ describe('IncidentPageChrome', () => {
   ): ReturnType<typeof render> {
     return render(
       <MemoryRouter>
-        <IncidentPageChrome heading="Incident detail" {...overrides} />
+        <IncidentPageChrome heading={INCIDENT_DETAIL_HEADING} {...overrides} />
       </MemoryRouter>,
     );
   }
 
   it('renders the heading and back link', (): void => {
     // Arrange
-    const heading = 'Incident detail';
+    const heading = INCIDENT_DETAIL_HEADING;
 
     // Act
     renderIncidentPageChrome({ heading });

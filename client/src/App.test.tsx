@@ -3,7 +3,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { createItem, fetchItems } from './api';
+import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
 import { ApiClientError } from './errors';
+import { formatPageTitle } from '@/pageTitle';
 import type { Item } from './types';
 
 vi.mock('./api', () => ({
@@ -58,7 +60,7 @@ describe('App', () => {
     renderApp(['/incidents/create']);
 
     // Assert
-    expect(document.title).toBe('Create incident | Radar Practice');
+    expect(document.title).toBe(formatPageTitle(INCIDENT_CREATE_HEADING));
   });
 
   it('loads and displays items after mount', async (): Promise<void> => {

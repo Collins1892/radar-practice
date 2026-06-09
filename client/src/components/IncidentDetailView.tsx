@@ -10,7 +10,10 @@ import {
   type IncidentSeverity,
   type IncidentStatus,
 } from '@/api/incidents';
-import { INCIDENT_DETAIL_HEADING } from '@/components/IncidentForm';
+import {
+  INCIDENT_DETAIL_HEADING,
+  INCIDENT_EDIT_HEADING,
+} from '@/components/incidentPageCopy';
 import { Badge } from '@/components/Badge';
 import { ErrorState } from '@/components/ErrorState';
 import { IncidentPageChrome } from '@/components/IncidentPageChrome';
@@ -167,7 +170,9 @@ export function IncidentDetailView(): JSX.Element {
             <Link to="/incidents">Back to incidents</Link>
           </Button>
           <Button asChild className="w-full sm:w-auto">
-            <Link to={`/incidents/${incident.id}/edit`}>Edit incident</Link>
+            <Link to={`/incidents/${incident.id}/edit`}>
+              {INCIDENT_EDIT_HEADING}
+            </Link>
           </Button>
         </div>
       </div>

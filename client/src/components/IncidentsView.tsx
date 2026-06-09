@@ -17,6 +17,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { Pagination } from '@/components/Pagination';
 import { SelectField } from '@/components/SelectField';
+import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
 import { Button } from '@/components/ui/button';
 
 type SortDirection = 'asc' | 'desc';
@@ -226,7 +227,7 @@ export function IncidentsView(): JSX.Element {
           </p>
         </div>
         <Button asChild className="w-full sm:w-auto">
-          <Link to="/incidents/create">Create incident</Link>
+          <Link to="/incidents/create">{INCIDENT_CREATE_HEADING}</Link>
         </Button>
       </div>
 

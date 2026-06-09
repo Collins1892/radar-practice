@@ -10,12 +10,13 @@ import {
 } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
 import { toast } from 'sonner';
+import { IncidentForm } from './IncidentForm';
 import {
+  INCIDENT_CREATE_HEADING,
   INCIDENT_CREATE_SUCCESS_MESSAGE,
   INCIDENT_EDIT_HEADING,
   INCIDENT_EDIT_SUCCESS_MESSAGE,
-  IncidentForm,
-} from './IncidentForm';
+} from './incidentPageCopy';
 
 const navigateMock = vi.hoisted(() => vi.fn());
 
@@ -293,7 +294,9 @@ describe('IncidentForm', () => {
     renderIncidentFormCreate();
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     expect(screen.getByLabelText(/^Title/)).toHaveFocus();
@@ -315,7 +318,9 @@ describe('IncidentForm', () => {
     // Act
     renderIncidentFormCreate();
     await fillValidIncidentForm();
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     await waitFor(() => {
