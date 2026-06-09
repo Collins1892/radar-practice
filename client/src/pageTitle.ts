@@ -3,7 +3,7 @@ import {
   INCIDENT_CREATE_HEADING,
   INCIDENT_DETAIL_HEADING,
   INCIDENT_EDIT_HEADING,
-} from '@/components/IncidentForm';
+} from '@/components/incidentPageCopy';
 
 export const SITE_TITLE = 'Radar Practice';
 
