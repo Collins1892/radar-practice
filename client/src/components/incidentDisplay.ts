@@ -1,7 +1,13 @@
+import { format, isValid, parseISO } from 'date-fns';
 import type { IncidentSeverity, IncidentStatus } from '@/api/incidents';
 import type { SelectFieldOption } from '@/components/SelectField';
 
 export const INCIDENT_ALL_FILTER = 'all';
+
+export function formatReportedDate(value: string): string {
+  const parsed = parseISO(value.slice(0, 10));
+  return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : String(value);
+}
 
 export const INCIDENT_SEVERITIES: readonly IncidentSeverity[] = [
   'Low',

@@ -60,6 +60,7 @@ No patient data, no production dependencies.
 - `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome).
 - `client/src/componentRegistry.tsx` — registry of all components for the components view. Has a file-level `eslint-disable react-refresh/only-export-components` — documented exception pending Week 7 architectural fix.
 - `client/src/components/formFieldUtils.ts` — shared utility (`formFieldErrorId`). Pure module, no JSX.
+- `client/src/components/incidentDisplay.ts` — shared incident display helpers — badge variants, status label, reported-date formatter, severity/status/filter option lists.
 
 ## TypeScript conventions
 
