@@ -1,22 +1,54 @@
 import type { IncidentSeverity, IncidentStatus } from '@/api/incidents';
+import type { SelectFieldOption } from '@/components/SelectField';
 
 export const INCIDENT_ALL_FILTER = 'all';
 
+export const INCIDENT_SEVERITIES: readonly IncidentSeverity[] = [
+  'Low',
+  'Medium',
+  'High',
+  'Critical',
+];
+
+export const INCIDENT_STATUSES: readonly IncidentStatus[] = [
+  'Open',
+  'InProgress',
+  'Resolved',
+  'Closed',
+];
+
+export function formatStatusLabel(status: IncidentStatus): string {
+  switch (status) {
+    case 'InProgress':
+      return 'In Progress';
+    default:
+      return status;
+  }
+}
+
+export const SEVERITY_FORM_OPTIONS = INCIDENT_SEVERITIES.map(
+  (severity): SelectFieldOption => ({
+    value: severity,
+    label: severity,
+  }),
+) satisfies readonly SelectFieldOption[];
+
+export const STATUS_FORM_OPTIONS = INCIDENT_STATUSES.map(
+  (status): SelectFieldOption => ({
+    value: status,
+    label: formatStatusLabel(status),
+  }),
+) satisfies readonly SelectFieldOption[];
+
 export const SEVERITY_OPTIONS = [
   { value: INCIDENT_ALL_FILTER, label: 'All severities' },
-  { value: 'Low', label: 'Low' },
-  { value: 'Medium', label: 'Medium' },
-  { value: 'High', label: 'High' },
-  { value: 'Critical', label: 'Critical' },
-];
+  ...SEVERITY_FORM_OPTIONS,
+] satisfies readonly SelectFieldOption[];
 
 export const STATUS_OPTIONS = [
   { value: INCIDENT_ALL_FILTER, label: 'All statuses' },
-  { value: 'Open', label: 'Open' },
-  { value: 'InProgress', label: 'In Progress' },
-  { value: 'Resolved', label: 'Resolved' },
-  { value: 'Closed', label: 'Closed' },
-];
+  ...STATUS_FORM_OPTIONS,
+] satisfies readonly SelectFieldOption[];
 
 export function severityBadgeVariant(
   severity: IncidentSeverity,
@@ -45,14 +77,5 @@ export function statusBadgeVariant(
       return 'success';
     case 'Closed':
       return 'default';
-  }
-}
-
-export function formatStatusLabel(status: IncidentStatus): string {
-  switch (status) {
-    case 'InProgress':
-      return 'In Progress';
-    default:
-      return status;
   }
 }
