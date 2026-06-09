@@ -106,7 +106,8 @@ Do:
 - All changes via feature branch and PR.
 
 Don't:
-- Commit or push unless explicitly asked; run destructive operations without confirmation.
+- Never commit or push changes without being explicitly asked to. Show changes only — the developer commits.
+- Run destructive operations without confirmation.
 - Make large unsupervised refactors; generate multiple tests in one prompt; skip the test run.
 - Expose stack traces or internal errors to the client; use `any`, non-null assertions, or disable ESLint rules (except documented exceptions in `componentRegistry.tsx` and `FormField.tsx`).
 - Over-engineer; translate AngularJS patterns directly — rewrite idiomatically in React (legacy is a reference for *what*, not *how*).

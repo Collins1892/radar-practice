@@ -218,7 +218,7 @@ changed library API.
 
 - Never include PII, patient data, NHS numbers, or any identifiable information in prompts
 - Never connect to or query production databases
-- Never commit or push without being explicitly asked to
+- Never commit or push changes without being explicitly asked to. Show changes only — the developer commits.
 - Never run destructive operations (delete files, drop tables, force push) without confirmation
 - Never make large unsupervised refactors across multiple files without a clear goal
 - Never generate multiple tests in one prompt — ask for one at a time
