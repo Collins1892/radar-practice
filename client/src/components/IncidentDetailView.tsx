@@ -7,9 +7,12 @@ import {
   incidentUserMessage,
   parseIncidentId,
   type Incident,
-  type IncidentSeverity,
-  type IncidentStatus,
 } from '@/api/incidents';
+import {
+  formatStatusLabel,
+  severityBadgeVariant,
+  statusBadgeVariant,
+} from '@/components/incidentDisplay';
 import {
   INCIDENT_DETAIL_HEADING,
   INCIDENT_EDIT_HEADING,
@@ -20,45 +23,6 @@ import { IncidentPageChrome } from '@/components/IncidentPageChrome';
 import { LoadingState } from '@/components/LoadingState';
 import { Button } from '@/components/ui/button';
 import { formatPageTitle } from '@/pageTitle';
-
-function severityBadgeVariant(
-  severity: IncidentSeverity,
-): 'default' | 'info' | 'warning' | 'danger' {
-  switch (severity) {
-    case 'Low':
-      return 'default';
-    case 'Medium':
-      return 'info';
-    case 'High':
-      return 'warning';
-    case 'Critical':
-      return 'danger';
-  }
-}
-
-function statusBadgeVariant(
-  status: IncidentStatus,
-): 'default' | 'info' | 'warning' | 'success' {
-  switch (status) {
-    case 'Open':
-      return 'info';
-    case 'InProgress':
-      return 'warning';
-    case 'Resolved':
-      return 'success';
-    case 'Closed':
-      return 'default';
-  }
-}
-
-function formatStatusLabel(status: IncidentStatus): string {
-  switch (status) {
-    case 'InProgress':
-      return 'In Progress';
-    default:
-      return status;
-  }
-}
 
 function formatReportedDate(value: string): string {
   const parsed = parseISO(value.slice(0, 10));

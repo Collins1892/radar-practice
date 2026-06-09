@@ -25,6 +25,12 @@ import { LoadingState } from '@/components/LoadingState';
 import { SelectField } from '@/components/SelectField';
 import { Button } from '@/components/ui/button';
 import {
+  INCIDENT_SEVERITIES,
+  INCIDENT_STATUSES,
+  SEVERITY_FORM_OPTIONS,
+  STATUS_FORM_OPTIONS,
+} from '@/components/incidentDisplay';
+import {
   INCIDENT_CREATE_HEADING,
   INCIDENT_CREATE_SUBTITLE,
   INCIDENT_CREATE_SUCCESS_MESSAGE,
@@ -33,34 +39,6 @@ import {
   INCIDENT_EDIT_SUCCESS_MESSAGE,
 } from '@/components/incidentPageCopy';
 import { cn } from '@/lib/utils';
-
-const SEVERITIES: readonly IncidentSeverity[] = [
-  'Low',
-  'Medium',
-  'High',
-  'Critical',
-];
-
-const STATUSES: readonly IncidentStatus[] = [
-  'Open',
-  'InProgress',
-  'Resolved',
-  'Closed',
-];
-
-const SEVERITY_OPTIONS = [
-  { value: 'Low', label: 'Low' },
-  { value: 'Medium', label: 'Medium' },
-  { value: 'High', label: 'High' },
-  { value: 'Critical', label: 'Critical' },
-];
-
-const STATUS_OPTIONS = [
-  { value: 'Open', label: 'Open' },
-  { value: 'InProgress', label: 'In Progress' },
-  { value: 'Resolved', label: 'Resolved' },
-  { value: 'Closed', label: 'Closed' },
-];
 
 type FieldKey =
   | 'title'
@@ -86,11 +64,11 @@ type IncidentFormProps =
   | { mode: 'edit'; incidentId: number };
 
 function isIncidentSeverityValue(value: string): value is IncidentSeverity {
-  return (SEVERITIES as readonly string[]).includes(value);
+  return (INCIDENT_SEVERITIES as readonly string[]).includes(value);
 }
 
 function isIncidentStatusValue(value: string): value is IncidentStatus {
-  return (STATUSES as readonly string[]).includes(value);
+  return (INCIDENT_STATUSES as readonly string[]).includes(value);
 }
 
 function formatReportedDateForApi(date: Date): string {
@@ -390,7 +368,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
             id={FIELD_ELEMENT_IDS.severity}
             value={severity}
             onValueChange={setSeverity}
-            options={SEVERITY_OPTIONS}
+            options={SEVERITY_FORM_OPTIONS}
             placeholder="Select severity"
             error={fieldErrors.severity}
             required
@@ -402,7 +380,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
             id={FIELD_ELEMENT_IDS.status}
             value={status}
             onValueChange={setStatus}
-            options={STATUS_OPTIONS}
+            options={STATUS_FORM_OPTIONS}
             placeholder="Select status"
             error={fieldErrors.status}
             required

@@ -17,6 +17,14 @@ import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { Pagination } from '@/components/Pagination';
 import { SelectField } from '@/components/SelectField';
+import {
+  INCIDENT_ALL_FILTER,
+  SEVERITY_OPTIONS,
+  STATUS_OPTIONS,
+  formatStatusLabel,
+  severityBadgeVariant,
+  statusBadgeVariant,
+} from '@/components/incidentDisplay';
 import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
 import { Button } from '@/components/ui/button';
 
@@ -26,71 +34,15 @@ type IncidentRow = Incident & Record<string, unknown>;
 
 const PAGE_SIZE = 25;
 
-const ALL_FILTER = 'all';
-
-const SEVERITY_OPTIONS = [
-  { value: ALL_FILTER, label: 'All severities' },
-  { value: 'Low', label: 'Low' },
-  { value: 'Medium', label: 'Medium' },
-  { value: 'High', label: 'High' },
-  { value: 'Critical', label: 'Critical' },
-];
-
-const STATUS_OPTIONS = [
-  { value: ALL_FILTER, label: 'All statuses' },
-  { value: 'Open', label: 'Open' },
-  { value: 'InProgress', label: 'In Progress' },
-  { value: 'Resolved', label: 'Resolved' },
-  { value: 'Closed', label: 'Closed' },
-];
-
-function severityBadgeVariant(
-  severity: IncidentSeverity,
-): 'default' | 'info' | 'warning' | 'danger' {
-  switch (severity) {
-    case 'Low':
-      return 'default';
-    case 'Medium':
-      return 'info';
-    case 'High':
-      return 'warning';
-    case 'Critical':
-      return 'danger';
-  }
-}
-
-function statusBadgeVariant(
-  status: IncidentStatus,
-): 'default' | 'info' | 'warning' | 'success' {
-  switch (status) {
-    case 'Open':
-      return 'info';
-    case 'InProgress':
-      return 'warning';
-    case 'Resolved':
-      return 'success';
-    case 'Closed':
-      return 'default';
-  }
-}
-
-function formatStatusLabel(status: IncidentStatus): string {
-  switch (status) {
-    case 'InProgress':
-      return 'In Progress';
-    default:
-      return status;
-  }
-}
-
 function formatReportedDate(value: string): string {
   const parsed = parseISO(value.slice(0, 10));
   return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : String(value);
 }
 
 export function IncidentsView(): JSX.Element {
-  const [severityFilter, setSeverityFilter] = useState<string>(ALL_FILTER);
-  const [statusFilter, setStatusFilter] = useState<string>(ALL_FILTER);
+  const [severityFilter, setSeverityFilter] =
+    useState<string>(INCIDENT_ALL_FILTER);
+  const [statusFilter, setStatusFilter] = useState<string>(INCIDENT_ALL_FILTER);
   const [sortKey, setSortKey] = useState<string>('reportedDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [page, setPage] = useState<number>(1);
@@ -104,11 +56,11 @@ export function IncidentsView(): JSX.Element {
     try {
       const data = await fetchIncidents({
         severity:
-          severityFilter === ALL_FILTER
+          severityFilter === INCIDENT_ALL_FILTER
             ? undefined
             : (severityFilter as IncidentSeverity),
         status:
-          statusFilter === ALL_FILTER
+          statusFilter === INCIDENT_ALL_FILTER
             ? undefined
             : (statusFilter as IncidentStatus),
         sortBy: sortKey,
@@ -148,7 +100,8 @@ export function IncidentsView(): JSX.Element {
   };
 
   const hasActiveFilters =
-    severityFilter !== ALL_FILTER || statusFilter !== ALL_FILTER;
+    severityFilter !== INCIDENT_ALL_FILTER ||
+    statusFilter !== INCIDENT_ALL_FILTER;
 
   const columns = useMemo(
     () => [
