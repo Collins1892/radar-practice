@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent, JSX } from 'react';
 import {
-  matchPath,
   Navigate,
   NavLink,
   Route,
@@ -9,11 +8,6 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { createItem, fetchItems } from './api';
-import {
-  INCIDENT_CREATE_HEADING,
-  INCIDENT_DETAIL_HEADING,
-  INCIDENT_EDIT_HEADING,
-} from '@/components/incidentPageCopy';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
 import { ComponentsView } from './components/ComponentsView';
@@ -24,7 +18,7 @@ import { IncidentsView } from './components/IncidentsView';
 import { componentRegistry } from './componentRegistry';
 import { toUserMessage } from './errors';
 import type { Item } from './types';
-import { formatPageTitle, SITE_TITLE } from '@/pageTitle';
+import { resolvePageTitle } from '@/pageTitle';
 import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 import './App.css';
@@ -33,28 +27,6 @@ const skipLinkClassName = cn(
   'absolute left-[-9999px] top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
   'focus-visible:left-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 );
-
-function resolvePageTitle(pathname: string): string {
-  if (matchPath({ path: '/incidents/create', end: true }, pathname)) {
-    return formatPageTitle(INCIDENT_CREATE_HEADING);
-  }
-  if (matchPath({ path: '/incidents/:id/edit', end: true }, pathname)) {
-    return formatPageTitle(INCIDENT_EDIT_HEADING);
-  }
-  if (matchPath({ path: '/incidents/:id', end: true }, pathname)) {
-    return formatPageTitle(INCIDENT_DETAIL_HEADING);
-  }
-  if (matchPath({ path: '/incidents', end: true }, pathname)) {
-    return formatPageTitle('Incidents');
-  }
-  if (matchPath({ path: '/components', end: true }, pathname)) {
-    return formatPageTitle('Components');
-  }
-  if (matchPath({ path: '/', end: true }, pathname)) {
-    return formatPageTitle('Items');
-  }
-  return SITE_TITLE;
-}
 
 function usePageTitle(): void {
   const { pathname } = useLocation();
