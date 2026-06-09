@@ -1,6 +1,6 @@
 ---
 name: playwright-test-writer
-description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use whenever the user asks to write, add, generate, or create an e2e test, Playwright test, browser test, or user journey. Always write exactly one test at a time. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Key user journeys are deferred to Week 5 — this skill prepares agents for that work. Run npx playwright test from client/ after every test. Synthetic data only; no PII.
+description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create an e2e test, Playwright spec, browser test, or user journey under client/e2e/. One test() per request. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Key user journeys are deferred to Week 5 — this skill prepares agents for that work. Run npx playwright test from client/ after adding or changing a test. Confirm the suite passes before declaring done. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, or Radix e2e interactions.
 ---
 
 # Playwright Test Writer
@@ -9,8 +9,8 @@ Guides writing Playwright end-to-end tests for the `client/` React TypeScript ap
 
 ## Core rules
 
-- **One test per request.** Write exactly one `test(...)` method. When done, ask which test to write next — never generate a batch.
-- **Always run `npx playwright test`** from `client/` after writing the test. Do not declare the task done until the suite passes.
+- **One test per request.** Write one `test(...)` at a time — not a batch. Offer the next test separately.
+- **Run tests and confirm pass.** After any change, run `npx playwright test` from `client/` and confirm the suite passes before declaring done.
 - **Start APIs when the journey needs data.** Playwright's `webServer` starts Vite only — ItemsApi and IncidentsApi must be running separately for journey tests (see [Run tests](#run-tests) and [Playwright gotchas](#playwright-gotchas)).
 - **Use Context7** when you need to verify Playwright locator, `expect`, or `webServer` API details:
   1. `mcp__context7__resolve-library-id` with library name + question
@@ -20,6 +20,18 @@ Guides writing Playwright end-to-end tests for the `client/` React TypeScript ap
 - **Synthetic data only** — no PII, patient data, or realistic-looking personal identifiers in fixtures (e.g. `E2E Widget`, `E2E spill in corridor B`).
 - **Do not remove or edit existing tests** without explicit instruction.
 - **Do not change `playwright.config.ts`** unless the user explicitly requests CI or `webServer` work.
+
+## Recommended effort level
+
+Calibrate reasoning depth and runtime setup:
+
+| Situation | Guidance |
+|-----------|----------|
+| Journey test (items/incidents CRUD), new page object, Radix Select/DatePicker interaction, or API-dependent assertions | **think hard** — confirm ItemsApi and/or IncidentsApi are running |
+| First spec in a new `*.journey.spec.ts` or shared locators across routes | **think hard** |
+| Smoke test (title, nav shell, route loads) following [app.spec.ts](../../../client/e2e/app.spec.ts) | Standard effort — Vite via `webServer` only; no extra keyword |
+
+When **think hard** applies, classify smoke vs journey before writing; do not require APIs for smoke. Prefer accessible locators from [react-test-writer §6](../react-test-writer/SKILL.md#6-accessibility-tests). Do not expand Week 5 journey catalog beyond the single `test` requested.
 
 ## Tech stack
 
@@ -136,7 +148,7 @@ Journey tests that need live APIs **will fail** in a Vite-only environment (erro
 
 ## Arrange/Act/Assert pattern
 
-Always include the three comment markers in every `test`, even when Arrange is minimal:
+Include the three comment markers in every `test`, even when Arrange is minimal:
 
 ```typescript
 test('app loads', async ({ page }): Promise<void> => {
@@ -383,13 +395,13 @@ When **appending** to an existing spec, insert the new `test` inside the relevan
 
 ## Workflow for each test request
 
-1. Classify: smoke vs page object vs journey; which domain (items/incidents).
+1. **Classify and calibrate effort** — smoke vs page object vs journey; which domain (items/incidents); apply [Recommended effort level](#recommended-effort-level).
 2. Determine the target file (table above).
 3. Look up any uncertain Playwright API details via Context7 before writing.
-4. Write exactly one `test` (and page object methods only if required for that test).
+4. Write one `test` (and page object methods only if required for that test).
 5. If the file exists, show only the new `test` (and any new page object) with a clear note about where to insert it. If it is a new file, show the complete file.
-6. Run `npx playwright test` from `client/` with the correct APIs running for journey tests; confirm all tests pass before asking for the next one.
-7. Confirm what was written and the test result, then ask: "Which e2e test or journey would you like next?"
+6. Run `npx playwright test` from `client/` — Vite only for smoke; start APIs for journey tests as needed.
+7. Confirm what was written and the test result. If tests fail, fix before offering the next test. Then ask: "Which e2e test or journey would you like next?"
 
 ## Related repo docs (follow-up)
 

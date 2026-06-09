@@ -1,6 +1,6 @@
 ---
 name: component-builder
-description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use whenever the user asks to create, add, scaffold, or implement a React component, form, page, view, or UI building block. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after every change that affects behaviour.
+description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use when the user asks to build, add, scaffold, implement, or create a hand-authored React component, screen, or route shell in client/. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after behavioural changes. Confirm the suite passes before declaring done. Calibrate effort: think hard for screens, feature forms, or app shell/routing.
 ---
 
 # Component Builder
@@ -18,10 +18,22 @@ Guides building hand-authored React components for the `client/` TypeScript app.
 | **No legacy CSS** | New components use Tailwind only. Do not add new `.css` files or global rules. (`ItemsList.css` is legacy — migrate to Tailwind when touching that file.) |
 | **Synthetic data only** | No PII, patient data, or realistic-looking personal identifiers in fixtures, placeholders, or examples. |
 | **Use Context7** | When uncertain about React 19, Radix, shadcn, react-router-dom, react-day-picker, or Tailwind v4 APIs, resolve and query docs before writing. |
-| **Run tests** | After any behavioural change, run `npm test` from `client/`. Do not declare done until the suite passes. |
+| **Run tests** | After any behavioural change, run `npm test` from `client/` and confirm the suite passes before declaring done. |
 | **Tests are separate** | Do not generate Vitest tests in the same request unless the user asks. Defer to [react-test-writer](../react-test-writer/SKILL.md) — one test per request. |
-| **Accessibility is built in** | Apply the build-time checklist in § Accessibility essentials. For a dedicated WCAG audit or build guide, use [wcag](../wcag/SKILL.md). |
+| **Accessibility is built in** | Full [essentials checklist](#accessibility-essentials) for forms and screens; spot-check primitives against [Positive references](#positive-references). For a dedicated WCAG audit or build guide, use [wcag](../wcag/SKILL.md). |
 | **Review is separate** | For merge-readiness review of finished code, use [code-reviewer](../code-reviewer/SKILL.md). |
+
+## Recommended effort level
+
+Calibrate design and implementation depth:
+
+| Situation | Guidance |
+|-----------|----------|
+| Screen/view with fetch + state machine, feature form (validation, focus-first-error, API submit), app shell/routing changes, or new DataTable + Pagination composition | **think hard** — use Plan mode if multi-file |
+| New Radix field wrapper or gallery registry entry with interactive demo state | **think hard** |
+| Primitive or thin route shell copying an existing [Positive references](#positive-references) file | Standard effort — match neighbour structure; essentials spot-check only |
+
+When **think hard** applies, read the matching [Build patterns by type](#build-patterns-by-type) section and [Accessibility essentials](#accessibility-essentials) in full. For dedicated WCAG audit before/after build, use [wcag](../wcag/SKILL.md). Do not generate Vitest tests in the same request unless asked ([react-test-writer](../react-test-writer/SKILL.md)).
 
 ## Use Context7
 
@@ -480,7 +492,9 @@ Hand-authored components call typed modules — never inline `fetch` in primitiv
 
 ## Accessibility essentials
 
-Build accessibly by default. For WCAG 2.2 AA audit reports or detailed build guides, use [wcag](../wcag/SKILL.md). For Vitest accessibility assertions after building, use [react-test-writer §6](../react-test-writer/SKILL.md).
+Build accessibly by default. For WCAG 2.2 AA audit reports or detailed build guides, use [wcag](../wcag/SKILL.md). For Vitest accessibility assertions after building, use [react-test-writer §6](../react-test-writer/SKILL.md#6-accessibility-tests).
+
+For forms and screens, work through the checklist below in full; for primitives, spot-check against [Positive references](#positive-references).
 
 **Minimum checklist for every new component:**
 
@@ -533,16 +547,17 @@ When a new screen or shell needs routing:
 ## Workflow for each build request
 
 1. **Confirm scope** — one component, screen, or feature slice; clarify create vs edit vs read-only if ambiguous. For screens or feature forms spanning multiple files, use Plan mode before implementing.
-2. **Classify** — use the [taxonomy](#component-taxonomy) to pick the component type.
-3. **Skim `CLAUDE.md`** if not already in context.
-4. **Read the positive reference** for that type (table above) — match its structure before writing.
-5. **Context7** — if uncertain about Radix, shadcn, or router APIs (max three calls).
-6. **Implement** — single file (or tight feature slice); universal standards + type-specific patterns.
-7. **Wire** — route, registry, or `pageTitle` updates if the feature is user-facing.
-8. **Accessibility pass** — run the [essentials checklist](#accessibility-essentials); defer deep audit to [wcag](../wcag/SKILL.md).
-9. **Run `npm test`** from `client/` and fix regressions.
-10. **Summarise** what was built, which files changed, and test result.
-11. **Offer follow-ups** — test (react-test-writer), journey tests (playwright-test-writer), WCAG audit (wcag), or code review (code-reviewer).
+2. **Calibrate effort** — apply [Recommended effort level](#recommended-effort-level); use Plan mode when **think hard** spans multiple files.
+3. **Classify** — use the [taxonomy](#component-taxonomy) to pick the component type.
+4. **Skim `CLAUDE.md`** if not already in context.
+5. **Read the positive reference** for that type (table above) — match its structure before writing.
+6. **Context7** — if uncertain about Radix, shadcn, or router APIs (max three calls).
+7. **Implement** — single file (or tight feature slice); universal standards + type-specific patterns.
+8. **Wire** — route, registry, or `pageTitle` updates if the feature is user-facing.
+9. **Accessibility pass** — full [essentials checklist](#accessibility-essentials) for forms/screens; spot-check primitives; defer deep audit to [wcag](../wcag/SKILL.md).
+10. **Run `npm test`** from `client/`, fix regressions, and confirm the suite passes before declaring done.
+11. **Summarise** what was built, which files changed, and test result.
+12. **Offer follow-ups** — test (react-test-writer), journey tests (playwright-test-writer), WCAG audit (wcag), or code review (code-reviewer).
 
 ### Build flow
 
@@ -550,6 +565,7 @@ When a new screen or shell needs routing:
 flowchart TD
   trigger[User_requests_component]
   scope[Confirm_one_scope]
+  calibrate[Calibrate_effort_level]
   classify[Classify_component_type]
   read[Read_positive_reference_and_CLAUDE.md]
   context7{Uncertain_library_API?}
@@ -560,7 +576,7 @@ flowchart TD
   test[npm_test_in_client]
   done[Summarise_and_offer_follow-ups]
 
-  trigger --> scope --> classify --> read
+  trigger --> scope --> calibrate --> classify --> read
   read --> context7
   context7 -->|yes| docs --> implement
   context7 -->|no| implement
