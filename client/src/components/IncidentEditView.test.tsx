@@ -28,7 +28,6 @@ function renderIncidentEditViewWithInvalidId(): ReturnType<typeof render> {
 describe('IncidentEditView', () => {
   beforeEach((): void => {
     vi.mocked(getIncident).mockReset();
-    Element.prototype.scrollIntoView = vi.fn();
   });
 
   it('shows an error state when the id param is not a valid number', (): void => {

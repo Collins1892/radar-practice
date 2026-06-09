@@ -119,7 +119,6 @@ describe('IncidentForm', () => {
     vi.mocked(updateIncident).mockReset();
     vi.mocked(toast.success).mockReset();
     navigateMock.mockReset();
-    Element.prototype.scrollIntoView = vi.fn();
   });
 
   async function fillValidIncidentForm(): Promise<void> {
