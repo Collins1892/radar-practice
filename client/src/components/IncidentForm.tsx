@@ -326,6 +326,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
           className="w-full max-w-lg space-y-4"
           onSubmit={(e) => void handleSubmit(e)}
           noValidate
+          aria-busy={submitting || undefined}
         >
           <FormField
             label="Title"

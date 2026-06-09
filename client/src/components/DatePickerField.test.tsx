@@ -139,4 +139,37 @@ describe('DatePickerField', () => {
       screen.queryByRole('button', { name: /previous month/i }),
     ).not.toBeInTheDocument();
   });
+
+  it('closes the calendar popover when disabled becomes true while open', async (): Promise<void> => {
+    // Arrange
+    const onChange = vi.fn((): void => {});
+    const { rerender } = render(
+      <DatePickerField
+        label={labelText}
+        id="incident-date"
+        value={undefined}
+        onChange={onChange}
+        placeholder="Pick incident date"
+      />,
+    );
+    fireEvent.click(getTrigger());
+    await screen.findByRole('button', { name: /previous month/i });
+
+    // Act
+    rerender(
+      <DatePickerField
+        label={labelText}
+        id="incident-date"
+        value={undefined}
+        onChange={onChange}
+        placeholder="Pick incident date"
+        disabled={true}
+      />,
+    );
+
+    // Assert
+    expect(
+      screen.queryByRole('button', { name: /previous month/i }),
+    ).not.toBeInTheDocument();
+  });
 });
