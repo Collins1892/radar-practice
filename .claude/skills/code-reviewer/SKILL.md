@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Full-stack code review for this repo. Use whenever the user asks to review code, run a code review, check a diff, or review a PR or file. Review one file or diff at a time; explain issues and suggest fixes; never edit code. Covers universal safety and conventions, .NET backend rules (including EF Core persistence), and React/TypeScript frontend rules (including Tailwind v4, shadcn/ui, and Radix). Use Context7 when unsure about library or WCAG guidance.
+description: Full-stack code review for this repo. Use whenever the user asks to review code, run a code review, check a diff, or review a PR or file. Review one file or diff at a time; explain issues and suggest fixes; never edit code. Covers universal safety and conventions, .NET backend rules (including EF Core persistence), and React/TypeScript frontend rules (including Tailwind v4, shadcn/ui, and Radix). Use Context7 when unsure about library or WCAG guidance. Calibrate effort: think hard for WCAG/a11y-heavy UI or multi-file diffs.
 ---
 
 # Code Reviewer
@@ -188,13 +188,14 @@ There is no accessibility ESLint plugin in this repo yet — apply judgment and 
 ## Workflow for each review
 
 1. **Confirm scope** — one file path or one diff; if ambiguous, ask once.
-2. **Classify path** — `ItemsApi*` → backend + universal; `client/` → frontend + universal; other paths → universal first, then any obvious stack-specific rules. Treat `client/src/components/ui/**` and `src/lib/utils.ts` as generated/ESLint-ignored — give them a lighter review (usage and registry divergence) than hand-written app code.
-3. **Skim `CLAUDE.md`** if it is not already in context for this session.
-4. **Read only what is in scope** — the provided file or diff; do not refactor or “fix” other files.
-5. **Context7** — optional; use when library or WCAG guidance is uncertain (max three calls per review).
-6. **Write the review** using the template below (severity: Blocker, Major, Minor, Suggestion).
-7. **Close explicitly** with: **I have not made any code changes.**
-8. **Prefer not to offer** to implement fixes in the same turn unless the user asks; keep implementation as a separate task.
+2. **Calibrate effort** — apply [Recommended effort level](#recommended-effort-level).
+3. **Classify path** — `ItemsApi*` → backend + universal; `client/` → frontend + universal; other paths → universal first, then any obvious stack-specific rules. Treat `client/src/components/ui/**` and `src/lib/utils.ts` as generated/ESLint-ignored — give them a lighter review (usage and registry divergence) than hand-written app code.
+4. **Skim `CLAUDE.md`** if it is not already in context for this session.
+5. **Read only what is in scope** — the provided file or diff; do not refactor or “fix” other files.
+6. **Context7** — optional; use when library or WCAG guidance is uncertain (max three calls per review).
+7. **Write the review** using the template below (severity: Blocker, Major, Minor, Suggestion).
+8. **Close explicitly** with: **I have not made any code changes.**
+9. **Prefer not to offer** to implement fixes in the same turn unless the user asks; keep implementation as a separate task.
 
 ### Review output template
 
