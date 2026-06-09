@@ -13,6 +13,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { FormField } from '@/components/FormField';
 import { LoadingState } from '@/components/LoadingState';
 import { Pagination } from '@/components/Pagination';
+import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
 import { SelectField } from '@/components/SelectField';
 
 function SelectFieldPreview(): ReactElement {
@@ -222,7 +223,7 @@ export const componentRegistry: ComponentEntry[] = [
               type="button"
               className="rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
             >
-              Create incident
+              {INCIDENT_CREATE_HEADING}
             </button>
           }
         />

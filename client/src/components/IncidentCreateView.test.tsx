@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createIncident } from '@/api/incidents';
 import type { Incident } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
+import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
 import { IncidentCreateView } from './IncidentCreateView';
 
 const navigateMock = vi.hoisted(() => vi.fn());
@@ -120,7 +121,7 @@ describe('IncidentCreateView', () => {
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Reported date')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Create incident' }),
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
     ).toBeInTheDocument();
   });
 
@@ -129,7 +130,9 @@ describe('IncidentCreateView', () => {
     renderIncidentCreateView();
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     expect(screen.getByText('Title is required.')).toBeInTheDocument();
@@ -150,7 +153,9 @@ describe('IncidentCreateView', () => {
     fireEvent.change(screen.getByLabelText(/^Title/), {
       target: { value: longTitle },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     expect(
@@ -177,7 +182,9 @@ describe('IncidentCreateView', () => {
 
     // Act
     await fillValidIncidentForm();
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     await waitFor(() => {
@@ -208,7 +215,9 @@ describe('IncidentCreateView', () => {
 
     // Act
     await fillValidIncidentForm();
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     await waitFor(() => {
@@ -227,7 +236,9 @@ describe('IncidentCreateView', () => {
 
     // Act
     await fillValidIncidentForm();
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     const alert = await screen.findByRole('alert');
@@ -247,7 +258,9 @@ describe('IncidentCreateView', () => {
 
     // Act
     await fillValidIncidentForm();
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     const alert = await screen.findByRole('alert');
@@ -281,7 +294,9 @@ describe('IncidentCreateView', () => {
       tomorrow.getMonth(),
       tomorrow.getDate(),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Create incident' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
 
     // Assert
     expect(

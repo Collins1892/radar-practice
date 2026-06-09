@@ -24,17 +24,15 @@ import { IncidentPageChrome } from '@/components/IncidentPageChrome';
 import { LoadingState } from '@/components/LoadingState';
 import { SelectField } from '@/components/SelectField';
 import { Button } from '@/components/ui/button';
+import {
+  INCIDENT_CREATE_HEADING,
+  INCIDENT_CREATE_SUBTITLE,
+  INCIDENT_CREATE_SUCCESS_MESSAGE,
+  INCIDENT_EDIT_HEADING,
+  INCIDENT_EDIT_SUBTITLE,
+  INCIDENT_EDIT_SUCCESS_MESSAGE,
+} from '@/components/incidentPageCopy';
 import { cn } from '@/lib/utils';
-
-export const INCIDENT_CREATE_HEADING = 'Create incident';
-export const INCIDENT_CREATE_SUBTITLE =
-  'Report a new incident to the Incidents API';
-export const INCIDENT_EDIT_HEADING = 'Edit incident';
-export const INCIDENT_EDIT_SUBTITLE =
-  'Update an existing incident in the Incidents API';
-export const INCIDENT_DETAIL_HEADING = 'Incident detail';
-export const INCIDENT_CREATE_SUCCESS_MESSAGE = 'Incident created successfully.';
-export const INCIDENT_EDIT_SUCCESS_MESSAGE = 'Incident saved successfully.';
 
 const SEVERITIES: readonly IncidentSeverity[] = [
   'Low',

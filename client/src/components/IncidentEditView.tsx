@@ -2,8 +2,9 @@ import type { JSX } from 'react';
 import { useParams } from 'react-router-dom';
 import { parseIncidentId } from '@/api/incidents';
 import { ErrorState } from '@/components/ErrorState';
-import { INCIDENT_EDIT_HEADING, IncidentForm } from '@/components/IncidentForm';
+import { IncidentForm } from '@/components/IncidentForm';
 import { IncidentPageChrome } from '@/components/IncidentPageChrome';
+import { INCIDENT_EDIT_HEADING } from '@/components/incidentPageCopy';
 
 export function IncidentEditView(): JSX.Element {
   const { id } = useParams();

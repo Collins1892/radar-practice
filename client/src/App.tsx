@@ -13,7 +13,7 @@ import {
   INCIDENT_CREATE_HEADING,
   INCIDENT_DETAIL_HEADING,
   INCIDENT_EDIT_HEADING,
-} from './components/IncidentForm';
+} from '@/components/incidentPageCopy';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
 import { ComponentsView } from './components/ComponentsView';

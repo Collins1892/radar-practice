@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getIncident, type Incident } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
-import { INCIDENT_DETAIL_HEADING } from '@/components/IncidentForm';
+import { INCIDENT_DETAIL_HEADING } from '@/components/incidentPageCopy';
 import { IncidentDetailView } from './IncidentDetailView';
 
 vi.mock('@/api/incidents', async (importOriginal) => {
