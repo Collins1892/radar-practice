@@ -1,3 +1,197 @@
+## Day 18 — 9 June 2026
+
+### Summary
+
+Week 4 Day 2 (Tuesday). Full day — prompting guide deep-dive, all six
+skills calibrated with effort levels, agent boundary rules established,
+git worktrees demonstrated with parallel agents across 8 PRs (#66–#73),
+and a four-run thinking budgets experiment. First real merge conflict
+resolved via rebase. 158 tests at close. Hotspot for the afternoon — no
+bandwidth issues in practice.
+
+### Prompting guide deep-dive — effort levels replace budget_tokens
+
+Read the live Anthropic Claude 4.x prompting guide. The headline finding
+for this programme: `budget_tokens` extended-thinking is deprecated. The
+current lever is the `effort` parameter plus adaptive thinking. Effort
+ladder: low / medium / high / xhigh / max. Sonnet 4.6 defaults to high.
+In Claude Code, effort is controlled via keywords: "think" / "think hard"
+/ "think harder" / "ultrathink". xhigh is the recommended default for
+coding and agentic work.
+
+The plan's framing of "thinking budgets" was one version behind. Spotting
+that immediately is exactly the "keeping up with the frontier" the CTO
+asked for.
+
+Other key extractions from the guide: subagent orchestration is native in
+latest models (Opus 4.8 spawns fewer subagents than 4.6 by default);
+code review harnesses should instruct for coverage and filter downstream
+not suppress findings upfront; multi-window state via git and progress
+notes matches documented best practice — the programme arrived at these
+patterns independently.
+
+### All six skills calibrated with effort levels — PRs #66 and #67
+
+Added Recommended effort level sections to all six agent skills. Each
+skill now specifies "think hard" for complex work (WCAG/a11y-heavy UI,
+multi-file diffs, journey tests, screens/feature forms) and standard
+effort for pattern-following tasks. Overtrigger-prone language (CRITICAL,
+ALWAYS, NEVER, exactly) softened across all six to reduce Claude 4.x
+over-application.
+
+Three full review passes across two PRs: Cursor first, then Claude Code
+`/review`, then fixes and re-review. Each pass caught different issues —
+the code-reviewer skill's own workflow step for calibration was missing,
+the wcag core rule conflicted with the new effort table, test-writer pass
+gates had been removed. Documentation quality is as reviewable as code.
+
+The no-commit/no-push rule was also tightened in this PR after Cursor
+Auto committed without being asked on Day 17. Both CLAUDE.md and
+`.cursor/rules/project.mdc` updated.
+
+### Agent boundary failures — Cursor Auto
+
+Day 18 produced the clearest evidence yet of Cursor Auto's tendency to
+complete the full git workflow without instruction:
+
+- Committed without being asked
+- Pushed without being asked
+- Raised pull requests via `gh pr create`
+- Posted review comments via `gh pr review`
+- Applied additional scope changes beyond the specified task
+
+All four actions are now explicitly blocked in CLAUDE.md and `.cursor/rules`.
+The pattern: agents treat "apply changes" as permission to complete the
+full git workflow unless told otherwise. "Do not commit or push. Do not
+raise pull requests." must be explicit in every prompt.
+
+Force push was also added to the blocked list — Cursor Auto squashed
+commits and force-pushed a branch during PR #70's review pass.
+
+### Git worktrees for parallel agents
+
+Set up three worktrees for the multi-agent demo:
+`git worktree add ../radar-practice-wt1 -b feature/extract-incident-constants`
+`git worktree add ../radar-practice-wt2 -b feature/remove-scrollintoview-mocks`
+`git worktree add ../radar-practice-wt3 -b feature/resolve-page-title`
+
+Each gets its own Claude Code session, its own branch, its own PR. The
+developer acts as orchestrator — briefing agents in parallel, reviewing
+sequentially. The parallelism is real: all three plans came back within
+minutes of each other.
+
+Key friction: each worktree has no node_modules. npm pulls from the
+global cache (bandwidth near-zero) but install time is real and
+disruptive mid-task. Established discipline: run `npm install` in each
+worktree's `client/` folder immediately after `git worktree add`, before
+briefing any agents.
+
+Three worktrees was too many — coordination overhead was significant, and
+the wt3 situation (merge conflict, scope overrun, mid-merge abort) added
+unplanned complexity. Two is the confirmed practical ceiling for
+manageable parallel orchestration.
+
+### Multi-agent task — PRs #68–#73
+
+Six PRs from parallel agents across two worktree runs:
+
+**Run 1 (three worktrees):**
+- #68 — Redundant scrollIntoView mocks removed from 5 test files
+- #69 — resolvePageTitle moved to pageTitle.ts; 7 unit tests added
+- #70 — Incident constants extracted to incidentPageCopy.ts
+
+**Run 2 (two worktrees):**
+- #71 — disabled prop added to SelectField and DatePickerField; aria-busy on form; controlled Popover open state; submit-lock integration test
+- #72 — Severity/status display helpers extracted to incidentDisplay.ts; 14 unit tests; IncidentForm local options deduped
+- #73 — formatReportedDate extracted to incidentDisplay.ts; 3 unit tests; CLAUDE.md and .cursor/rules synced
+
+Six items from the Week 7 tidy list closed in one day via parallel agents.
+
+### Thinking budgets experiment
+
+Four plan runs of the same extraction task (formatReportedDate) at
+increasing effort levels, comparing plan output:
+
+- **No keyword** — complete plan: both locations, correct home module,
+  unused import cleanup, tests included.
+- **"think"** — structurally identical. Referenced the existing test
+  assertion as a safety net; noted CLAUDE.md as optional.
+- **"think hard"** — CLAUDE.md update added as a concrete plan step (not
+  optional); three test cases vs two; pre-commit hook explicitly called
+  out in verification.
+- **"ultrathink"** — call sites confirmed explicitly ("Call site at line
+  158 is unchanged"); `String(value)` faithfulness note added (subtle
+  correctness observation the others missed). `ultrathink` highlighted in
+  rainbow colour in the Claude Code terminal — visual signal the keyword
+  is recognised.
+
+Conclusion: effort calibration matters most on genuinely complex tasks.
+For a mechanical extraction, the plans were structurally identical. The
+gains from "think hard" to "ultrathink" are real but marginal. Default
+effort is sufficient for pattern-following work — the skill effort tables
+are calibrated correctly.
+
+### First merge conflict
+
+PR #69 (resolvePageTitle) and PR #70 (incident constants extraction) both
+modified App.tsx. #70 merged first, which rewrote the import block. #69
+then conflicted on merge.
+
+Resolution: rebase #69 onto main, resolve the App.tsx conflict (keep both
+sets of changes — resolvePageTitle removal from #69 and import alias fix
+from #70), continue rebase, force-with-lease push.
+
+`git fetch origin` → `git rebase origin/main` → resolve conflict in App.tsx → `git add client/src/App.tsx` → `git rebase --continue` → `git push --force-with-lease`
+
+`git push --force-with-lease` is the correct tool after a rebase — safer
+than `--force` as it only overwrites if no one else has pushed since your
+last fetch. VS Code as git editor (`git config core.editor "code --wait"`)
+prevents the vim surprise when the rebase commit message editor opens.
+
+The conflict also surfaced a subtler logical dependency: pageTitle.ts
+imported INCIDENT_*_HEADING from IncidentForm, but PR #70 had moved those
+constants to incidentPageCopy. The import alias was correct but pointing
+at a module that no longer exported those values. One test was passing
+vacuously — both sides of the assertion were `undefined | Radar Practice`.
+Fixed by updating pageTitle.ts and pageTitle.test.ts to import from
+incidentPageCopy.
+
+### What I would not trust the agent to do unsupervised
+
+- Respect "do not commit or push" without the explicit phrase in the prompt
+  — Cursor Auto completed the full git workflow on every task today until
+  the boundary rules were added
+- Raise PRs or post review comments without instruction — treated both as
+  part of "apply changes"
+- Know that a worktree needs npm install before tests can run — attempted
+  to run tests immediately and discovered it mid-task
+- Manage three parallel agents without coordination overhead — two is the
+  practical ceiling
+- Produce meaningfully different plans for pattern-following tasks at
+  higher effort levels — four runs of the same extraction were structurally
+  identical; effort calibration for mechanical work is wasted cost
+- Detect that a test was passing vacuously — both expected and actual were
+  `undefined | Radar Practice`; it looked green
+
+### Ideas and observations
+
+- 158 tests, 8 PRs (#66–#73), all six skills calibrated — in one day,
+  mostly from home on a hotspot.
+- The thinking budget experiment is strong Week 6 material — four concrete
+  data points showing when effort calibration adds value and when it
+  doesn't. That's a nuanced answer, not just "ultrathink everything."
+- Six Week 7 tidy list items closed via parallel agents in a single
+  afternoon session. The worktree pattern is the direct answer to the CTO's
+  "agentic AI across the SDLC" requirement.
+- The merge conflict is the best portfolio story from Day 18 — it's not
+  just "I used worktrees", it's "here's what went wrong, here's why, and
+  here's exactly how I resolved it." That's the difference between having
+  done it and having understood it.
+- Cursor Auto's autonomous git workflow is a boundary problem now but a
+  target capability by Week 5 — when agents work across worktrees on
+  parallel tasks, autonomous commit and PR raising becomes the feature.
+  Noted in decisions log.
+
 ## Day 17 — 8 June 2026
 
 ### Summary

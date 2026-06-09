@@ -108,6 +108,8 @@ Do:
 
 Don't:
 - Commit or push without being explicitly asked — show changes only; the developer commits.
+- Force push (`git push --force` or `--force-with-lease`) without explicit instruction.
+- Raise pull requests via `gh pr create` or post PR comments via `gh pr review`.
 - Run destructive operations without confirmation.
 - Make large unsupervised refactors; generate multiple tests in one prompt; skip the test run.
 - Expose stack traces or internal errors to the client; use `any`, non-null assertions, or disable ESLint rules (except documented exceptions in `componentRegistry.tsx` and `FormField.tsx`).
