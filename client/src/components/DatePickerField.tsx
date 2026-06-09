@@ -19,6 +19,7 @@ type DatePickerFieldProps = {
   placeholder?: string;
   error?: string;
   required?: boolean;
+  disabled?: boolean;
 };
 
 export function DatePickerField({
@@ -29,6 +30,7 @@ export function DatePickerField({
   placeholder = 'Pick a date',
   error,
   required = false,
+  disabled = false,
 }: DatePickerFieldProps): React.ReactElement {
   const errorId = formFieldErrorId(id);
   const buttonText = value ? format(value, 'dd/MM/yyyy') : placeholder;
@@ -41,6 +43,7 @@ export function DatePickerField({
             id={id}
             type="button"
             variant="outline"
+            disabled={disabled}
             className={cn(
               'w-full justify-start text-left font-normal',
               !value && 'text-muted-foreground',

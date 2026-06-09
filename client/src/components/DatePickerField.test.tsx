@@ -116,4 +116,27 @@ describe('DatePickerField', () => {
     expect(trigger).not.toHaveAttribute('aria-invalid');
     expect(trigger).not.toHaveAttribute('aria-describedby');
   });
+
+  it('disables the trigger button when disabled is true', (): void => {
+    // Arrange — defaults via renderDatePickerField
+
+    // Act
+    renderDatePickerField({ disabled: true });
+
+    // Assert
+    expect(getTrigger()).toBeDisabled();
+  });
+
+  it('does not open the calendar popover when disabled and the trigger is clicked', (): void => {
+    // Arrange
+    renderDatePickerField({ disabled: true });
+
+    // Act
+    fireEvent.click(getTrigger());
+
+    // Assert
+    expect(
+      screen.queryByRole('button', { name: /previous month/i }),
+    ).not.toBeInTheDocument();
+  });
 });

@@ -72,4 +72,14 @@ describe('SelectField', () => {
     expect(trigger).not.toHaveAttribute('aria-invalid');
     expect(trigger).not.toHaveAttribute('aria-describedby');
   });
+
+  it('disables the select trigger when disabled is true', (): void => {
+    // Arrange — defaults via renderSelectField
+
+    // Act
+    renderSelectField({ disabled: true });
+
+    // Assert
+    expect(screen.getByRole('combobox')).toBeDisabled();
+  });
 });

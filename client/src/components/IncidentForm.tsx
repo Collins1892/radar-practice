@@ -393,6 +393,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
             placeholder="Select severity"
             error={fieldErrors.severity}
             required
+            disabled={submitting}
           />
 
           <SelectField
@@ -404,6 +405,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
             placeholder="Select status"
             error={fieldErrors.status}
             required
+            disabled={submitting}
           />
 
           <DatePickerField
@@ -414,6 +416,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
             placeholder="Pick reported date"
             error={fieldErrors.reportedDate}
             required
+            disabled={submitting}
           />
 
           <div className="pt-2">
