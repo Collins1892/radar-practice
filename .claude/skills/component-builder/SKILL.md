@@ -20,7 +20,7 @@ Guides building hand-authored React components for the `client/` TypeScript app.
 | **Use Context7** | When uncertain about React 19, Radix, shadcn, react-router-dom, react-day-picker, or Tailwind v4 APIs, resolve and query docs before writing. |
 | **Run tests** | After any behavioural change, run `npm test` from `client/`. |
 | **Tests are separate** | Do not generate Vitest tests in the same request unless the user asks. Defer to [react-test-writer](../react-test-writer/SKILL.md) — one test per request. |
-| **Accessibility is built in** | Apply the build-time checklist in § Accessibility essentials. For a dedicated WCAG audit or build guide, use [wcag](../wcag/SKILL.md). |
+| **Accessibility is built in** | Full [essentials checklist](#accessibility-essentials) for forms and screens; spot-check primitives against [Positive references](#positive-references). For a dedicated WCAG audit or build guide, use [wcag](../wcag/SKILL.md). |
 | **Review is separate** | For merge-readiness review of finished code, use [code-reviewer](../code-reviewer/SKILL.md). |
 
 ## Recommended effort level
@@ -494,7 +494,7 @@ Hand-authored components call typed modules — never inline `fetch` in primitiv
 
 Build accessibly by default. For WCAG 2.2 AA audit reports or detailed build guides, use [wcag](../wcag/SKILL.md). For Vitest accessibility assertions after building, use [react-test-writer §6](../react-test-writer/SKILL.md).
 
-Run [Accessibility essentials](#accessibility-essentials) — full pass for forms and screens; spot-check primitives against [Positive references](#positive-references).
+For forms and screens, work through the checklist below in full; for primitives, spot-check against [Positive references](#positive-references).
 
 **Minimum checklist for every new component:**
 

@@ -31,7 +31,7 @@ Calibrate reasoning depth and runtime setup:
 | First spec in a new `*.journey.spec.ts` or shared locators across routes | **think hard** |
 | Smoke test (title, nav shell, route loads) following [app.spec.ts](../../../client/e2e/app.spec.ts) | Standard effort — Vite via `webServer` only; no extra keyword |
 
-When **think hard** applies, classify smoke vs journey before writing; do not require APIs for smoke. Prefer accessible locators from [react-test-writer §6](../react-test-writer/SKILL.md). Do not expand Week 5 journey catalog beyond the single `test` requested.
+When **think hard** applies, classify smoke vs journey before writing; do not require APIs for smoke. Prefer accessible locators from [react-test-writer §6](../react-test-writer/SKILL.md#6-accessibility-tests). Do not expand Week 5 journey catalog beyond the single `test` requested.
 
 ## Tech stack
 
@@ -395,14 +395,13 @@ When **appending** to an existing spec, insert the new `test` inside the relevan
 
 ## Workflow for each test request
 
-1. Classify: smoke vs page object vs journey; which domain (items/incidents).
-2. **Calibrate effort** — smoke vs journey; apply [Recommended effort level](#recommended-effort-level).
-3. Determine the target file (table above).
-4. Look up any uncertain Playwright API details via Context7 before writing.
-5. Write one `test` (and page object methods only if required for that test).
-6. If the file exists, show only the new `test` (and any new page object) with a clear note about where to insert it. If it is a new file, show the complete file.
-7. Run `npx playwright test` from `client/` — Vite only for smoke; start APIs for journey tests as needed.
-8. Confirm what was written and the test result, then ask: "Which e2e test or journey would you like next?"
+1. **Classify and calibrate effort** — smoke vs page object vs journey; which domain (items/incidents); apply [Recommended effort level](#recommended-effort-level).
+2. Determine the target file (table above).
+3. Look up any uncertain Playwright API details via Context7 before writing.
+4. Write one `test` (and page object methods only if required for that test).
+5. If the file exists, show only the new `test` (and any new page object) with a clear note about where to insert it. If it is a new file, show the complete file.
+6. Run `npx playwright test` from `client/` — Vite only for smoke; start APIs for journey tests as needed.
+7. Confirm what was written and the test result. If tests fail, fix before offering the next test. Then ask: "Which e2e test or journey would you like next?"
 
 ## Related repo docs (follow-up)
 

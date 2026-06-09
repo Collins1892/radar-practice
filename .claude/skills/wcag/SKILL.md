@@ -1,6 +1,6 @@
 ---
 name: wcag
-description: Frontend WCAG 2.2 AA accessibility audits and build guides for the React client. Use when the user asks for a dedicated WCAG 2.2 AA audit or accessibility build guide (report only). One component or screen per request; report only — no code changes. Covers semantic HTML, ARIA, colour contrast, focus management, keyboard navigation, responsive layout, graceful degradation, target size, and focus appearance. Uses Radix/shadcn patterns from this repo. Use Context7 when uncertain about WCAG techniques. Calibrate effort: think hard for screens, complex forms, or contrast/focus/keyboard depth.
+description: Frontend WCAG 2.2 AA accessibility audits and build guides for the React client. Use when the user asks for a dedicated WCAG 2.2 AA audit, accessibility build guide, or accessibility review of a named component (report only). One component or screen per request; report only — no code changes. Covers semantic HTML, ARIA, colour contrast, focus management, keyboard navigation, responsive layout, graceful degradation, target size, and focus appearance. Uses Radix/shadcn patterns from this repo. Use Context7 when uncertain about WCAG techniques. Calibrate effort: think hard for screens, complex forms, or contrast/focus/keyboard depth.
 ---
 
 # WCAG Accessibility
@@ -14,7 +14,7 @@ Guides **read-only** WCAG 2.2 Level AA accessibility audits and build guides for
 | **One scope per request** | Audit or guide one hand-authored component file or one screen/view (e.g. `IncidentsView.tsx`). If multiple files are offered, work on the first (or ask once which to prioritise) and offer to continue with the next. |
 | **Report only** | **Do not** edit, create, delete, or commit files. **Do not** run `npm test` or Playwright unless the user explicitly asks to *verify* or *fix* — this skill is advisory. |
 | **Frontend only** | Scope is `client/` hand-authored code. `client/src/components/ui/**` and `src/lib/utils.ts` are vendored — review **usage**, not internal Radix/shadcn implementation. |
-| **WCAG 2.2 AA** | Evaluate against **Level AA** (all Level A + all Level AA success criteria). Note AAA criteria only as **Suggestions**, not failures. |
+| **WCAG 2.2 AA** | Evaluate against Level AA; depth per [Recommended effort level](#recommended-effort-level) — full checklist for screens/complex widgets, quick checks for primitives. Note AAA criteria only as **Suggestions**, not failures. |
 | **Dual mode** | **Audit** (existing code) or **Build guide** (user is about to build). Ask once if ambiguous; default to **audit** when reviewing existing files. |
 | **Read `CLAUDE.md` first** | Treat [`CLAUDE.md`](../../../CLAUDE.md) as source of truth for versions, healthcare context (accessibility non-optional), and component locations. |
 | **Positive framing** | Show correct repo patterns (cite existing components) alongside findings. |

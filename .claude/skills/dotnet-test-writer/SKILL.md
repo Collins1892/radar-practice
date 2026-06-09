@@ -214,4 +214,4 @@ When **appending** to an existing file, insert the new `[Fact]` method before th
 5. Write one test, following the naming convention and A/A/A structure.
 6. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
 7. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` after adding or changing the test.
-8. Confirm what was written and the test result, then ask: "Which test would you like next?"
+8. Confirm what was written and the test result. If tests fail, fix before offering the next test. Then ask: "Which test would you like next?"

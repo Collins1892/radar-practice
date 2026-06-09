@@ -489,7 +489,7 @@ When **appending** to an existing file, insert the new `it` inside the relevant 
 5. Write one `it`, with AAA comments and the correct return type (`(): void` or `async (): Promise<void>`).
 6. If the file exists, show only the new `it` (and any new helper) with a clear note about where to insert it. If it is a new file, show the complete file.
 7. Run `npm test` from `client/` after adding or changing the test.
-8. Confirm what was written and the test result, then ask: "Which test would you like next?"
+8. Confirm what was written and the test result. If tests fail, fix before offering the next test. Then ask: "Which test would you like next?"
 
 ## Related skills
 

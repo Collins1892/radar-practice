@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Full-stack code review for this repo. Use whenever the user asks to review code, run a code review, check a diff, or review a PR or file. Review one file or diff at a time; explain issues and suggest fixes; never edit code. Covers universal safety and conventions, .NET backend rules (including EF Core persistence), and React/TypeScript frontend rules (including Tailwind v4, shadcn/ui, and Radix). Use Context7 when unsure about library or WCAG guidance. Calibrate effort: think hard for WCAG/a11y-heavy UI or multi-file diffs.
+description: Full-stack code review for this repo. Use when the user asks to review code, run a code review, check a diff, or review a PR or file. Review one file or diff at a time; explain issues and suggest fixes; never edit code. Covers universal safety and conventions, .NET backend rules (including EF Core persistence), and React/TypeScript frontend rules (including Tailwind v4, shadcn/ui, and Radix). Use Context7 when unsure about library or WCAG guidance. Calibrate effort: think hard for WCAG/a11y-heavy UI or multi-file diffs.
 ---
 
 # Code Reviewer
