@@ -329,4 +329,27 @@ describe('IncidentForm', () => {
       );
     });
   });
+
+  it('disables all fields while createIncident is pending', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(createIncident).mockImplementation(() => new Promise(() => {}));
+
+    // Act
+    renderIncidentFormCreate();
+    await fillValidIncidentForm();
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Title/)).toBeDisabled();
+      expect(screen.getByLabelText(/^Description/)).toBeDisabled();
+      expect(screen.getByLabelText(/^Location/)).toBeDisabled();
+      expect(screen.getByLabelText(/^Severity/)).toBeDisabled();
+      expect(screen.getByLabelText(/^Status/)).toBeDisabled();
+      expect(screen.getByLabelText(/^Reported date/)).toBeDisabled();
+      expect(screen.getByRole('button', { name: /creating/i })).toBeDisabled();
+    });
+  });
 });

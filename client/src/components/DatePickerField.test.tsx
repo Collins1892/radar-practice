@@ -116,4 +116,60 @@ describe('DatePickerField', () => {
     expect(trigger).not.toHaveAttribute('aria-invalid');
     expect(trigger).not.toHaveAttribute('aria-describedby');
   });
+
+  it('disables the trigger button when disabled is true', (): void => {
+    // Arrange — defaults via renderDatePickerField
+
+    // Act
+    renderDatePickerField({ disabled: true });
+
+    // Assert
+    expect(getTrigger()).toBeDisabled();
+  });
+
+  it('does not open the calendar popover when disabled and the trigger is clicked', (): void => {
+    // Arrange
+    renderDatePickerField({ disabled: true });
+
+    // Act
+    fireEvent.click(getTrigger());
+
+    // Assert
+    expect(
+      screen.queryByRole('button', { name: /previous month/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('closes the calendar popover when disabled becomes true while open', async (): Promise<void> => {
+    // Arrange
+    const onChange = vi.fn((): void => {});
+    const { rerender } = render(
+      <DatePickerField
+        label={labelText}
+        id="incident-date"
+        value={undefined}
+        onChange={onChange}
+        placeholder="Pick incident date"
+      />,
+    );
+    fireEvent.click(getTrigger());
+    await screen.findByRole('button', { name: /previous month/i });
+
+    // Act
+    rerender(
+      <DatePickerField
+        label={labelText}
+        id="incident-date"
+        value={undefined}
+        onChange={onChange}
+        placeholder="Pick incident date"
+        disabled={true}
+      />,
+    );
+
+    // Assert
+    expect(
+      screen.queryByRole('button', { name: /previous month/i }),
+    ).not.toBeInTheDocument();
+  });
 });

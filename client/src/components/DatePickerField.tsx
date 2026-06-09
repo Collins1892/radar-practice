@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { FormField } from '@/components/FormField';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -19,6 +20,7 @@ type DatePickerFieldProps = {
   placeholder?: string;
   error?: string;
   required?: boolean;
+  disabled?: boolean;
 };
 
 export function DatePickerField({
@@ -29,18 +31,27 @@ export function DatePickerField({
   placeholder = 'Pick a date',
   error,
   required = false,
+  disabled = false,
 }: DatePickerFieldProps): React.ReactElement {
   const errorId = formFieldErrorId(id);
   const buttonText = value ? format(value, 'dd/MM/yyyy') : placeholder;
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (disabled) {
+      setOpen(false);
+    }
+  }, [disabled]);
 
   return (
     <FormField label={label} htmlFor={id} error={error} required={required}>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             id={id}
             type="button"
             variant="outline"
+            disabled={disabled}
             className={cn(
               'w-full justify-start text-left font-normal',
               !value && 'text-muted-foreground',

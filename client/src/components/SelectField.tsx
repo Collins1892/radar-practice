@@ -22,6 +22,7 @@ type SelectFieldProps = {
   placeholder?: string;
   error?: string;
   required?: boolean;
+  disabled?: boolean;
 };
 
 export function SelectField({
@@ -33,12 +34,13 @@ export function SelectField({
   placeholder = 'Select an option',
   error,
   required = false,
+  disabled = false,
 }: SelectFieldProps): React.ReactElement {
   const errorId = formFieldErrorId(id);
 
   return (
     <FormField label={label} htmlFor={id} error={error} required={required}>
-      <Select value={value} onValueChange={onValueChange}>
+      <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         {/* aria-* must live on SelectTrigger — Select.Root renders no DOM node, so FormField's cloneElement cannot reach it */}
         <SelectTrigger
           id={id}
