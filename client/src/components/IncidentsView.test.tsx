@@ -51,7 +51,6 @@ function renderIncidentsView(): ReturnType<typeof render> {
 describe('IncidentsView', () => {
   beforeEach((): void => {
     vi.mocked(fetchIncidents).mockReset();
-    Element.prototype.scrollIntoView = vi.fn();
   });
 
   it('shows loading state while incidents are being fetched', (): void => {
@@ -282,7 +281,6 @@ describe('IncidentsView', () => {
 
   it('shows filtered empty message when severity filter is active and no incidents match', async (): Promise<void> => {
     // Arrange
-    Element.prototype.scrollIntoView = vi.fn();
     vi.mocked(fetchIncidents)
       .mockResolvedValueOnce(populatedPagedResult)
       .mockResolvedValueOnce(emptyPagedResult);

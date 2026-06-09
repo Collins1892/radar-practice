@@ -38,7 +38,6 @@ function renderIncidentDetailViewWithInvalidId(): ReturnType<typeof render> {
 describe('IncidentDetailView', () => {
   beforeEach((): void => {
     vi.mocked(getIncident).mockReset();
-    Element.prototype.scrollIntoView = vi.fn();
   });
 
   it('shows the incident data when getIncident resolves successfully', async (): Promise<void> => {

@@ -87,7 +87,6 @@ describe('IncidentCreateView', () => {
   beforeEach((): void => {
     vi.mocked(createIncident).mockReset();
     navigateMock.mockReset();
-    Element.prototype.scrollIntoView = vi.fn();
   });
 
   async function fillValidIncidentForm(): Promise<void> {
