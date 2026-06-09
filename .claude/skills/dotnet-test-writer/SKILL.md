@@ -1,6 +1,6 @@
 ---
 name: dotnet-test-writer
-description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use when the user asks to write or add an ItemsApi integration test. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj after adding or changing a test. Calibrate effort: think hard for mock/exception paths, fixture isolation, or new endpoints.
+description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use when the user asks to write, add, generate, or create an ItemsApi integration test. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj after adding or changing a test. Calibrate effort: think hard for mock/exception paths, fixture isolation, or new endpoints.
 ---
 
 # .NET Test Writer
@@ -9,8 +9,8 @@ Guides writing integration tests for the `ItemsApi` .NET 8 minimal API.
 
 ## Core rules
 
-- **One test per request.** Write one `[Fact]` method per request; offer the next test separately.
-- **Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`** after adding or changing a test.
+- **One test per request.** Write one `[Fact]` at a time — not a batch. Offer the next test separately.
+- **Run tests and confirm pass.** After any change, run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` and confirm the suite passes before declaring done.
 - **Use Context7** when you need to verify current xUnit or NSubstitute API details:
   1. `mcp__context7__resolve-library-id` with library name + question
   2. `mcp__context7__query-docs` with the resolved ID

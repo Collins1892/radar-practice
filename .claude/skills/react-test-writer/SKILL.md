@@ -1,6 +1,6 @@
 ---
 name: react-test-writer
-description: Write Vitest tests for the React TypeScript client in this project. Use when the user asks to write or add a Vitest test in client/. One it() per request. Uses Vitest 4.1.7, @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1, React 19.2.6, react-router-dom 7.16.0, and Arrange/Act/Assert comments. Run npm test from client/ after adding or changing a test. Calibrate effort: think hard for a11y, router, async integration, or Radix/portal tests.
+description: Write Vitest tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create a Vitest test in client/. One it() per request. Uses Vitest 4.1.7, @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1, React 19.2.6, react-router-dom 7.16.0, and Arrange/Act/Assert comments. Run npm test from client/ after adding or changing a test. Calibrate effort: think hard for a11y, router, async integration, or Radix/portal tests.
 ---
 
 # React Test Writer
@@ -9,8 +9,8 @@ Guides writing Vitest tests for the `client/` React TypeScript app.
 
 ## Core rules
 
-- **One test per request.** Write one `it(...)` method per request; offer the next test separately.
-- **Run `npm test`** from `client/` after adding or changing a test.
+- **One test per request.** Write one `it(...)` at a time — not a batch. Offer the next test separately.
+- **Run tests and confirm pass.** After any change, run `npm test` from `client/` and confirm the suite passes before declaring done.
 - **Use Context7** when you need to verify Vitest, React Testing Library, react-day-picker, react-router-dom, or WCAG technique details:
   1. `mcp__context7__resolve-library-id` with library name + question
   2. `mcp__context7__query-docs` with the resolved ID

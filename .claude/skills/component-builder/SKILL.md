@@ -1,6 +1,6 @@
 ---
 name: component-builder
-description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use when the user asks to build or add a hand-authored React component, screen, or route shell in client/. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after behavioural changes. Calibrate effort: think hard for screens, feature forms, or app shell/routing.
+description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use when the user asks to write, add, generate, or create a hand-authored React component, screen, or route shell in client/. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after behavioural changes. Calibrate effort: think hard for screens, feature forms, or app shell/routing.
 ---
 
 # Component Builder
@@ -18,7 +18,7 @@ Guides building hand-authored React components for the `client/` TypeScript app.
 | **No legacy CSS** | New components use Tailwind only. Do not add new `.css` files or global rules. (`ItemsList.css` is legacy — migrate to Tailwind when touching that file.) |
 | **Synthetic data only** | No PII, patient data, or realistic-looking personal identifiers in fixtures, placeholders, or examples. |
 | **Use Context7** | When uncertain about React 19, Radix, shadcn, react-router-dom, react-day-picker, or Tailwind v4 APIs, resolve and query docs before writing. |
-| **Run tests** | After any behavioural change, run `npm test` from `client/`. |
+| **Run tests** | After any behavioural change, run `npm test` from `client/` and confirm the suite passes before declaring done. |
 | **Tests are separate** | Do not generate Vitest tests in the same request unless the user asks. Defer to [react-test-writer](../react-test-writer/SKILL.md) — one test per request. |
 | **Accessibility is built in** | Full [essentials checklist](#accessibility-essentials) for forms and screens; spot-check primitives against [Positive references](#positive-references). For a dedicated WCAG audit or build guide, use [wcag](../wcag/SKILL.md). |
 | **Review is separate** | For merge-readiness review of finished code, use [code-reviewer](../code-reviewer/SKILL.md). |

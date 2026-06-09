@@ -1,6 +1,6 @@
 ---
 name: playwright-test-writer
-description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write or add a Playwright spec under client/e2e/. One test() per request. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Key user journeys are deferred to Week 5 — this skill prepares agents for that work. Run npx playwright test from client/ after adding or changing a test. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, or Radix e2e interactions.
+description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create a Playwright spec under client/e2e/. One test() per request. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Key user journeys are deferred to Week 5 — this skill prepares agents for that work. Run npx playwright test from client/ after adding or changing a test. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, or Radix e2e interactions.
 ---
 
 # Playwright Test Writer
@@ -9,8 +9,8 @@ Guides writing Playwright end-to-end tests for the `client/` React TypeScript ap
 
 ## Core rules
 
-- **One test per request.** Write one `test(...)` method per request; offer the next test separately.
-- **Run `npx playwright test`** from `client/` after adding or changing a test.
+- **One test per request.** Write one `test(...)` at a time — not a batch. Offer the next test separately.
+- **Run tests and confirm pass.** After any change, run `npx playwright test` from `client/` and confirm the suite passes before declaring done.
 - **Start APIs when the journey needs data.** Playwright's `webServer` starts Vite only — ItemsApi and IncidentsApi must be running separately for journey tests (see [Run tests](#run-tests) and [Playwright gotchas](#playwright-gotchas)).
 - **Use Context7** when you need to verify Playwright locator, `expect`, or `webServer` API details:
   1. `mcp__context7__resolve-library-id` with library name + question
