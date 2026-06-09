@@ -11,11 +11,23 @@ Guides **read-only** full-stack code reviews for this repository (Items API + Re
 
 | Rule | Detail |
 |------|--------|
-| **One scope per request** | Review **exactly one** file **or** one diff the user provides. If they attach multiple files, review the first (or ask once which to prioritize) and offer to continue with the next. |
+| **One scope per request** | Review **one at a time** — one file **or** one diff the user provides. If they attach multiple files, review the first (or ask once which to prioritize) and offer to continue with the next. |
 | **Review only** | **Do not** edit, create, delete, or commit files. **Do not** run `dotnet test`, `npm test`, or linters unless the user explicitly asks to *fix* or *verify* — this skill is advisory. |
 | **Read `CLAUDE.md` first** | Treat `CLAUDE.md` at the repo root as the source of truth for versions, boundaries, and conventions; cite it when flagging violations. |
 | **Positive framing** | Prefer showing the correct pattern (as in `CLAUDE.md`) over listing negatives only. |
 | **Output structure** | Use the review format in [Workflow for each review](#workflow-for-each-review) below. |
+
+## Recommended effort level
+
+Calibrate reasoning depth to the review at hand:
+
+| Situation | Guidance |
+|-----------|----------|
+| WCAG, accessibility, or a11y-heavy UI (forms, modals, tables, focus, ARIA, contrast) | **think hard** |
+| Multiple files, a large diff, or cross-cutting changes (routing + API + tests) | **think hard** |
+| Simple single-file review (one component, test, endpoint, or config) | Standard effort — no extra keyword |
+
+When **think hard** applies, take time to trace interactions (e.g. keyboard paths, error announcements, repository boundaries) before assigning severity. Do not inflate every nit to Blocker.
 
 ## Use Context7
 
@@ -182,7 +194,7 @@ There is no accessibility ESLint plugin in this repo yet — apply judgment and 
 5. **Context7** — optional; use when library or WCAG guidance is uncertain (max three calls per review).
 6. **Write the review** using the template below (severity: Blocker, Major, Minor, Suggestion).
 7. **Close explicitly** with: **I have not made any code changes.**
-8. **Do not** offer to implement fixes in the same turn unless the user asks; keep implementation as a separate task.
+8. **Prefer not to offer** to implement fixes in the same turn unless the user asks; keep implementation as a separate task.
 
 ### Review output template
 
