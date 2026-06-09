@@ -1,6 +1,6 @@
 ---
 name: dotnet-test-writer
-description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use this skill whenever the user asks to write, add, generate, or create a test for the .NET API — even if they just say "write a test for GET /items" or "add a failing case for invalid price". Always write exactly one test at a time. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj after every test.
+description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use when the user asks to write or add an ItemsApi integration test. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj after adding or changing a test. Calibrate effort: think hard for mock/exception paths, fixture isolation, or new endpoints.
 ---
 
 # .NET Test Writer
@@ -9,11 +9,23 @@ Guides writing integration tests for the `ItemsApi` .NET 8 minimal API.
 
 ## Core rules
 
-- **One test per request.** Write exactly one `[Fact]` method. When done, ask which test to write next — never generate a batch.
-- **Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`** after writing each test and confirm all tests pass before asking for the next one.
+- **One test per request.** Write one `[Fact]` method per request; offer the next test separately.
+- **Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`** after adding or changing a test.
 - **Use Context7** when you need to verify current xUnit or NSubstitute API details:
   1. `mcp__context7__resolve-library-id` with library name + question
   2. `mcp__context7__query-docs` with the resolved ID
+
+## Recommended effort level
+
+Calibrate reasoning depth to the test scenario:
+
+| Situation | Guidance |
+|-----------|----------|
+| NSubstitute exception paths, scoped DI vs mock override, or shared-fixture persistence ordering | **think hard** |
+| New endpoint file, custom status/body shape, or GlobalExceptionHandler behaviour | **think hard** |
+| Happy-path GET/POST or single validation 400 following existing `[Fact]` patterns | Standard effort — no extra keyword |
+
+When **think hard** applies, read [Mocking with NSubstitute](#mocking-with-nsubstitute) and [Database and isolation gotchas](#database-and-isolation-gotchas) before choosing `CreateDefaultClient()` vs `CreateClientWithRepo()`. Do not over-mock persistence tests or over-assert DB-generated ids.
 
 ## Tech stack
 
@@ -57,7 +69,7 @@ ItemsApi.Tests/
 
 ## Test class structure (boilerplate)
 
-All test classes use this exact shape — no explicit namespace, private helper methods, private response records at the bottom:
+All test classes follow this shape — no explicit namespace, private helper methods, private response records at the bottom:
 
 ```csharp
 using System.Net;
@@ -117,7 +129,7 @@ Examples:
 
 ## Arrange/Act/Assert pattern
 
-Always include the three comment markers, even when Arrange is minimal:
+Include the three comment markers, even when Arrange is minimal:
 
 ```csharp
 [Fact]
@@ -196,9 +208,10 @@ When **appending** to an existing file, insert the new `[Fact]` method before th
 ## Workflow for each test request
 
 1. Identify endpoint and scenario from the user's message.
-2. Determine the target file (table above).
-3. Look up any uncertain API details via Context7 before writing.
-4. Write exactly one test, following the naming convention and A/A/A structure.
-5. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
-6. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` after writing each test and confirm all tests pass before asking for the next one.
-7. Confirm what was written and the test result, then ask: "Which test would you like next?"
+2. **Calibrate effort** — apply [Recommended effort level](#recommended-effort-level).
+3. Determine the target file (table above).
+4. Look up any uncertain API details via Context7 before writing.
+5. Write one test, following the naming convention and A/A/A structure.
+6. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
+7. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` after adding or changing the test.
+8. Confirm what was written and the test result, then ask: "Which test would you like next?"

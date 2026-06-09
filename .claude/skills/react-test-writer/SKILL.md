@@ -1,6 +1,6 @@
 ---
 name: react-test-writer
-description: Write Vitest tests for the React TypeScript client in this project. Use whenever the user asks to write, add, generate, or create a frontend test — unit (guards, errors), component (ItemsList), App integration, form validation, routing, or accessibility. Always write exactly one test at a time. Uses Vitest 4.1.7, @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1, React 19.2.6, react-router-dom 7.16.0, and Arrange/Act/Assert comments. Run npm test from client/ after every test.
+description: Write Vitest tests for the React TypeScript client in this project. Use when the user asks to write or add a Vitest test in client/. One it() per request. Uses Vitest 4.1.7, @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1, React 19.2.6, react-router-dom 7.16.0, and Arrange/Act/Assert comments. Run npm test from client/ after adding or changing a test. Calibrate effort: think hard for a11y, router, async integration, or Radix/portal tests.
 ---
 
 # React Test Writer
@@ -9,8 +9,8 @@ Guides writing Vitest tests for the `client/` React TypeScript app.
 
 ## Core rules
 
-- **One test per request.** Write exactly one `it(...)` method. When done, ask which test to write next — never generate a batch.
-- **Always run `npm test`** from `client/` after writing the test. Do not declare the task done until the suite passes.
+- **One test per request.** Write one `it(...)` method per request; offer the next test separately.
+- **Run `npm test`** from `client/` after adding or changing a test.
 - **Use Context7** when you need to verify Vitest, React Testing Library, react-day-picker, react-router-dom, or WCAG technique details:
   1. `mcp__context7__resolve-library-id` with library name + question
   2. `mcp__context7__query-docs` with the resolved ID
@@ -18,6 +18,18 @@ Guides writing Vitest tests for the `client/` React TypeScript app.
 - **TypeScript conventions:** no `any`, explicit return types on every test function, single quotes, semicolons, trailing commas. No `console.log` or `debugger`.
 - **Synthetic data only** — no PII, patient data, or realistic-looking personal identifiers in fixtures.
 - **Do not remove or edit existing tests** without explicit instruction.
+
+## Recommended effort level
+
+Calibrate reasoning depth to the test type:
+
+| Situation | Guidance |
+|-----------|----------|
+| Accessibility assertions (ARIA, live regions, keyboard), router flows, async App integration with mock chains, Radix portals, or Sonner/fake timers | **think hard** |
+| New render helper, DataTable generic typing, or multi-step form submit + refetch | **think hard** |
+| Unit tests (`guards`, `errors`, `formFieldUtils`), single-state component tests, or one App flow matching [Positive references](#positive-references) | Standard effort — no extra keyword |
+
+When **think hard** applies, prefer [§6 Accessibility tests](#6-accessibility-tests) and [shadcn / Radix gotchas](#shadcn--radix-gotchas) over inventing selectors. For dedicated WCAG audits (no test code), use [wcag/SKILL.md](../wcag/SKILL.md). Do not add a11y assertions to pure unit tests.
 
 ## Tech stack
 
@@ -84,7 +96,7 @@ Match patterns already used in this repo:
 
 ## Arrange/Act/Assert pattern
 
-Always include the three comment markers in every `it`, even when Arrange is minimal:
+Include the three comment markers in every `it`, even when Arrange is minimal:
 
 ```typescript
 it('returns false for null', (): void => {
@@ -345,7 +357,7 @@ render(
 
 ## 6. Accessibility tests
 
-For dedicated accessibility audits (not test writing), use [wcag/SKILL.md](../wcag/SKILL.md).
+This section writes **accessibility assertions** in Vitest — not full WCAG audits. For dedicated accessibility audits (no test code), use [wcag/SKILL.md](../wcag/SKILL.md).
 
 There is no axe/eslint-a11y plugin in this repo — verify WCAG 2.2 AA concerns with RTL queries and attribute assertions. Use Context7 when unsure about a WCAG technique.
 
@@ -471,12 +483,13 @@ When **appending** to an existing file, insert the new `it` inside the relevant 
 ## Workflow for each test request
 
 1. Identify the test type (unit, component, integration, form, router, or accessibility) and scenario from the user's message.
-2. Determine the target file (table above).
-3. Look up any uncertain API details via Context7 before writing.
-4. Write exactly one `it`, with AAA comments and the correct return type (`(): void` or `async (): Promise<void>`).
-5. If the file exists, show only the new `it` (and any new helper) with a clear note about where to insert it. If it is a new file, show the complete file.
-6. Run `npm test` from `client/` after writing each test and confirm all tests pass before asking for the next one.
-7. Confirm what was written and the test result, then ask: "Which test would you like next?"
+2. **Calibrate effort** — apply [Recommended effort level](#recommended-effort-level).
+3. Determine the target file (table above).
+4. Look up any uncertain API details via Context7 before writing.
+5. Write one `it`, with AAA comments and the correct return type (`(): void` or `async (): Promise<void>`).
+6. If the file exists, show only the new `it` (and any new helper) with a clear note about where to insert it. If it is a new file, show the complete file.
+7. Run `npm test` from `client/` after adding or changing the test.
+8. Confirm what was written and the test result, then ask: "Which test would you like next?"
 
 ## Related skills
 

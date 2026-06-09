@@ -1,6 +1,6 @@
 ---
 name: wcag
-description: Frontend WCAG 2.2 AA accessibility audits and build guides for the React client. Use whenever the user asks for a WCAG audit, accessibility review, a11y check, contrast/focus/keyboard review, screen accessibility pass, or guidance building an accessible component. One component or screen per request; report only — no code changes. Covers semantic HTML, ARIA, colour contrast, focus management, keyboard navigation, responsive layout, graceful degradation, target size, and focus appearance. Uses Radix/shadcn patterns from this repo. Use Context7 when uncertain about WCAG techniques.
+description: Frontend WCAG 2.2 AA accessibility audits and build guides for the React client. Use when the user asks for a dedicated WCAG 2.2 AA audit or accessibility build guide (report only). One component or screen per request; report only — no code changes. Covers semantic HTML, ARIA, colour contrast, focus management, keyboard navigation, responsive layout, graceful degradation, target size, and focus appearance. Uses Radix/shadcn patterns from this repo. Use Context7 when uncertain about WCAG techniques. Calibrate effort: think hard for screens, complex forms, or contrast/focus/keyboard depth.
 ---
 
 # WCAG Accessibility
@@ -11,7 +11,7 @@ Guides **read-only** WCAG 2.2 Level AA accessibility audits and build guides for
 
 | Rule | Detail |
 |------|--------|
-| **One scope per request** | Audit or guide **exactly one** hand-authored component file **or** one screen/view (e.g. `IncidentsView.tsx`). If multiple files are offered, work on the first (or ask once which to prioritise) and offer to continue with the next. |
+| **One scope per request** | Audit or guide one hand-authored component file or one screen/view (e.g. `IncidentsView.tsx`). If multiple files are offered, work on the first (or ask once which to prioritise) and offer to continue with the next. |
 | **Report only** | **Do not** edit, create, delete, or commit files. **Do not** run `npm test` or Playwright unless the user explicitly asks to *verify* or *fix* — this skill is advisory. |
 | **Frontend only** | Scope is `client/` hand-authored code. `client/src/components/ui/**` and `src/lib/utils.ts` are vendored — review **usage**, not internal Radix/shadcn implementation. |
 | **WCAG 2.2 AA** | Evaluate against **Level AA** (all Level A + all Level AA success criteria). Note AAA criteria only as **Suggestions**, not failures. |
@@ -20,6 +20,20 @@ Guides **read-only** WCAG 2.2 Level AA accessibility audits and build guides for
 | **Positive framing** | Show correct repo patterns (cite existing components) alongside findings. |
 | **Synthetic data only** | No PII, patient data, or realistic-looking personal identifiers in examples or Context7 queries. |
 | **Output structure** | Use the templates in [Output templates](#output-templates) below. Close every response with: **I have not made any code changes.** |
+
+## Recommended effort level
+
+Calibrate audit depth to scope:
+
+| Situation | Guidance |
+|-----------|----------|
+| Full screen/view (state machine, table + filters + pagination, route shell), complex form (Radix Select/DatePicker/Popover), or contrast/focus/keyboard across many interactives | **think hard** |
+| Build guide for a new screen or multi-widget feature slice | **think hard** |
+| Single primitive (Badge, LoadingState, EmptyState, ErrorState) or one form field wrapper with a known positive reference | Standard effort — use [Component-specific quick checks](#component-specific-quick-checks); map findings to SC numbers, do not enumerate every N/A criterion |
+
+When **think hard** applies, work the full [Systematic audit checklist](#systematic-audit-checklist) and [Radix / shadcn coverage matrix](#radix--shadcn-coverage-matrix). Trace focus paths and live-region behaviour before assigning Blocker. Do not inflate Minor inconsistencies (e.g. legacy Items form label style) to Blocker.
+
+For merge-readiness across stack/conventions, use [code-reviewer](../code-reviewer/SKILL.md) first; use this skill for dedicated a11y depth.
 
 ## Use Context7
 
@@ -381,15 +395,16 @@ Each finding must include:
 ## Workflow for each request
 
 1. **Confirm scope and mode** — one component or screen; audit vs build guide. Ask once if ambiguous; default to audit for existing files.
-2. **Classify** — component (`client/src/components/<Name>.tsx`) vs screen/view (e.g. `IncidentsView.tsx`, route shell in `App.tsx`).
-3. **Skim `CLAUDE.md`** if not already in context.
-4. **Read only what is in scope** — the target file; for screens, include inline helpers defined in the same file. Do not read unrelated files except positive references cited in findings.
-5. **Apply Radix coverage matrix** — separate what Radix handles from what app code owns.
-6. **Work checklist by mode** — **Audit mode:** full 13-step systematic checklist (§ Systematic audit checklist); map each finding to WCAG 2.2 AA SC numbers. **Build mode:** pre-build checklist only (§ Build guide).
-7. **Context7** — if uncertain about SC interpretation or Radix behaviour (max three calls).
-8. **Write report** using the appropriate template below.
-9. **Close** with: **I have not made any code changes.**
-10. **Offer next scope** — do not implement fixes unless the user asks.
+2. **Calibrate effort** — apply [Recommended effort level](#recommended-effort-level).
+3. **Classify** — component (`client/src/components/<Name>.tsx`) vs screen/view (e.g. `IncidentsView.tsx`, route shell in `App.tsx`).
+4. **Skim `CLAUDE.md`** if not already in context.
+5. **Read only what is in scope** — the target file; for screens, include inline helpers defined in the same file. Do not read unrelated files except positive references cited in findings.
+6. **Apply Radix coverage matrix** — separate what Radix handles from what app code owns.
+7. **Work checklist by mode** — **Audit mode:** full [Systematic audit checklist](#systematic-audit-checklist) for screens and complex widgets; for primitives, use [Component-specific quick checks](#component-specific-quick-checks) and applicable checklist items only — not every N/A SC row. Map findings to WCAG 2.2 AA SC numbers. **Build mode:** pre-build checklist only (§ Build guide).
+8. **Context7** — if uncertain about SC interpretation or Radix behaviour (max three calls).
+9. **Write report** using the appropriate template below.
+10. **Close** with: **I have not made any code changes.**
+11. **Offer next scope** — do not implement fixes unless the user asks.
 
 ### Audit flow
 
