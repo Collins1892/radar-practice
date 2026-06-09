@@ -1,6 +1,6 @@
 ---
 name: component-builder
-description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use when the user asks to write, add, generate, or create a hand-authored React component, screen, or route shell in client/. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after behavioural changes. Calibrate effort: think hard for screens, feature forms, or app shell/routing.
+description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use when the user asks to write, add, generate, or create a hand-authored React component, screen, or route shell in client/. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after behavioural changes. Confirm the suite passes before declaring done. Calibrate effort: think hard for screens, feature forms, or app shell/routing.
 ---
 
 # Component Builder
@@ -492,7 +492,7 @@ Hand-authored components call typed modules — never inline `fetch` in primitiv
 
 ## Accessibility essentials
 
-Build accessibly by default. For WCAG 2.2 AA audit reports or detailed build guides, use [wcag](../wcag/SKILL.md). For Vitest accessibility assertions after building, use [react-test-writer §6](../react-test-writer/SKILL.md).
+Build accessibly by default. For WCAG 2.2 AA audit reports or detailed build guides, use [wcag](../wcag/SKILL.md). For Vitest accessibility assertions after building, use [react-test-writer §6](../react-test-writer/SKILL.md#6-accessibility-tests).
 
 For forms and screens, work through the checklist below in full; for primitives, spot-check against [Positive references](#positive-references).
 
@@ -555,7 +555,7 @@ When a new screen or shell needs routing:
 7. **Implement** — single file (or tight feature slice); universal standards + type-specific patterns.
 8. **Wire** — route, registry, or `pageTitle` updates if the feature is user-facing.
 9. **Accessibility pass** — full [essentials checklist](#accessibility-essentials) for forms/screens; spot-check primitives; defer deep audit to [wcag](../wcag/SKILL.md).
-10. **Run `npm test`** from `client/` and fix regressions.
+10. **Run `npm test`** from `client/`, fix regressions, and confirm the suite passes before declaring done.
 11. **Summarise** what was built, which files changed, and test result.
 12. **Offer follow-ups** — test (react-test-writer), journey tests (playwright-test-writer), WCAG audit (wcag), or code review (code-reviewer).
 
@@ -565,6 +565,7 @@ When a new screen or shell needs routing:
 flowchart TD
   trigger[User_requests_component]
   scope[Confirm_one_scope]
+  calibrate[Calibrate_effort_level]
   classify[Classify_component_type]
   read[Read_positive_reference_and_CLAUDE.md]
   context7{Uncertain_library_API?}
@@ -575,7 +576,7 @@ flowchart TD
   test[npm_test_in_client]
   done[Summarise_and_offer_follow-ups]
 
-  trigger --> scope --> classify --> read
+  trigger --> scope --> calibrate --> classify --> read
   read --> context7
   context7 -->|yes| docs --> implement
   context7 -->|no| implement

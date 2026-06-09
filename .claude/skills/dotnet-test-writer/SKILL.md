@@ -1,6 +1,6 @@
 ---
 name: dotnet-test-writer
-description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use when the user asks to write, add, generate, or create an ItemsApi integration test. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj after adding or changing a test. Calibrate effort: think hard for mock/exception paths, fixture isolation, or new endpoints.
+description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use when the user asks to write, add, generate, or create an ItemsApi integration test. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj after adding or changing a test. Confirm the suite passes before declaring done. Calibrate effort: think hard for mock/exception paths, fixture isolation, or new endpoints.
 ---
 
 # .NET Test Writer
@@ -213,5 +213,5 @@ When **appending** to an existing file, insert the new `[Fact]` method before th
 4. Look up any uncertain API details via Context7 before writing.
 5. Write one test, following the naming convention and A/A/A structure.
 6. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
-7. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` after adding or changing the test.
+7. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` after adding or changing the test and confirm the suite passes.
 8. Confirm what was written and the test result. If tests fail, fix before offering the next test. Then ask: "Which test would you like next?"

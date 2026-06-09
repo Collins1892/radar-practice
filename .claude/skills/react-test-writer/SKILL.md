@@ -1,6 +1,6 @@
 ---
 name: react-test-writer
-description: Write Vitest tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create a Vitest test in client/. One it() per request. Uses Vitest 4.1.7, @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1, React 19.2.6, react-router-dom 7.16.0, and Arrange/Act/Assert comments. Run npm test from client/ after adding or changing a test. Calibrate effort: think hard for a11y, router, async integration, or Radix/portal tests.
+description: Write Vitest tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create a Vitest test in client/. One it() per request. Uses Vitest 4.1.7, @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1, React 19.2.6, react-router-dom 7.16.0, and Arrange/Act/Assert comments. Run npm test from client/ after adding or changing a test. Confirm the suite passes before declaring done. Calibrate effort: think hard for a11y, router, async integration, or Radix/portal tests.
 ---
 
 # React Test Writer
@@ -488,7 +488,7 @@ When **appending** to an existing file, insert the new `it` inside the relevant 
 4. Look up any uncertain API details via Context7 before writing.
 5. Write one `it`, with AAA comments and the correct return type (`(): void` or `async (): Promise<void>`).
 6. If the file exists, show only the new `it` (and any new helper) with a clear note about where to insert it. If it is a new file, show the complete file.
-7. Run `npm test` from `client/` after adding or changing the test.
+7. Run `npm test` from `client/` after adding or changing the test and confirm the suite passes.
 8. Confirm what was written and the test result. If tests fail, fix before offering the next test. Then ask: "Which test would you like next?"
 
 ## Related skills

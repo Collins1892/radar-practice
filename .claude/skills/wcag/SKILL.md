@@ -412,6 +412,7 @@ Each finding must include:
 flowchart TD
   trigger[User_requests_WCAG_audit_or_build_guide]
   scope[Confirm_one_component_or_screen]
+  calibrate[Calibrate_effort_level]
   mode{Audit_or_build?}
   read[Read_scope_file_and_CLAUDE.md]
   matrix[Apply_Radix_coverage_matrix]
@@ -422,7 +423,7 @@ flowchart TD
   report[Structured_findings_report]
   noedit[No_file_edits]
 
-  trigger --> scope --> mode
+  trigger --> scope --> calibrate --> mode
   mode -->|audit| read --> matrix --> checklist --> scMap
   mode -->|build| read --> matrix --> report
   scMap --> context7

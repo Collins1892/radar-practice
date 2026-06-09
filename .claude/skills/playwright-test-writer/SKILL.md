@@ -1,6 +1,6 @@
 ---
 name: playwright-test-writer
-description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create a Playwright spec under client/e2e/. One test() per request. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Key user journeys are deferred to Week 5 — this skill prepares agents for that work. Run npx playwright test from client/ after adding or changing a test. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, or Radix e2e interactions.
+description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create an e2e test, Playwright spec, browser test, or user journey under client/e2e/. One test() per request. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Key user journeys are deferred to Week 5 — this skill prepares agents for that work. Run npx playwright test from client/ after adding or changing a test. Confirm the suite passes before declaring done. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, or Radix e2e interactions.
 ---
 
 # Playwright Test Writer
