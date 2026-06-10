@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Modal } from './Modal';
@@ -70,12 +71,13 @@ describe('Modal', () => {
 
   it('closes on ESC key', async (): Promise<void> => {
     // Arrange
+    const user = userEvent.setup();
     renderModal();
     fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
     await screen.findByText('Test title');
 
     // Act
-    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    await user.keyboard('{Escape}');
 
     // Assert
     expect(screen.queryByText('Test title')).not.toBeInTheDocument();

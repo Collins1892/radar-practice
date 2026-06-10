@@ -194,8 +194,9 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
         Assert.DoesNotContain("Update failed.", body.Error);
     }
 
+    // Exercises real EF persistence via CreateDefaultClient(); Put_ById_ValidData_Returns200WithUpdatedIncident uses a mocked repository.
     [Fact]
-    public async Task Put_ExistingIncident_Returns200WithUpdatedValues()
+    public async Task Put_ExistingIncident_PersistsUpdatedValuesInDatabase()
     {
         // Arrange
         var client = CreateDefaultClient();
