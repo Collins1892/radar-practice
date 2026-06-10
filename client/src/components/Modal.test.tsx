@@ -1,0 +1,83 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import type { ComponentProps } from 'react';
+import { describe, expect, it } from 'vitest';
+import { Modal } from './Modal';
+
+describe('Modal', () => {
+  function renderModal(
+    overrides: Partial<ComponentProps<typeof Modal>> = {},
+  ): ReturnType<typeof render> {
+    const { children: overrideChildren, trigger, title, ...rest } = overrides;
+
+    return render(
+      <Modal
+        trigger={trigger ?? <button>Open modal</button>}
+        title={title ?? 'Test title'}
+        {...rest}
+      >
+        {overrideChildren ?? <p>Modal body content</p>}
+      </Modal>,
+    );
+  }
+
+  it('renders trigger button', (): void => {
+    // Arrange
+
+    // Act
+    renderModal();
+
+    // Assert
+    expect(
+      screen.getByRole('button', { name: 'Open modal' }),
+    ).toBeInTheDocument();
+  });
+
+  it('opens on trigger click', async (): Promise<void> => {
+    // Arrange
+    renderModal();
+
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
+
+    // Assert
+    expect(await screen.findByText('Test title')).toBeVisible();
+  });
+
+  it('displays title and body content', async (): Promise<void> => {
+    // Arrange
+    renderModal();
+
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
+
+    // Assert
+    expect(await screen.findByText('Test title')).toBeVisible();
+    expect(screen.getByText('Modal body content')).toBeVisible();
+  });
+
+  it('closes on close button click', async (): Promise<void> => {
+    // Arrange
+    renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
+    await screen.findByText('Test title');
+
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+    // Assert
+    expect(screen.queryByText('Test title')).not.toBeInTheDocument();
+  });
+
+  it('closes on ESC key', async (): Promise<void> => {
+    // Arrange
+    renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
+    await screen.findByText('Test title');
+
+    // Act
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+
+    // Assert
+    expect(screen.queryByText('Test title')).not.toBeInTheDocument();
+  });
+});

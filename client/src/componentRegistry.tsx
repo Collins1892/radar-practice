@@ -14,6 +14,8 @@ import { FormField } from '@/components/FormField';
 import { LoadingState } from '@/components/LoadingState';
 import { Pagination } from '@/components/Pagination';
 import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
+import { InlineAlert } from '@/components/InlineAlert';
+import { Modal } from '@/components/Modal';
 import { SelectField } from '@/components/SelectField';
 
 function SelectFieldPreview(): ReactElement {
@@ -169,6 +171,52 @@ function PaginationPreview(): ReactElement {
   );
 }
 
+function InlineAlertPreview(): ReactElement {
+  return (
+    <div className="flex w-full flex-col gap-3 rounded-lg border border-dashed border-border p-4">
+      <InlineAlert
+        variant="success"
+        title="Changes saved"
+        message="Your incident report has been updated successfully."
+      />
+      <InlineAlert
+        variant="info"
+        message="Incidents are archived automatically after 90 days."
+      />
+      <InlineAlert
+        variant="warning"
+        title="Unsaved changes"
+        message="Navigate away to discard your current edits."
+      />
+      <InlineAlert
+        variant="error"
+        title="Submission failed"
+        message="Could not save the incident. Please try again."
+      />
+    </div>
+  );
+}
+
+function ModalPreview(): ReactElement {
+  return (
+    <div className="flex items-center justify-center rounded-lg border border-dashed border-border p-6">
+      <Modal
+        trigger={
+          <Button type="button" variant="outline">
+            Open modal
+          </Button>
+        }
+        title="Example modal"
+        description="An optional description providing context for the modal content."
+      >
+        <p className="text-sm text-muted-foreground">
+          Modal body content goes here. This area accepts any React children.
+        </p>
+      </Modal>
+    </div>
+  );
+}
+
 export const componentRegistry: ComponentEntry[] = [
   {
     name: 'Pagination',
@@ -319,6 +367,18 @@ export const componentRegistry: ComponentEntry[] = [
     description:
       'FormField-wrapped date picker using a Popover trigger button and Calendar single-date selection.',
     preview: <DatePickerFieldPreview />,
+  },
+  {
+    name: 'Modal',
+    description:
+      'Accessible dialog built on Radix Dialog with a composable trigger, title, body, and close button. Supports an optional description for screen readers. Focus-trapped and dismissible via ESC or backdrop click.',
+    preview: <ModalPreview />,
+  },
+  {
+    name: 'InlineAlert',
+    description:
+      'Inline status banner with four variants (success, warning, error, info) — each pairs a distinct colour with a distinct icon so status is never conveyed by colour alone. role="alert" for errors, role="status" aria-live="polite" for all others.',
+    preview: <InlineAlertPreview />,
   },
   {
     name: 'Toast',

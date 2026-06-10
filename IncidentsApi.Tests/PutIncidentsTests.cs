@@ -16,6 +16,8 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
         _factory = factory;
     }
 
+    private HttpClient CreateDefaultClient() => _factory.CreateClient();
+
     private HttpClient CreateClientWithRepo(IIncidentRepository repo) =>
         _factory.WithWebHostBuilder(b =>
             b.ConfigureServices(s => s.AddSingleton(repo)))
@@ -190,6 +192,54 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
         Assert.NotNull(body);
         Assert.Equal("An unexpected error occurred.", body.Error);
         Assert.DoesNotContain("Update failed.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_ExistingIncident_Returns200WithUpdatedValues()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+        var reportedDate = DateTime.UtcNow.Date;
+
+        var createResponse = await client.PostAsJsonAsync(
+            "/incidents",
+            new
+            {
+                title = "Initial report",
+                description = "Initial description",
+                location = "Ward 1",
+                severity = IncidentSeverity.Low,
+                status = IncidentStatus.Open,
+                reportedDate,
+            });
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
+        Assert.NotNull(created);
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{created.Id}",
+            new
+            {
+                title = "Updated report",
+                description = "Updated description",
+                location = "Ward 2",
+                severity = IncidentSeverity.High,
+                status = IncidentStatus.Resolved,
+                reportedDate,
+            });
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
+        Assert.NotNull(body);
+        Assert.Equal(created.Id, body.Id);
+        Assert.Equal("Updated report", body.Title);
+        Assert.Equal("Updated description", body.Description);
+        Assert.Equal("Ward 2", body.Location);
+        Assert.Equal(IncidentSeverity.High, body.Severity);
+        Assert.Equal(IncidentStatus.Resolved, body.Status);
+        Assert.Equal(reportedDate, body.ReportedDate.Date);
     }
 
     private record IncidentResponse(

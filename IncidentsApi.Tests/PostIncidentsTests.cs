@@ -236,6 +236,33 @@ public class PostIncidentsTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal("Invalid status value.", body.Error);
     }
 
+    [Fact]
+    public async Task Post_MissingTitle_Returns400WithError()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+        var reportedDate = DateTime.UtcNow.Date.ToString("yyyy-MM-dd");
+        var json = $$"""
+            {
+              "description": "Water on floor near supplies",
+              "location": "Building 2, level 1",
+              "severity": 1,
+              "status": 0,
+              "reportedDate": "{{reportedDate}}"
+            }
+            """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PostAsync("/incidents", content);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Title is required.", body.Error);
+    }
+
     private record IncidentResponse(
         int Id,
         string Title,
