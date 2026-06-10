@@ -64,6 +64,16 @@ describe('InlineAlert', () => {
     expect(within(infoContainer).getByRole('status')).toBeInTheDocument();
   });
 
+  it('uses polite aria-live on the status region for non-error variants', (): void => {
+    // Arrange — defaults via renderInlineAlert (info variant)
+
+    // Act
+    renderInlineAlert({ variant: 'info' });
+
+    // Assert
+    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+  });
+
   it('icon has aria-hidden set to true', (): void => {
     // Arrange
 

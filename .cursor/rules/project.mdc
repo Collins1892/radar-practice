@@ -50,14 +50,14 @@ No patient data, no production dependencies.
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar.
 - `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level.
 - ESLint 10.3.0 (typescript-eslint); Prettier 3.8.3 (semicolons, single quotes, trailing commas).
-- Vitest 4.1.7 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1; Playwright 1.60.0 (Chromium only, e2e/; smoke test landed, key journeys Week 5).
+- Vitest 4.1.7 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, @testing-library/user-event 14.6.1, jsdom 29.1.1; Playwright 1.60.0 (Chromium only, e2e/; smoke test landed, key journeys Week 5).
 - CSS: OKLCH theme tokens in `src/index.css` under `@theme inline`; compose classes with `cn()`; no new legacy CSS.
 - Dark mode: `@custom-variant dark` uses the Tailwind v4 block form responding to both `.dark` class and `prefers-color-scheme: dark`. All three sync points (`.dark` class, media query, `@custom-variant`) must be kept in sync when tokens change.
 
 ## Component file locations
 
 - `client/src/components/ui/` — shadcn-generated vendor components only (ESLint-ignored). Do not place hand-authored components here.
-- `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome).
+- `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, InlineAlert, Modal).
 - `client/src/componentRegistry.tsx` — registry of all components for the components view. Has a file-level `eslint-disable react-refresh/only-export-components` — documented exception pending Week 7 architectural fix.
 - `client/src/components/formFieldUtils.ts` — shared utility (`formFieldErrorId`). Pure module, no JSX.
 - `client/src/components/incidentDisplay.ts` — shared incident display helpers — badge variants, status label, reported-date formatter, severity/status/filter option lists.
