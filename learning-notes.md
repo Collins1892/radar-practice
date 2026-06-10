@@ -220,7 +220,7 @@ Plugged the accessibility gap where create/edit success redirected silently with
 
 - `next-themes` added by shadcn CLI but unused — generated `sonner.tsx` imports `useTheme` from `next-themes` by default. This project doesn't use Next.js. Fix: hardcode `theme="system"`. Always check for unused dependencies after shadcn CLI installs.
 - **CSS variable specificity** — Sonner's inline style CSS variables (`--success-bg` etc.) override Tailwind `classNames`. `toastOptions.classNames` for colours silently loses. Fix: define `--sonner-*` variables in `index.css` across all three dark mode sync points and wire through the `style` prop with `richColors` enabled.
-- `**<Toaster />` DOM placement** — must sit after the skip link in DOM order. When placed first, the toast close button becomes the first Tab stop instead of the skip link (WCAG 2.4.1).
+- **`<Toaster />` DOM placement** — must sit after the skip link in DOM order. When placed first, the toast close button becomes the first Tab stop instead of the skip link (WCAG 2.4.1).
 - **Sonner uses `aria-live="polite"` for all variants** including error. No assertive live region. Acceptable for this project but a known limitation for more critical error contexts.
 
 **Test patterns:**
@@ -403,7 +403,7 @@ Week 3 Day 4 was the most thorough validation of the two-review pattern yet. Cla
 - Choose the correct architecture (standalone vs shared context) without explicit direction — the first plan proposed adding everything to ItemsApi
 - Know that Radix Select needs a scrollIntoView shim — this breaks silently until the test runs
 - Use local date methods for form submission — UTC getters are the natural default and the bug is invisible until you're in a UTC+ timezone
-- Keep enum sort order correct with string storage — the agent suggested HasConversion() without flagging the alphabetical sort trap
+- Keep enum sort order correct with string storage — the agent suggested HasConversion<string>() without flagging the alphabetical sort trap
 - Identify that MemoryRouter is needed when a Link is added — the error message is clear but non-obvious to trace back to the missing router context
 
 ### Ideas and observations
@@ -492,7 +492,7 @@ The copy button in visualiser widgets is unreliable in the Claude.ai interface. 
 Week 3 Day 2. All 9 reusable components built, reviewed, and merged in a
 single day: Badge, LoadingState, EmptyState, ErrorState, FormField,
 SelectField, DatePickerField, DataTable, and Pagination. ComponentsView
-scaffold with React Router also landed on Day 2. Cursor Pro credit limit hit
+scaffold with React Router also landed on Week 3 Day 2. Cursor Pro credit limit hit
 mid-day; switched to Auto mode and continued. Progress update email sent to
 the CTO. Heavy review back-and-forth — most PRs went through 2–3 review
 cycles before merging. Token spend was significant. Documentation session at
@@ -643,7 +643,7 @@ directory before running CLI tools
 Had to re-apply all four manually. Lesson: after any lint-staged failure, run
 `git show HEAD --stat` to verify what actually landed before pushing
 - ESLint pre-commit failures on shadcn-generated files — fixed by excluding
-`src/components/ui/`** and `src/lib/utils.ts` from linting. Vendor-generated
+`src/components/ui/**` and `src/lib/utils.ts` from linting. Vendor-generated
 files should not be held to project lint conventions
 - `--no-warn-ignored` flag needed in lint-staged to suppress `--max-warnings 0`
 failure on ignored files. Not disabling a rule — suppressing a noise message
