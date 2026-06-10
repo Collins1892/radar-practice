@@ -1,3 +1,157 @@
+## Week 4 Day 3 — Wednesday 10 June 2026
+
+### Summary
+
+Week 4 Day 3 (Wednesday). Full day — date fix pass across all .md files,
+formal evals across all six skills, Modal and InlineAlert components built
+and merged (PR #76), job application submitted to Radar Healthcare, and
+Week 5 reshaped around the nightly autonomous agent. 169 Vitest, 25
+IncidentsApi xUnit, 13 ItemsApi xUnit at close.
+
+### Date fix pass (PR #75)
+
+Global day numbers (Day 17, Day 18 etc.) replaced with Week X Day Y format
+across all .md files in a dedicated pass. House-sitting date corrected from
+Friday 13 June to Friday 12 June. Two Majors and three Minors from the
+Cursor review fixed before merge — broken markdown on the Toaster bullet,
+ESLint glob path with early backtick close, and HasConversion generic type
+dropped accidentally. Trailing newline and blank line between list items
+also fixed. List continuation indent stripping logged to the nightly agent
+backlog rather than fixed in this PR.
+
+### Formal evals — all six skills
+
+Ran skill vs no-skill eval runs across all six repo skills using parallel
+worktrees. Key findings:
+
+**Auto-loading invalidates the pass/fail baseline.** `.claude/skills/`
+auto-loads in all Claude Code sessions — a clean no-skill baseline is not
+achievable. The eval question shifts from skill-present vs skill-absent to
+skill coverage completeness. The dotnet-test-writer scope mismatch
+(scoped to ItemsApi, tested against IncidentsApi) is the first concrete
+example — the agent flagged the gap, adapted, and produced a
+real-persistence round-trip test rather than a duplicate.
+
+**The delta is quality, not pass rate.** Skill agent refused to write
+duplicate tests (react-test-writer prompt 1 — identified existing coverage,
+offered genuine gaps instead). Skill agent used `getByRole('button', {
+name: label })` over `getByLabelText` — higher-priority RTL query, with
+explicit justification against the skill's §6 guidance. No-skill agent
+used the lower-priority query. Both tests passed; the skill agent's test
+was more deliberate and rigorous.
+
+**Playwright file placement consistency.** Skill agent placed both tests
+in `app.spec.ts` — correct per the skill's smoke test convention. No-skill
+agent created a new `incidents.spec.ts` on the first prompt (rejected),
+then correctly used `app.spec.ts` on the second. Inconsistent structural
+decisions across identical task types is the finding.
+
+**code-reviewer cross-stack Blocker.** Skill agent caught the PascalCase
+serialisation Blocker in PR #46 — IncidentsApi serialises in PascalCase
+by default, frontend guards check camelCase, so every API response silently
+failed. No-skill agent missed it entirely. The skill agent read both the
+backend serialisation config and the frontend type guards together and
+connected the dots. No-skill agent reviewed each layer independently.
+
+**wcag contrast calculations.** Skill agent computed exact OKLCH luminance
+values for the DataTable focus ring (2.53:1 against thead background) and
+elevated the finding to a Major with proof. No-skill agent flagged the same
+concern as an unconfirmed Suggestion. In a healthcare context, confirmed vs
+unconfirmed matters.
+
+**component-builder directory violation.** No-skill agent wrote Modal to
+`src/components/ui/` on prompt 1 — the shadcn vendor directory, explicitly
+forbidden in CLAUDE.md. Skill agent wrote to `src/components/` correctly
+both times. This is the Core team reusable patterns problem in miniature.
+
+**Time cost.** Skill agent consistently took longer on complex tasks:
+DataTable wcag audit 8m 20s vs no-skill 3m 26s; code-reviewer PR #46
+5m 50s vs 2m 35s. For pattern-following tasks the difference was marginal.
+Effort calibration matters most on genuinely complex work.
+
+**Skill enforces conventions over user instructions.** The react-test-writer
+skill overrode an explicit instruction to generate all InlineAlert tests at
+once, enforcing the one-test-at-a-time convention from CLAUDE.md. The skill
+cited both itself and CLAUDE.md as the source. This is appropriate strictness
+— convention consistency matters more than prompt convenience.
+
+### Nightly agent backlog established
+
+A backlog of 16 small, well-defined, low-blast-radius tasks identified
+during evals for the Week 5 nightly autonomous agent. Includes formatting
+fixes from PR #75, DataTable WCAG fixes, and Pagination WCAG fixes. These
+are ideal first tasks — contained, verifiable via diff, no logic involved,
+easy to review in the morning.
+
+### Modal and InlineAlert components (PR #76)
+
+Two new accessible UI primitives built during the eval session and merged:
+
+Modal — Radix Dialog wrapper with focus trap, aria-labelledby,
+aria-describedby suppression when description omitted, WCAG-compliant
+close button (aria-label, size="icon"), motion-reduce fallback. 5 Vitest
+tests covering render, open, title/body, close button, and ESC key.
+userEvent.keyboard used for the ESC test after eval confirmed fireEvent
+is less reliable for Radix portal keyboard handling.
+
+InlineAlert — 4 variants (success, warning, error, info) matching Sonner
+toast colours. role="alert" for error only; role="status" and
+aria-live="polite" for others. Decorative icons aria-hidden. 5 Vitest
+tests. Both components registered in componentRegistry.
+
+Two full review passes (Cursor then Claude Code) caught one Major
+(aria-describedby suppression), two Minors (CLAUDE.md version drift,
+component inventory), and a test coverage gap (aria-live assertion).
+All fixed before merge.
+
+### Week 5 reshaped
+
+The original Week 5 task list was diffuse. Reshaped around three headline
+items: modernisation refactor as the primary coding thread, automated PR
+review as the CI foundation, and the nightly autonomous agent as the
+headline build. The nightly agent is a GitHub Actions cron job calling
+the Anthropic API directly, reading the backlog, picking a bounded task,
+implementing it, running tests, and raising a PR for morning review. This
+is the Boris Cherny direction — agents shipping code while the developer
+sleeps.
+
+### Job application submitted
+
+Full Stack Engineer role at Radar Healthcare submitted 10 June 2026. CV
+updated with agentic AI upskilling in the personal profile. Cover letter
+written in three paragraphs: who I am and why I am applying, what I built
+during the personal development plan, and why the modernisation brief is
+where my passion lies.
+
+### What I would not trust the agent to do unsupervised
+
+- Produce a clean no-skill baseline in the current repo setup — skills
+  auto-load; the baseline does not exist
+- Write to the correct directory without the component-builder skill —
+  no-skill agent defaulted to the vendor directory on prompt 1
+- Confirm a WCAG finding without the wcag skill — no-skill flagged the
+  DataTable ring contrast as an unconfirmed Suggestion; skill agent
+  computed the ratio and confirmed it as a Major
+- Place Playwright tests consistently across identical task types without
+  the skill — no-skill was correct on prompt 2 but wrong on prompt 1
+- Respect the one-test-at-a-time convention without the skill — no-skill
+  wrote 9 tests unprompted on the InlineAlert component-builder prompt
+
+### Ideas and observations
+
+- The auto-loading finding is stronger portfolio material than a pass rate
+  delta. It shows the workflow has matured to the point where skills are
+  always present — the baseline has become the floor.
+- The component-builder directory violation is the clearest single-prompt
+  demonstration of skill value: one prompt, one critical convention error,
+  one rejection. That is a story you can tell in 30 seconds.
+- The time cost data (skill agent 2x slower on complex WCAG audits) is the
+  honest side of the story — skills cost more to run, but the output is
+  confirmable rather than probabilistic. That trade-off is worth naming
+  explicitly in the Week 6 impact story.
+- 207 tests, 6 skills formally evalled, 2 new components, application
+  submitted, Week 5 reshaped — all in one day.
+  
 ## Week 4 Day 2 — 9 June 2026
 
 ### Summary
@@ -198,7 +352,7 @@ Noted in decisions log.
 
 ### Summary
 
-Week 4 Day 1 (Monday). Late start due to errands. CTO email sent confirming readiness to apply when role publishes, with progress update promised for Friday. Two PRs merged: component-builder skill (PR #63) and Sonner toast SC 4.1.3 (PR #64). 129 tests, 6 skills. Slash command exploration. Custom slash commands deferred to Wednesday.
+Week 4 Day 1 (Monday). Late start due to errands. Two PRs merged: component-builder skill (PR #63) and Sonner toast SC 4.1.3 (PR #64). 129 tests, 6 skills. Slash command exploration. Custom slash commands deferred to Wednesday.
 
 ### component-builder skill (PR #63)
 
