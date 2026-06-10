@@ -56,7 +56,8 @@ Mirrors microservices direction without over-engineering.
 - `private/phase-1-foundation.md` — Weeks 1–2 complete (private file: agent-readable, not committed)
 - `private/phase-2-build.md` — Weeks 3–5, Week 3 complete; Week 4 in progress (private file: agent-readable, not committed)
 - `private/phase-3-articulate.md` — Weeks 6–7 (private file: agent-readable, not committed)
-- `private/original-plan.md` — original plan shared with the tech lead (private file: agent-readable, not committed)
+- `private/original-plan.md` — original plan shared (private file: agent-readable, not committed)
+- `private/job-advert.md` — live job advert (June 2026), (private file: agent-readable, not committed)
 
 ## Tech stack
 

@@ -38,7 +38,7 @@ radar-practice/
 ├── ItemsApi/              # .NET 8 minimal API (GET/POST /items), EF Core + SQLite
 ├── ItemsApi.Tests/        # xUnit integration tests (13 tests)
 ├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT /incidents, GET /incidents/{id}), EF Core + SQLite
-├── IncidentsApi.Tests/    # xUnit integration tests (23 tests)
+├── IncidentsApi.Tests/    # xUnit integration tests (25 tests)
 ├── client/                # React + TypeScript + Vite frontend
 │   ├── src/api/incidents.ts               # Typed fetch layer for IncidentsApi
 │   ├── src/components/IncidentsView.tsx   # Incident list with filters, sort, pagination
@@ -47,6 +47,8 @@ radar-practice/
 │   ├── src/components/IncidentDetailView.tsx # Read-only detail view
 │   ├── src/components/IncidentEditView.tsx   # Thin wrapper — mode=edit
 │   ├── src/components/IncidentPageChrome.tsx # Shared page chrome (h1 + back link)
+│   ├── src/components/Modal.tsx           # Accessible dialog component (Radix Dialog)
+│   ├── src/components/InlineAlert.tsx     # Inline status alert, four variants
 │   ├── src/pageTitle.ts                   # Per-route document.title helper
 │   ├── src/App.test.tsx                   # Vitest App integration tests
 │   ├── src/components/ItemsList.test.tsx  # Vitest component tests
@@ -69,7 +71,7 @@ radar-practice/
 |-------|-------|
 | Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`) |
 | Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
-| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 23 IncidentsApi tests |
+| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 25 IncidentsApi tests |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes include `/`, `/components`, `/incidents`, and incident create/detail/edit |
 | Frontend tests | Vitest, `@testing-library/react`; Playwright e2e (smoke test, key journeys Week 5) |
 | CI | GitHub Actions — `dotnet test` (both APIs) and `npm test` (Vitest) on push/PR to `main` |
@@ -104,6 +106,7 @@ These are practical lessons from building this project with Claude Code (termina
 - Test-writer skills are built after real code exists — the agent reads real patterns before writing anything. Build-guide skills (e.g. wcag) should be built before feature work to prevent retrofitting.
 - Skills drive consistent output across sessions and developers — the direct fix for the confirmed Core team reusable-patterns problem.
 - All six skills include effort calibration — **think hard** for complex work (multi-file diffs, a11y-heavy UI, journey tests); **standard** for pattern-following tasks.
+- Formal evals across all six skills confirmed the delta is test quality and convention consistency, not just pass rate. Skill agents refused duplicate tests, used higher-priority RTL queries, and caught cross-stack issues that no-skill agents missed.
 
 **Two independent reviews catch different things**
 - Claude Code `/review` and Cursor review consistently flag different issues on the same diff. Running both for significant PRs is now a firm discipline — neither alone is complete.
