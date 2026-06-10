@@ -140,6 +140,17 @@ describe('DatePickerField', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('trigger button has the accessible name from the label', (): void => {
+    // Arrange
+    const label = 'Reported on';
+
+    // Act
+    renderDatePickerField({ label, id: 'reported-on' });
+
+    // Assert
+    expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+  });
+
   it('closes the calendar popover when disabled becomes true while open', async (): Promise<void> => {
     // Arrange
     const onChange = vi.fn((): void => {});

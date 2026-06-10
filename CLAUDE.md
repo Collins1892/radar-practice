@@ -33,7 +33,7 @@ Mirrors microservices direction without over-engineering.
 - `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
-- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome)
+- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, InlineAlert, Modal)
 - `client/src/api.ts` — typed fetch layer for ItemsApi (fetchItems, createItem)
 - `client/src/api/incidents.ts` — typed fetch layer for IncidentsApi (fetchIncidents, createIncident, getIncident, updateIncident, shared helpers incidentUserMessage, parseIncidentId)
 - `client/src/types.ts` — shared TypeScript types (e.g. `Item`, `CreateItemRequest`)
@@ -88,7 +88,7 @@ Mirrors microservices direction without over-engineering.
 - `lucide-react` 1.17.0 (icons)
 - ESLint 10.3.0 with typescript-eslint
 - Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
-- Vitest 4.1.7 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, and jsdom 29.1.1
+- Vitest 4.1.7 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, @testing-library/user-event 14.6.1, and jsdom 29.1.1
 - `@playwright/test` 1.60.0 — e2e tests, Chromium only. Key user journeys deferred to Week 5.
 - `date-fns` 4.4.0 — date formatting utilities
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar
