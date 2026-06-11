@@ -114,7 +114,6 @@ All test classes follow this shape — no explicit namespace, private helper met
 ```csharp
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -250,8 +249,8 @@ Format: `<HttpVerb>_<Scenario>_<ExpectedResult>`
 - `Post_BlankTitle_Returns400WithError`
 - `Post_InvalidSeverity_Returns400WithError`
 - `Post_WhenRepositoryThrows_Returns500`
-- `Get_ById_ExistingId_Returns200WithIncident`
-- `Get_ById_MissingId_Returns404WithError`
+- `Get_ById_Exists_Returns200WithIncident`
+- `Get_ById_NotFound_Returns404WithError`
 - `Put_ById_ValidData_Returns200WithUpdatedIncident`
 - `Put_ExistingIncident_PersistsUpdatedValuesInDatabase`
 - `Put_ById_NotFound_Returns404WithError`
@@ -291,7 +290,7 @@ public async Task Get_NoItems_ReturnsEmptyArray()
 
 `CreateClientWithRepo(repo)` overrides the EF repository with a fresh mock for that one client, so the test owns its data completely and runs correctly regardless of execution order.
 
-`CreateDefaultClient()` now runs against the real, isolated, migrated in-memory database — it is the right choice for persistence and round-trip behaviour (for example, posting an item and reading it back), as well as for validation errors (400) that never reach the repository.
+`CreateDefaultClient()` runs against the real, isolated, migrated in-memory database — it is the right choice for persistence and round-trip behaviour (for example, posting an item and reading it back), as well as for validation errors (400) that never reach the repository.
 
 ```csharp
 // Arrange — mock controls exactly what GetAll returns
@@ -316,14 +315,15 @@ repo.Add(Arg.Any<string>(), Arg.Any<decimal>())
 | Verify paged response shape or mock a controlled list | `CreateClientWithRepo(mock)` |
 | Verify filter/sort/paginate behaviour against real data | `CreateDefaultClient()` — seed multiple records via POST, then query |
 | POST happy path (201 + round-trip id) | `CreateDefaultClient()` |
-| PUT round-trip (assert update persisted) | `CreateDefaultClient()` — POST to create, PUT to update, GET to confirm |
+| GET by id 200 with known data | `CreateClientWithRepo(mock)` with stubbed `GetById` return, or `CreateDefaultClient()` after POST for full-stack |
+| PUT round-trip (assert update persisted) | `CreateDefaultClient()` — POST to create, PUT to update, assert PUT response body (optionally follow with GET to confirm persistence) |
 | 500 exception path | `CreateClientWithRepo(mock)` — configure mock to `.Throws(...)` |
 | 404 not-found | `CreateClientWithRepo(mock)` — configure `Update`/`GetById` to return `null` |
 | Validation 400 that never reaches the repo | `CreateDefaultClient()` (or a bare mock — repo is never called) |
 
-For filter/sort/paginate tests using real persistence, seed records with different field values via `PostAsJsonAsync`, then call the filtered/sorted/paginated URL and assert only the expected records are returned in the expected order.
+For filter/sort/paginate tests using real persistence, seed records with different field values via `PostAsJsonAsync`, then call the filtered/sorted/paginated URL and assert only the expected records are returned in the expected order. For example, seed two incidents with different severities, then `GET /incidents?severity=High` and assert only the matching incident is returned.
 
-For PUT round-trip tests using real persistence: POST to create → PUT to update → GET to confirm the GET response reflects the update. This proves persistence, not just the PUT response body.
+For PUT round-trip tests using real persistence: POST to create → PUT to update → assert PUT response body (optionally follow with GET to confirm persistence).
 
 For exception scenarios, mock the `IIncidentRepository` interface method that the endpoint calls:
 
@@ -409,7 +409,7 @@ var response = await client.PostAsync("/incidents", content);
 - **404** `"Incident not found."` — id not in database; `repo.Update(...)` returns `null`
 - **500** — repository throws; assert `"An unexpected error occurred."` AND `DoesNotContain` the internal exception message
 
-**500-test assertion pattern for POST and PUT (required):**
+**500-test assertion pattern — all endpoints (required):**
 
 ```csharp
 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
