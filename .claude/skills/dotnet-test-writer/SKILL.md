@@ -226,6 +226,8 @@ public class <FeatureName>Tests : IClassFixture<TestWebApplicationFactory>
 
 Only include the private records the class actually uses. `PagedIncidentsResponse` is only needed in GET /incidents tests; `IncidentResponse` is used by POST, GET by id, and PUT tests.
 
+Trim imports to what the class uses — `System.Text`, `System.Text.Json`, and `System.Text.Json.Serialization` are only needed for raw-JSON `StringContent` (invalid-enum) tests and `JsonOptions`.
+
 ## Naming convention
 
 Format: `<HttpVerb>_<Scenario>_<ExpectedResult>`
@@ -382,8 +384,8 @@ var response = await client.PostAsync("/incidents", content);
 - **400** `"Page size must be 100 or fewer."` — `pageSize > 100`
 - **400** `"Invalid sort field."` — `sortBy` not in `{title, description, location, severity, status, reporteddate}` (case-insensitive)
 - **400** `"Sort direction must be asc or desc."` — `sortDirection` not `asc` or `desc` (case-insensitive)
-- **400** `"Invalid severity value."` — out-of-range `severity` int passed as query param
-- **400** `"Invalid status value."` — out-of-range `status` int passed as query param
+- **400** `"Invalid severity value."` — out-of-range `severity` int passed as query param (supply as `?severity=99` — no raw JSON needed, unlike POST)
+- **400** `"Invalid status value."` — out-of-range `status` int passed as query param (supply as `?status=99` — no raw JSON needed, unlike POST)
 - **500** — repository throws; assert `"An unexpected error occurred."` AND `DoesNotContain` the internal exception message
 
 #### POST /incidents
@@ -417,7 +419,8 @@ Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType
 var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 Assert.NotNull(body);
 Assert.Equal("An unexpected error occurred.", body.Error);
-Assert.DoesNotContain("<internal exception message>", body.Error);
+var raw = await response.Content.ReadAsStringAsync();
+Assert.DoesNotContain("<internal exception message>", raw);
 ```
 
 ## Database and isolation gotchas
