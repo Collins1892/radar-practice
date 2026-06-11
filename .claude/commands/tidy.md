@@ -11,7 +11,9 @@ Step 1 — Establish the current date and week position:
   - Phase 3 (phase-3-articulate.md): Jun 23 – Jul 4
   - If the date falls in a gap between phases, ask the developer for
     Week X Day Y before continuing
-- Read the matching phase file from private/ to find today's task list
+- Read the matching phase file from private/
+- Cross-reference the date with the ### Week X Day Y headers to locate
+  today's task list and determine the current Week X Day Y
 - Read private/phase-3-articulate.md to find all T0X tidy list items
 - If private/ is missing, ask the developer for today's tasks and skip
   the tidy list check
@@ -20,32 +22,35 @@ Step 2 — Run status checks:
 - Run: gh pr list --state open --json number,title,headRefName
 - Run: gh pr list --state merged --json number,title,headRefName --limit 50
 - Run: git branch -r
+- Run: git branch
 - If gh is not authenticated or fails, note "gh unavailable — PR checks
   skipped" and continue with branch and codebase checks only
 
-Step 3 — Assign status to T0X tidy list items using these rules in order:
+Step 3 — Assign status to T0X tidy list items. Apply these rules in
+order; stop at the first match:
 - **Done** — the T0X identifier appears in a merged PR title or branch
   name, OR the corresponding line in private/phase-3-articulate.md is
   marked ✅. The ✅ marker is the primary Done signal; merged PR match
   is supplementary.
 - **In PR** — T0X identifier appears in an open PR title or branch name
   (note PR number)
-- **In Progress** — a remote branch name contains the T0X identifier
-  but has no open PR (note branch name)
+- **In Progress** — a local or remote branch name contains the T0X
+  identifier but has no open PR (note branch name)
 - **Partial** — partially addressed in the codebase
 - **Open** — none of the above apply
 - **Unknown** — insufficient information to determine status
 
 Step 4 — Assign status to today's tasks (D01, D02 etc., numbered
-sequentially from the phase file bullets for the current day):
+sequentially from the phase file bullets for the current day). Apply
+these rules in order; stop at the first match:
 - **Done** — bullet is marked ✅ in the phase file, OR a merged PR
-  or open PR title/branch contains a significant keyword from the task
-  text (first noun phrase or distinctive term)
-- **In PR** — open PR title or branch contains a significant keyword
+  title or branch name contains a significant keyword from the task text
+  (first noun phrase or distinctive term)
+- **In PR** — an open PR title or branch contains a significant keyword
   from the task text (note PR number)
-- **In Progress** — remote branch name contains a significant keyword
-  from the task text but has no open PR (note branch name). If no clear
-  keyword match exists, mark Unknown rather than guess.
+- **In Progress** — a local or remote branch name contains a significant
+  keyword from the task text but has no open PR (note branch name). If
+  no clear keyword match exists, mark Unknown rather than guess.
 - **Partial** — partially addressed in the codebase
 - **Open** — none of the above apply
 - **Unknown** — insufficient information to determine status

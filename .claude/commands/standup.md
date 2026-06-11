@@ -22,16 +22,20 @@ Step 1 — Establish the current date and week position:
 Step 2 — Read the following files:
 - learning-notes.md (all entries to identify sections by Week X Day Y)
 - private/seven-week-plan.md (daily structure and context)
+- docs/workflow-friction.md (open friction actions for Carried section)
 
 Step 3 — Summarise yesterday:
 - "Yesterday" is the Week X Day Y section immediately before the
   date-derived current day — not simply the most recent entry
+- Use the phase file as source of truth for completion status; use
+  learning-notes.md for narrative detail. If they disagree, note the
+  discrepancy.
 - Report: what landed, what didn't, any loose ends
 
 Step 4 — Identify carried items:
 - Incomplete bullets from yesterday's phase file section
-- Any open actions from the latest docs/workflow-friction.md entry
-  marked Status: Open
+- Any entry in docs/workflow-friction.md with Status: Open (check all
+  entries, not just the latest)
 
 Step 5 — Check for open PRs:
 - Run: gh pr list --state open
