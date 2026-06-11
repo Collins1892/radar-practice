@@ -50,8 +50,10 @@ Mirrors microservices direction without over-engineering.
 - `client/e2e/` — Playwright e2e tests
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
+- `.claude/commands/` — Claude Code slash commands (`/review`, `/standup`, `/observations`, `/tidy`)
 - `.cursor/rules/` — Cursor agent conventions (mirrors CLAUDE.md)
 - `learning-notes.md` — daily observations from the build
+- `docs/workflow-friction.md` — running workflow friction log (feeds Week 6 AI impact narrative)
 - `private/seven-week-plan.md` — master plan, decisions log, daily structure (private file: agent-readable, not committed)
 - `private/phase-1-foundation.md` — Weeks 1–2 complete (private file: agent-readable, not committed)
 - `private/phase-2-build.md` — Weeks 3–5, Week 3 complete; Week 4 in progress (private file: agent-readable, not committed)
