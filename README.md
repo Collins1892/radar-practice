@@ -63,6 +63,8 @@ radar-practice/
 │   ├── code-reviewer/
 │   ├── wcag/
 │   └── component-builder/
+├── .claude/commands/      # Claude Code slash commands (/review, /standup, /observations, /tidy)
+├── docs/                  # Workflow friction log and supporting documentation
 ├── .github/workflows/     # GitHub Actions CI
 └── learning-notes.md      # Daily observations from the build
 ```
@@ -73,7 +75,7 @@ radar-practice/
 | Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
 | Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 25 IncidentsApi tests |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes include `/`, `/components`, `/incidents`, and incident create/detail/edit |
-| Frontend tests | Vitest, `@testing-library/react`; Playwright e2e (smoke test, key journeys Week 5) |
+| Frontend tests | Vitest (172 tests), `@testing-library/react`; Playwright e2e (smoke test, key journeys Week 5) |
 | CI | GitHub Actions — `dotnet test` (both APIs) and `npm test` (Vitest) on push/PR to `main` |
 
 > **Note:** Each API uses its own SQLite database (`app.db` for items, `incidents.db` for incidents). Both are local only and not committed.
@@ -106,7 +108,13 @@ These are practical lessons from building this project with Claude Code (termina
 - Test-writer skills are built after real code exists — the agent reads real patterns before writing anything. Build-guide skills (e.g. wcag) should be built before feature work to prevent retrofitting.
 - Skills drive consistent output across sessions and developers — the direct fix for the confirmed Core team reusable-patterns problem.
 - All six skills include effort calibration — **think hard** for complex work (multi-file diffs, a11y-heavy UI, journey tests); **standard** for pattern-following tasks.
-- Formal evals across all six skills confirmed the delta is test quality and convention consistency, not just pass rate. Skill agents refused duplicate tests, used higher-priority RTL queries, and caught cross-stack issues that no-skill agents missed.
+- Formal evals across all six skills confirmed the delta is test quality and convention consistency, not just pass rate. Skill agents refused duplicate tests, used higher-priority RTL queries, and caught cross-stack issues that no-skill agents missed. The real measure is variance reduction — skills narrow the agent's output possibility space toward convention-consistent, high-quality results.
+
+**Slash commands (`.claude/commands/`)**
+- `/standup` — runs the daily session start: reads learning notes and the active phase file, derives the current week and day, summarises yesterday, and lists open PRs.
+- `/observations` — interactive workflow friction capture: asks eight structured questions and appends a categorised entry to `docs/workflow-friction.md`.
+- `/tidy` — status check against today's task list and the Week 7 tidy list; matches T0X identifiers in PR titles for deterministic status detection.
+- `/review` — structured code review against the `code-reviewer` skill.
 
 **Two independent reviews catch different things**
 - Claude Code `/review` and Cursor review consistently flag different issues on the same diff. Running both for significant PRs is now a firm discipline — neither alone is complete.
@@ -121,6 +129,7 @@ These are practical lessons from building this project with Claude Code (termina
 - Radix Select requires `Element.prototype.scrollIntoView = vi.fn()` in jsdom tests (now global in `setup.ts`).
 - Any component using `Link`, `NavLink`, or `useNavigate` must be wrapped in `MemoryRouter` in tests.
 - UTC date serialization: use `format(date, 'yyyy-MM-dd')` (local date) not UTC getters — affects users in UTC+ timezones.
+- Radix Dialog overlay has no ARIA role and is portaled — use `document.querySelector('div[data-state="open"]:not([role="dialog"])')` to locate it in tests. Fire `pointerDown` not `click` — Radix dismisses on pointer events at the document level, not click events.
 
 **Safety habits (especially relevant to healthcare work)**
 - Never paste identifiable patient data into prompts — anything in a prompt leaves your environment via the API.

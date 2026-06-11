@@ -1,3 +1,121 @@
+## Week 4 Day 4 — Thursday 11 June 2026
+
+### Summary
+
+Week 4 Day 4 (Thursday). Full day across multiple bursts — three custom
+slash commands built and iterated through four review passes, dotnet-test-writer
+skill extended to cover IncidentsApi, Modal test gaps closed, phase files
+updated, README updated, and Sunday plan review checklist drafted. 172 Vitest,
+25 IncidentsApi xUnit, 13 ItemsApi xUnit at close. PRs #78, #79, #80 merged.
+
+### Custom slash commands (PR #78)
+
+Three commands built in `.claude/commands/`: `/standup`, `/observations`,
+`/tidy`. Each went through four review passes — two Cursor, two Claude Code.
+The commands started as basic templates and ended as sophisticated,
+deterministic tools. Key findings across the passes:
+
+**Cursor found http:// links masquerading as file paths.** The initial
+draft used markdown link syntax (`[file.md](http://file.md)`) which agents
+interpret as HTTP fetch attempts. Replaced with bare paths throughout.
+
+**Phase file selection was ambiguous.** "Whichever is not yet marked
+complete" matched multiple files simultaneously. Fixed by tying selection
+to explicit date ranges from the programme calendar.
+
+**D-task and T0X status rules need separate logic.** `/tidy` initially
+applied T0X matching (identifier in PR title) to today's tasks too. D-tasks
+have no pre-defined identifiers — they're numbered sequentially from phase
+file bullets. The two rule sets are now separate blocks with "apply in order;
+stop at first match" guards.
+
+**DoesNotContain on body.Error gives false confidence.** The 500-test
+assertion pattern in dotnet-test-writer checked `Assert.DoesNotContain`
+against `body.Error` — which had already been asserted equal to the generic
+string, making the check redundant. Fixed to assert against `raw` (the full
+response string via `ReadAsStringAsync()`).
+
+**T0X identifier convention established.** All PRs addressing Week 7 tidy
+list items must include the T0X identifier in the PR title (e.g.
+`fix(T14): replace skip link pattern`). This makes `/tidy` matching
+deterministic and means the nightly agent's PR titles must follow the same
+convention.
+
+### Eval measurement reframe
+
+The +17% pass rate from Week 2 Day 2 (dotnet-test-writer) was an emergent
+result, not a designed benchmark. Attempting to produce equivalent numbers
+across all six skills in Week 4 would have missed the point. A skill's
+purpose is to narrow the variance in agent output — without a skill, the
+agent has a wider possibility space and more of those possibilities produce
+suboptimal results. The skill constrains that space toward convention-consistent,
+high-quality output. This applies across all six skills regardless of type.
+Documented in the decisions log as the authoritative framing for Week 6.
+
+### dotnet-test-writer scope extended (PR #79)
+
+The Week 4 Day 3 eval exposed that dotnet-test-writer was scoped to ItemsApi
+only. Extended to cover IncidentsApi in full: separate project layout,
+IncidentsDbContext boilerplate with JsonOptions and JsonStringEnumConverter,
+mock vs real-persistence decision table, PUT round-trip guidance, raw JSON
+StringContent pattern for invalid enum values, complete endpoint reference
+with all 400 messages, and enum storage gotcha (int in DB, string over wire).
+Two review passes — Cursor and Claude Code — with a substantive fix to the
+500-test DoesNotContain assertion across both reviews.
+
+### Modal test gaps closed (PR #80)
+
+Two gaps identified in the Week 4 Day 3 eval and PR #76 reviews:
+
+**Backdrop dismiss.** Radix Dialog overlay has no ARIA role and is portaled
+to the document body — a `data-radix-dialog-overlay` attribute does not exist
+in this Radix version. Located structurally: `document.querySelector('div
+[data-state="open"]:not([role="dialog"])')`. Radix dismisses on
+`pointerDown` at the document level, not `click` — a plain click event would
+not trigger dismissal in jsdom. The DOM inspection approach (writing a temp
+test to log all div attributes) was the right way to discover the correct
+selector before writing the real test.
+
+**aria-describedby suppression.** When no `description` prop is passed,
+`aria-describedby` should not appear on the dialog element. Radix would
+auto-link a description ID if the prop were present — the test confirms
+the attribute is genuinely absent.
+
+`@testing-library/user-event` was missing from `node_modules` (present in
+package.json but not installed) — `npm install` in `client/` restored it.
+Logged to workflow-friction as a context gap finding for the backlog.
+
+### Anthropic API gap identified
+
+The nightly autonomous agent and automated PR review (both Week 5 headline
+builds) call the Anthropic API directly — not via Claude Code or Cursor.
+The programme to date has worked through these tools which abstract the raw
+API away. A half-session orientation on the API is needed before any Week 5
+agent design work begins. Added as the opening item on Week 5 Day 1.
+
+### Document consolidation discipline
+
+A pattern emerged of creating new .md files without clear standards. Agreed
+that all programme documentation consolidates into the existing plan files
+(seven-week-plan.md, phase files) rather than spawning new files. The
+`docs/workflow-friction.md` is the one deliberate exception — public,
+committed, feeds the Week 6 AI impact story.
+
+### Ideas and observations
+
+- Four review passes on the slash commands was the right call — each pass
+  caught different substantive issues. Cursor and Claude Code consistently
+  find different things even on the same diff.
+- The `/tidy` output on first run correctly identified that the phase file
+  marked Week 4 complete prematurely — the command exposed the gap in the
+  source data, which is exactly what it's for.
+- The Week 5 pre-flight checklist is the most important thing on the Sunday
+  agenda. Week 5 is the showcase week — everything needs to be ready before
+  Monday.
+- Slash commands are durable agentic patterns that persist across sessions.
+  The `/standup` command already feels like a genuine daily workflow tool
+  rather than a demo.
+  
 ## Week 4 Day 3 — Wednesday 10 June 2026
 
 ### Summary
