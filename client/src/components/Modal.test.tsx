@@ -109,6 +109,8 @@ describe('Modal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
     await screen.findByText('Test title');
 
+    // Act — (dialog open handled in Arrange)
+
     // Assert
     const dialog = screen.getByRole('dialog');
     expect(dialog).not.toHaveAttribute('aria-describedby');
