@@ -1,18 +1,35 @@
+---
+description: Run daily standup — date, yesterday's delivery, open PRs, confirm today's tasks.
+---
 Run the daily standup for this session.
 
 Step 1 — Establish the current date and week position:
 - Run: date
-- Read the active phase file from private/ (whichever of phase-1-foundation.md, phase-2-build.md, or phase-3-articulate.md is not yet marked complete)
-- Cross-reference the date output with the phase file to determine the current Week X Day Y
-- If the week/day cannot be determined with confidence, ask the developer before continuing
+- Compare the date to the programme phase ranges:
+  - Phase 1 (phase-1-foundation.md): May 18 – May 30
+  - Phase 2 (phase-2-build.md): Jun 2 – Jun 20
+  - Phase 3 (phase-3-articulate.md): Jun 23 – Jul 4
+- Read the matching phase file from private/
+- Cross-reference the date with the phase file to determine the current
+  Week X Day Y
+- If the week/day cannot be determined with confidence, ask the developer
+  before continuing
+- If private/ is missing, ask the developer for Week X Day Y and today's
+  task list before continuing
 
 Step 2 — Read the following files:
-- learning-notes.md (most recent entry)
+- learning-notes.md (all entries to identify sections by Week X Day Y)
 - private/seven-week-plan.md (daily structure and context)
 
-Step 3 — Summarise what was delivered yesterday: what landed, what didn't, any loose ends.
+Step 3 — Summarise yesterday:
+- "Yesterday" is the Week X Day Y section immediately before the
+  date-derived current day — not simply the most recent entry
+- Report: what landed, what didn't, any loose ends
 
-Step 4 — Check for open PRs with: gh pr list --state open
+Step 4 — Check for open PRs:
+- Run: gh pr list --state open
+- If gh is not authenticated or fails, note "gh unavailable — PR check
+  skipped" and continue
 
 Step 5 — Output in this format:
 
