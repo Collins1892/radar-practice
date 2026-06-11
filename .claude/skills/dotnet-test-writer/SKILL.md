@@ -1,16 +1,16 @@
 ---
 name: dotnet-test-writer
-description: Write integration tests for the .NET 8 minimal API in this project (ItemsApi). Use when the user asks to write, add, generate, or create an ItemsApi integration test. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj after adding or changing a test. Confirm the suite passes before declaring done. Calibrate effort: think hard for mock/exception paths, fixture isolation, or new endpoints.
+description: Write integration tests for the .NET 8 minimal APIs in this project (ItemsApi and IncidentsApi). Use when the user asks to write, add, generate, or create an integration test for either API. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test <Project>.Tests/<Project>.Tests.csproj after adding or changing a test. Confirm the suite passes before declaring done. Calibrate effort: think hard for mock/exception paths, fixture isolation, new endpoints, or any IncidentsApi filter/sort/paginate or PUT round-trip test.
 ---
 
 # .NET Test Writer
 
-Guides writing integration tests for the `ItemsApi` .NET 8 minimal API.
+Guides writing integration tests for both .NET 8 minimal APIs in this project: `ItemsApi` and `IncidentsApi`. Each API has its own test project, factory, and DbContext — treat them as separate concerns.
 
 ## Core rules
 
 - **One test per request.** Write one `[Fact]` at a time — not a batch. Offer the next test separately.
-- **Run tests and confirm pass.** After any change, run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` and confirm the suite passes before declaring done.
+- **Run tests and confirm pass.** After any change to ItemsApi tests, run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`. After any change to IncidentsApi tests, run `dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj`. Confirm the suite passes before declaring done.
 - **Use Context7** when you need to verify current xUnit or NSubstitute API details:
   1. `mcp__context7__resolve-library-id` with library name + question
   2. `mcp__context7__query-docs` with the resolved ID
@@ -23,6 +23,7 @@ Calibrate reasoning depth to the test scenario:
 |-----------|----------|
 | NSubstitute exception paths, scoped DI vs mock override, or shared-fixture persistence ordering | **think hard** |
 | New endpoint file, custom status/body shape, or GlobalExceptionHandler behaviour | **think hard** |
+| Any IncidentsApi filter, sort, paginate, or PUT round-trip test | **think hard** |
 | Happy-path GET/POST or single validation 400 following existing `[Fact]` patterns | Standard effort — no extra keyword |
 
 When **think hard** applies, read [Mocking with NSubstitute](#mocking-with-nsubstitute) and [Database and isolation gotchas](#database-and-isolation-gotchas) before choosing `CreateDefaultClient()` vs `CreateClientWithRepo()`. Do not over-mock persistence tests or over-assert DB-generated ids.
@@ -39,11 +40,13 @@ When **think hard** applies, read [Mocking with NSubstitute](#mocking-with-nsubs
 | Microsoft.Data.Sqlite | 8.0.27 (transitive via EFCore.Sqlite; used directly in TestWebApplicationFactory) |
 | Target framework | .NET 8.0 |
 
-The test project references `Microsoft.EntityFrameworkCore.Sqlite` (8.0.27), and `TestWebApplicationFactory` uses `Microsoft.Data.Sqlite` directly (`SqliteConnection`) for its in-memory database.
+The test projects reference `Microsoft.EntityFrameworkCore.Sqlite` (8.0.27), and each `TestWebApplicationFactory` uses `Microsoft.Data.Sqlite` directly (`SqliteConnection`) for its in-memory database.
 
-The `Xunit` namespace is globally imported (via `<Using Include="Xunit" />` in the csproj) — no `using Xunit;` needed.
+The `Xunit` namespace is globally imported (via `<Using Include="Xunit" />` in each csproj) — no `using Xunit;` needed.
 
 ## Project layout
+
+### ItemsApi
 
 ```
 ItemsApi/
@@ -61,13 +64,50 @@ ItemsApi/
   Migrations/                 — EF migrations (initial: 20260601041641_InitialCreate)
 
 ItemsApi.Tests/
-  TestWebApplicationFactory.cs — custom factory; per-class in-memory SQLite DB
+  TestWebApplicationFactory.cs — custom factory; per-class in-memory SQLite DB via AppDbContext
   PostItemsTests.cs           — POST /items tests (file already exists)
   GlobalExceptionHandlerTests.cs
   GetItemsTests.cs            — GET /items tests (file already exists — append new [Fact] before private records)
 ```
 
+### IncidentsApi
+
+```
+IncidentsApi/
+  Program.cs                  — GET /incidents, POST /incidents, GET /incidents/{id},
+                                PUT /incidents/{id} endpoints; registers CORS,
+                                AddDbContext<IncidentsDbContext> (SQLite "incidents.db"),
+                                AddScoped<IIncidentRepository, EfIncidentRepository>,
+                                JsonStringEnumConverter (enums serialised as strings in JSON),
+                                global exception handler, and runs Database.Migrate() on startup
+  IIncidentRepository.cs      — interface: GetPaged(query), GetById(id), Add(incident), Update(incident)
+  Incident.cs                 — record Incident(int Id, string Title, string Description,
+                                string Location, IncidentSeverity Severity, IncidentStatus Status,
+                                DateTime ReportedDate); also declares IncidentSeverity and
+                                IncidentStatus enums (stored as int in DB)
+  IncidentRequest.cs          — record IncidentRequest(string Title, string Description,
+                                string Location, IncidentSeverity Severity,
+                                IncidentStatus Status, DateTime ReportedDate)
+  IncidentListQuery.cs        — record IncidentListQuery(IncidentSeverity? Severity,
+                                IncidentStatus? Status, string SortBy, bool SortDescending,
+                                int Page, int PageSize)
+  PagedIncidentsResult.cs     — record PagedIncidentsResult(IReadOnlyList<Incident> Items,
+                                int Page, int PageSize, int TotalCount, int TotalPages)
+  Data/IncidentsDbContext.cs  — dedicated DbContext for incidents.db; enums stored as int
+  Repositories/EfIncidentRepository.cs — EF Core implementation of IIncidentRepository
+  Migrations/                 — EF migrations (initial: 20260604060010_InitialCreate)
+
+IncidentsApi.Tests/
+  TestWebApplicationFactory.cs — custom factory; per-class in-memory SQLite DB via IncidentsDbContext
+  GetIncidentsTests.cs        — GET /incidents tests (exists — append new [Fact] before private records)
+  PostIncidentsTests.cs       — POST /incidents tests (exists — append new [Fact] before private records)
+  GetIncidentByIdTests.cs     — GET /incidents/{id} tests (exists — append new [Fact] before private records)
+  PutIncidentsTests.cs        — PUT /incidents/{id} tests (exists — append new [Fact] before private records)
+```
+
 ## Test class structure (boilerplate)
+
+### ItemsApi
 
 All test classes follow this shape — no explicit namespace, private helper methods, private response records at the bottom:
 
@@ -115,17 +155,107 @@ public class <FeatureName>Tests : IClassFixture<TestWebApplicationFactory>
 
 Only include the private records the class actually uses.
 
+### IncidentsApi
+
+IncidentsApi test classes add a static `JsonOptions` field because enums are serialised as strings in the server's JSON responses (due to `JsonStringEnumConverter` in `Program.cs`) and must be deserialised with the same converter in tests:
+
+```csharp
+using System.Net;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using IncidentsApi;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+
+public class <FeatureName>Tests : IClassFixture<TestWebApplicationFactory>
+{
+    private readonly TestWebApplicationFactory _factory;
+
+    public <FeatureName>Tests(TestWebApplicationFactory factory)
+    {
+        _factory = factory;
+    }
+
+    private HttpClient CreateDefaultClient() => _factory.CreateClient();
+
+    private HttpClient CreateClientWithRepo(IIncidentRepository repo) =>
+        _factory.WithWebHostBuilder(b =>
+            b.ConfigureServices(s => s.AddSingleton(repo)))
+        .CreateClient();
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() },
+    };
+
+    [Fact]
+    public async Task <MethodName>()
+    {
+        // Arrange
+        ...
+
+        // Act
+        ...
+
+        // Assert
+        ...
+    }
+
+    private record IncidentResponse(
+        int Id,
+        string Title,
+        string Description,
+        string Location,
+        IncidentSeverity Severity,
+        IncidentStatus Status,
+        DateTime ReportedDate);
+
+    private record PagedIncidentsResponse(
+        IncidentResponse[] Items,
+        int Page,
+        int PageSize,
+        int TotalCount,
+        int TotalPages);
+
+    private record ErrorResponse(string Error);
+}
+```
+
+Only include the private records the class actually uses. `PagedIncidentsResponse` is only needed in GET /incidents tests; `IncidentResponse` is used by POST, GET by id, and PUT tests.
+
 ## Naming convention
 
 Format: `<HttpVerb>_<Scenario>_<ExpectedResult>`
 
-Examples:
+**ItemsApi examples:**
 - `Get_NoItems_ReturnsEmptyArray`
 - `Get_WithTwoItems_ReturnsBothItems`
 - `Get_WhenRepositoryThrows_Returns500`
 - `Post_ValidItem_Returns201WithItem`
 - `Post_EmptyName_Returns400WithError`
 - `Post_WhenRepositoryThrows_Returns500`
+
+**IncidentsApi examples:**
+- `Get_NoFilters_Returns200WithPagedResult`
+- `Get_NoIncidents_Returns200WithEmptyPagedResult`
+- `Get_PageSizeOver100_Returns400WithError`
+- `Get_InvalidSortBy_Returns400WithError`
+- `Get_FilterBySeverity_ReturnsOnlyMatchingIncidents`
+- `Get_WhenRepositoryThrows_Returns500`
+- `Post_ValidIncident_Returns201WithIncident`
+- `Post_BlankTitle_Returns400WithError`
+- `Post_InvalidSeverity_Returns400WithError`
+- `Post_WhenRepositoryThrows_Returns500`
+- `Get_ById_ExistingId_Returns200WithIncident`
+- `Get_ById_MissingId_Returns404WithError`
+- `Put_ById_ValidData_Returns200WithUpdatedIncident`
+- `Put_ExistingIncident_PersistsUpdatedValuesInDatabase`
+- `Put_ById_NotFound_Returns404WithError`
+- `Put_WhenRepositoryThrows_Returns500`
 
 ## Arrange/Act/Assert pattern
 
@@ -153,9 +283,11 @@ public async Task Get_NoItems_ReturnsEmptyArray()
 
 ## Mocking with NSubstitute
 
+### ItemsApi
+
 **Use `CreateClientWithRepo(mock)` when the test needs to force specific `GetAll()` contents or simulate a repository exception. Use `CreateDefaultClient()` when the test exercises real persistence (create, round-trip read).**
 
-`IClassFixture` gives the whole test class a single shared `TestWebApplicationFactory` instance. The real repository is now `EfItemsRepository` (registered **scoped**), backed by an in-memory SQLite database that the factory creates per test class — a `SqliteConnection("DataSource=:memory:")` opened in the fixture constructor, kept open for the fixture's lifetime, migrated on host creation, and disposed at the end. Each test class therefore gets its own isolated database; data does **not** leak across classes. Data added within a class *does* persist across that class's `[Fact]`s (shared fixture), so a test that asserts the repo is empty or contains exactly N items via `CreateDefaultClient()` can be fragile within the class unless it owns the state.
+`IClassFixture` gives the whole test class a single shared `TestWebApplicationFactory` instance. The real repository is `EfItemsRepository` (registered **scoped**), backed by an in-memory SQLite database that the factory creates per test class — a `SqliteConnection("DataSource=:memory:")` opened in the fixture constructor, kept open for the fixture's lifetime, migrated on host creation, and disposed at the end. Each test class therefore gets its own isolated database; data does **not** leak across classes. Data added within a class *does* persist across that class's `[Fact]`s (shared fixture), so a test that asserts the repo is empty or contains exactly N items via `CreateDefaultClient()` can be fragile within the class unless it owns the state.
 
 `CreateClientWithRepo(repo)` overrides the EF repository with a fresh mock for that one client, so the test owns its data completely and runs correctly regardless of execution order.
 
@@ -175,43 +307,153 @@ repo.Add(Arg.Any<string>(), Arg.Any<decimal>())
     .Throws(new InvalidOperationException("Item limit reached."));
 ```
 
+### IncidentsApi
+
+**Real-persistence tests are preferred for IncidentsApi over mocked tests wherever the goal is verifying data behaviour.** Apply this guidance:
+
+| Goal | Client to use |
+|------|---------------|
+| Verify paged response shape or mock a controlled list | `CreateClientWithRepo(mock)` |
+| Verify filter/sort/paginate behaviour against real data | `CreateDefaultClient()` — seed multiple records via POST, then query |
+| POST happy path (201 + round-trip id) | `CreateDefaultClient()` |
+| PUT round-trip (assert update persisted) | `CreateDefaultClient()` — POST to create, PUT to update, GET to confirm |
+| 500 exception path | `CreateClientWithRepo(mock)` — configure mock to `.Throws(...)` |
+| 404 not-found | `CreateClientWithRepo(mock)` — configure `Update`/`GetById` to return `null` |
+| Validation 400 that never reaches the repo | `CreateDefaultClient()` (or a bare mock — repo is never called) |
+
+For filter/sort/paginate tests using real persistence, seed records with different field values via `PostAsJsonAsync`, then call the filtered/sorted/paginated URL and assert only the expected records are returned in the expected order.
+
+For PUT round-trip tests using real persistence: POST to create → PUT to update → GET to confirm the GET response reflects the update. This proves persistence, not just the PUT response body.
+
+For exception scenarios, mock the `IIncidentRepository` interface method that the endpoint calls:
+
+```csharp
+var repo = Substitute.For<IIncidentRepository>();
+repo.Add(Arg.Any<Incident>())
+    .Throws(new InvalidOperationException("Incident limit reached."));
+var client = CreateClientWithRepo(repo);
+```
+
+For `GetPaged` exceptions:
+
+```csharp
+repo.GetPaged(Arg.Any<IncidentListQuery>())
+    .Throws(new InvalidOperationException("Simulated failure"));
+```
+
+**Invalid enum values** cannot be expressed via `PostAsJsonAsync` (the client-side serialiser can't produce out-of-range ints from a typed enum). Use raw JSON with `StringContent` instead:
+
+```csharp
+var json = $$"""
+    {
+      "title": "Test",
+      "description": "Desc",
+      "location": "Ward 1",
+      "severity": 99,
+      "status": 0,
+      "reportedDate": "{{DateTime.UtcNow.Date:yyyy-MM-dd}}"
+    }
+    """;
+using var content = new StringContent(json, Encoding.UTF8, "application/json");
+var response = await client.PostAsync("/incidents", content);
+```
+
 ## Endpoint reference
 
-### GET /items
+### ItemsApi endpoints
+
+#### GET /items
 - **200** — returns `Item[]` (JSON array)
 - **500** — repository throws
 
-### POST /items
+#### POST /items
 - **201** — valid input; returns `{ id, name, price }`. The `id` is DB-generated (auto-increment), so assert `Id > 0` rather than a specific value. Decimal price precision is preserved on round-trip because `Price` is mapped via `HasConversion<string>()`.
 - **400** `"Name is required."` — empty or whitespace name
 - **400** `"Name must be under 100 characters."` — name > 100 chars
 - **400** `"Price must be greater than zero."` — price ≤ 0
 - **500** — repository throws
 
+### IncidentsApi endpoints
+
+#### GET /incidents
+- **200** — paged result: `{ items, page, pageSize, totalCount, totalPages }`. Defaults: `sortBy=reportedDate`, `sortDirection=desc`, `page=1`, `pageSize=25`.
+- **400** `"Page must be at least 1."` — `page < 1`
+- **400** `"Page size must be at least 1."` — `pageSize < 1`
+- **400** `"Page size must be 100 or fewer."` — `pageSize > 100`
+- **400** `"Invalid sort field."` — `sortBy` not in `{title, description, location, severity, status, reporteddate}` (case-insensitive)
+- **400** `"Sort direction must be asc or desc."` — `sortDirection` not `asc` or `desc` (case-insensitive)
+- **400** `"Invalid severity value."` — out-of-range `severity` int passed as query param
+- **400** `"Invalid status value."` — out-of-range `status` int passed as query param
+- **500** — repository throws; assert `"An unexpected error occurred."` AND `DoesNotContain` the internal exception message
+
+#### POST /incidents
+- **201** — valid input; returns created `Incident`. `Id` is DB-generated — assert `Id > 0`. Enums are returned as strings in the JSON response; deserialise with `JsonOptions`.
+- **400** `"Title is required."` — blank/whitespace title
+- **400** `"Title must be 50 characters or fewer."` — title > 50 chars
+- **400** `"Description is required."` — blank/whitespace description
+- **400** `"Description must be 100 characters or fewer."` — description > 100 chars
+- **400** `"Location is required."` — blank/whitespace location
+- **400** `"Location must be 100 characters or fewer."` — location > 100 chars
+- **400** `"Invalid severity value."` — out-of-range severity (use raw JSON `StringContent`)
+- **400** `"Invalid status value."` — out-of-range status (use raw JSON `StringContent`)
+- **400** `"Reported date must not be in the future."` — `reportedDate` after `DateTime.UtcNow.Date`
+- **500** — repository throws; assert `"An unexpected error occurred."` AND `DoesNotContain` the internal exception message
+
+#### GET /incidents/{id}
+- **200** — returns single `Incident` by id. Deserialise with `JsonOptions`.
+- **404** `"Incident not found."` — id not in database
+
+#### PUT /incidents/{id}
+- **200** — valid input; returns updated `Incident`. Applies the same validation rules as POST. Deserialise with `JsonOptions`.
+- **400** — same validation errors as POST
+- **404** `"Incident not found."` — id not in database; `repo.Update(...)` returns `null`
+- **500** — repository throws; assert `"An unexpected error occurred."` AND `DoesNotContain` the internal exception message
+
+**500-test assertion pattern for POST and PUT (required):**
+
+```csharp
+Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+Assert.NotNull(body);
+Assert.Equal("An unexpected error occurred.", body.Error);
+Assert.DoesNotContain("<internal exception message>", body.Error);
+```
+
 ## Database and isolation gotchas
 
-- Each test class gets one fresh in-memory SQLite database via `TestWebApplicationFactory`. Data survives across `[Fact]`s in the same class but never leaks across classes.
+- Each test class gets one fresh in-memory SQLite database via its `TestWebApplicationFactory`. Data survives across `[Fact]`s in the same class but never leaks across classes.
+- **ItemsApi** uses `AppDbContext`; **IncidentsApi** uses `IncidentsDbContext` — they are completely separate databases and factories. Never mix test projects or factories.
 - Schema changes require a new EF migration — the factory applies the committed migrations through `Database.Migrate()` on host creation.
 - `Microsoft.Data.Sqlite` in-memory databases are destroyed when the connection closes, which is why the factory holds the `SqliteConnection` open for the fixture's lifetime.
+- **IncidentsApi enum storage:** `IncidentSeverity` and `IncidentStatus` are stored as `int` in `incidents.db` for correct sort order and query performance. The JSON layer uses `JsonStringEnumConverter` (string representation over the wire). This means: filter/sort tests on severity or status work correctly when seeding via POST (which round-trips through the string converter), but the DB column value is an int that EF queries against directly.
 
 ## Which file to write to
 
-| Endpoint | File |
-|----------|------|
-| GET /items | `ItemsApi.Tests/GetItemsTests.cs` (create if absent) |
-| POST /items | `ItemsApi.Tests/PostItemsTests.cs` (exists — append before closing `}`) |
-| Exception handler | `ItemsApi.Tests/GlobalExceptionHandlerTests.cs` |
-| New endpoint | Create `ItemsApi.Tests/<Endpoint>Tests.cs` |
+| API | Endpoint | File |
+|-----|----------|------|
+| ItemsApi | GET /items | `ItemsApi.Tests/GetItemsTests.cs` (create if absent) |
+| ItemsApi | POST /items | `ItemsApi.Tests/PostItemsTests.cs` (exists — append before closing `}`) |
+| ItemsApi | Exception handler | `ItemsApi.Tests/GlobalExceptionHandlerTests.cs` |
+| ItemsApi | New endpoint | Create `ItemsApi.Tests/<Endpoint>Tests.cs` |
+| IncidentsApi | GET /incidents | `IncidentsApi.Tests/GetIncidentsTests.cs` (exists — append before private records) |
+| IncidentsApi | POST /incidents | `IncidentsApi.Tests/PostIncidentsTests.cs` (exists — append before private records) |
+| IncidentsApi | GET /incidents/{id} | `IncidentsApi.Tests/GetIncidentByIdTests.cs` (exists — append before private records) |
+| IncidentsApi | PUT /incidents/{id} | `IncidentsApi.Tests/PutIncidentsTests.cs` (exists — append before private records) |
+| IncidentsApi | New endpoint | Create `IncidentsApi.Tests/<Endpoint>Tests.cs` |
 
 When **appending** to an existing file, insert the new `[Fact]` method before the private record declarations at the bottom of the class.
 
 ## Workflow for each test request
 
-1. Identify endpoint and scenario from the user's message.
+1. Identify the API (ItemsApi or IncidentsApi), the endpoint, and the scenario from the user's message.
 2. **Calibrate effort** — apply [Recommended effort level](#recommended-effort-level).
 3. Determine the target file (table above).
-4. Look up any uncertain API details via Context7 before writing.
-5. Write one test, following the naming convention and A/A/A structure.
-6. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
-7. Run `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj` after adding or changing the test and confirm the suite passes.
-8. Confirm what was written and the test result. If tests fail, fix before offering the next test. Then ask: "Which test would you like next?"
+4. For IncidentsApi: decide whether to use `CreateDefaultClient()` (real persistence) or `CreateClientWithRepo(mock)` — see [Mocking with NSubstitute — IncidentsApi](#incidentsapi).
+5. Look up any uncertain API details via Context7 before writing.
+6. Write one test, following the naming convention and A/A/A structure.
+7. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.
+8. Run the appropriate test command:
+   - ItemsApi: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`
+   - IncidentsApi: `dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj`
+9. Confirm what was written and the test result. If tests fail, fix before offering the next test. Then ask: "Which test would you like next?"
