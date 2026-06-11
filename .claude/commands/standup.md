@@ -9,9 +9,11 @@ Step 1 — Establish the current date and week position:
   - Phase 1 (phase-1-foundation.md): May 18 – May 30
   - Phase 2 (phase-2-build.md): Jun 2 – Jun 20
   - Phase 3 (phase-3-articulate.md): Jun 23 – Jul 4
+  - If the date falls in a gap between phases, ask the developer for
+    Week X Day Y before continuing
 - Read the matching phase file from private/
-- Cross-reference the date with the phase file to determine the current
-  Week X Day Y
+- Cross-reference the date with the ### Week X Day Y headers in the
+  phase file to determine the current Week X Day Y
 - If the week/day cannot be determined with confidence, ask the developer
   before continuing
 - If private/ is missing, ask the developer for Week X Day Y and today's
@@ -26,12 +28,17 @@ Step 3 — Summarise yesterday:
   date-derived current day — not simply the most recent entry
 - Report: what landed, what didn't, any loose ends
 
-Step 4 — Check for open PRs:
+Step 4 — Identify carried items:
+- Incomplete bullets from yesterday's phase file section
+- Any open actions from the latest docs/workflow-friction.md entry
+  marked Status: Open
+
+Step 5 — Check for open PRs:
 - Run: gh pr list --state open
 - If gh is not authenticated or fails, note "gh unavailable — PR check
   skipped" and continue
 
-Step 5 — Output in this format:
+Step 6 — Output in this format:
 
 **Date:** [date] — [Week X Day Y]
 
@@ -39,7 +46,7 @@ Step 5 — Output in this format:
 [what landed]
 
 **Carried**
-[deferred or incomplete]
+[incomplete bullets from yesterday + open friction actions, or "none"]
 
 **Open PRs**
 [list or "none"]
