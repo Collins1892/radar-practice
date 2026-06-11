@@ -30,6 +30,8 @@ Step 3 — Summarise yesterday:
 - Use the phase file as source of truth for completion status; use
   learning-notes.md for narrative detail. If they disagree, note the
   discrepancy.
+- If no matching learning-notes.md section exists, summarise from
+  yesterday's phase-file bullets only and note that notes are pending.
 - Report: what landed, what didn't, any loose ends
 
 Step 4 — Identify carried items:
