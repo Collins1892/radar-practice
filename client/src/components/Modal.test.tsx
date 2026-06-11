@@ -82,4 +82,36 @@ describe('Modal', () => {
     // Assert
     expect(screen.queryByText('Test title')).not.toBeInTheDocument();
   });
+
+  it('closes on backdrop click', async (): Promise<void> => {
+    // Arrange
+    renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
+    await screen.findByText('Test title');
+
+    // Act
+    const overlay = document.querySelector(
+      'div[data-state="open"]:not([role="dialog"])',
+    );
+    if (overlay === null) {
+      throw new Error('Expected dialog overlay to be present');
+    }
+    fireEvent.pointerDown(overlay);
+
+    // Assert
+    expect(screen.queryByText('Test title')).not.toBeInTheDocument();
+  });
+
+  it('omits aria-describedby when no description is provided', async (): Promise<void> => {
+    // Arrange
+    renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
+    await screen.findByText('Test title');
+
+    // Act
+    const dialog = screen.getByRole('dialog');
+
+    // Assert
+    expect(dialog).not.toHaveAttribute('aria-describedby');
+  });
 });
