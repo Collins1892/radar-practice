@@ -90,6 +90,7 @@ describe('Modal', () => {
     await screen.findByText('Test title');
 
     // Act
+    // Radix overlay is portaled and has no ARIA role, so a DOM-level selector is unavoidable.
     const overlay = document.querySelector(
       'div[data-state="open"]:not([role="dialog"])',
     );
@@ -108,10 +109,8 @@ describe('Modal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
     await screen.findByText('Test title');
 
-    // Act
-    const dialog = screen.getByRole('dialog');
-
     // Assert
+    const dialog = screen.getByRole('dialog');
     expect(dialog).not.toHaveAttribute('aria-describedby');
   });
 });
