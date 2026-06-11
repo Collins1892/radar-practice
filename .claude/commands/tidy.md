@@ -20,7 +20,7 @@ Step 1 — Establish the current date and week position:
 
 Step 2 — Run status checks:
 - Run: gh pr list --state open --json number,title,headRefName
-- Run: gh pr list --state merged --json number,title,headRefName --limit 50
+- Run: gh pr list --state merged --json number,title,headRefName --limit 100
 - Run: git branch -r
 - Run: git branch
 - If gh is not authenticated or fails, note "gh unavailable — PR checks

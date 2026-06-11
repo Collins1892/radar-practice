@@ -24,6 +24,8 @@ Step 2 — Read the following files:
 - private/seven-week-plan.md (daily structure and context)
 - docs/workflow-friction.md (open friction actions for Carried section)
 
+When summarising, omit personal names, client names, and credentials — consistent with the PII hygiene rules in CLAUDE.md.
+
 Step 3 — Summarise yesterday:
 - "Yesterday" is the Week X Day Y section immediately before the
   date-derived current day — not simply the most recent entry

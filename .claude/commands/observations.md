@@ -54,12 +54,12 @@ or a skill file. Feeds into the Week 6 AI impact story.
 Step 4 — Append to docs/workflow-friction.md in this format:
 
 ## [Week X Day Y] — [one-line summary]
-- **Category:** [category]
 - **Tool:** [tool]
 - **Skill active:** [skill or none]
 - **What happened:** [description]
 - **Why it broke flow:** [description]
 - **Time cost:** [estimate]
+- **Category:** [category]
 - **Fix or lesson:** [what would prevent this]
 - **Open action:** [action or none]
-- **Status:** Open / Resolved
+- **Status:** Open
