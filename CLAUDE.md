@@ -216,7 +216,7 @@ changed library API.
 - Use descriptive commit messages when asked to commit
 - Follow the TypeScript conventions defined above — no any, explicit return types
 - Check `.claude/skills/` for relevant skills before starting a task — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`
-- Check `.claude/commands/` for relevant slash commands — `/standup`, `/observations`, `/tidy`, `/review`
+- Check `.claude/commands/` for relevant slash commands — `/review`, `/standup`, `/observations`, `/tidy`
 - Place hand-authored components in `client/src/components/` — never in `client/src/components/ui/` (shadcn vendor directory)
 
 ## What the agent should not do
