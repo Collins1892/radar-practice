@@ -143,7 +143,7 @@ the human as the gate on what becomes durable backlog work.
 - Deliberately deferred the API key vs Agent SDK decision to Monday with
   a clean view rather than forcing it at the end of a design session.
   Better decisions come from fresh attention on a real fork.
-  
+    
 ## Week 4 Day 5 — Saturday 13 June 2026
 
 ### Summary
