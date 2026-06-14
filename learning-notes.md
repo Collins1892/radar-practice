@@ -1,3 +1,274 @@
+## Week 4 Day 6 — Sunday 14 June 2026
+
+### Summary
+
+Week 4 close and Week 5 pre-flight. No code, no PRs — a design and
+decision session. Week 4 confirmed complete (outcome met and exceeded).
+All three Week 5 headline builds designed in detail, with the reasoning
+behind each decision captured here because the *why* is what demonstrates
+judgement for the CTO conversation and the Week 6 impact story. Monday's
+sequence locked. Closing with a fresh chat to start Week 5 clean.
+
+### Week 4 outcome — met and exceeded
+
+The outcome was "advanced agentic patterns under control, multi-agent
+workflows demonstrated, evals running." Against that: parallel agents
+across worktrees shipping 8 PRs in a day, formal evals across all six
+skills, the two-review discipline, durable slash commands, and a reframe
+of what evals even measure. Not just met — exceeded. The pattern of
+"revealing new things each week" isn't scope creep; it's the evidence of
+moving up the learning curve and keeping pace with a fast-moving field,
+which is exactly what the CTO asked for.
+
+### Automated PR review — design and rationale
+
+A single agent reviews the PR diff against code-reviewer, fixes Blockers
+and Majors itself, and logs Minors for morning review.
+
+**Why build it first.** Originally framed as the "safe, comment-only
+plumbing validator." That framing broke once the decision was made to
+let it *fix* code (Option A) rather than only comment (Option B) — fixing
+code is autonomous code-changing, same risk class as the nightly agent,
+so it isn't risk-free. The real reason to build it first is that its
+input is *bounded*: it works on one known diff in front of it, whereas
+the nightly agent has the harder job of *choosing* what to work on from a
+backlog. Bounded input is a simpler problem, so it's the right first
+build — but it gets the same daylight-first safety discipline.
+
+**Option A vs B — and the "two agents" confusion.** Worth recording
+because it was a genuine point of clarification: neither option is two
+agents working together. Both are a single agent. The only difference is
+whether that one agent *edits code* (A) or *only comments* (B). Chose A
+because it's the real time saver — an agent that fixes Blockers/Majors
+itself removes work rather than just flagging it.
+
+**The bounded-retry safety valve.** Loops up to 3 attempts to resolve
+Blockers/Majors. If still not clean, marks the PR as draft with a note
+rather than looping forever or merging something unsafe. 3 is a starting
+value, tuned from standup observations. Draft status is the signal a
+human is needed — same language as the nightly agent, so both builds
+behave consistently.
+
+**Other locked decisions.** Triggers on every push; review job gated
+behind `needs: test` so it only runs on green code (the agent never
+spends calls on broken code); single PR comment for the Minors log,
+updated in place; loud fail on API/key failure.
+
+### Nightly autonomous agent — design and rationale
+
+**Done condition — scope, not size.** Initial instinct was a line-count
+cap (e.g. refuse to PR if >150 lines). Rejected it: line count is a poor
+proxy for risk. A clean 200-line change that adds a fix plus its tests is
+fine; a 40-line change touching an unrelated file is not. The real gate
+is scope and coherence — tests pass (including added tests), the diff
+touches only task-relevant files, and it's one coherent change. This is
+the same boundary discipline that stopped Cursor Auto wandering in Week 4.
+
+**Always raises something — draft when stuck.** A silent night with
+nothing to show is a bad start. So the agent always produces something to
+review: a normal PR if confident, a *draft* PR with a note if it
+struggled. Draft status instantly signals "this needs my judgement" vs
+"this is ready." Same mechanism as the PR review's 3-attempts-then-draft.
+
+**The tidy-list management answer.** The key management question was how
+to stop the tidy list going stale. The answer is exactly one deliberate
+manual step: the agent puts the T0X identifier in the PR title and only
+moves the item to "In PR" — it never marks its own work done. On merge,
+the developer ticks the item ✅ in phase-3-articulate.md. That tick is the
+human gate. Everything else is automated or surfaced by `/tidy`.
+Consistent with the whole discipline: agents show changes, the developer
+commits and confirms.
+
+**Build safely — daylight first.** The first-ever run must not be
+unattended at 2am. Build with a manual trigger (`workflow_dispatch`),
+watch it pick a task, implement, test, and raise the PR in daylight
+across 2–3 runs, and only then schedule the cron. The first overnight run
+should be one already trusted.
+
+**Guardrails tuned, not fixed.** The guardrails can't be perfected on
+paper before the agent has run. Each Week 5 morning standup includes a
+nightly-agent review — what it picked, did it stay in scope, was the done
+condition right — and the guardrails are tightened from observed
+behaviour. This is also a strong interview narrative: not "built it and
+hoped" but "ran it, reviewed every morning, tuned from what I saw."
+
+### Modernisation refactor — Events module
+
+**The slice.** An Events module — a CRUD screen with table and
+pagination, mirroring the Incidents module's shape. One believable
+vertical slice migrated well beats a half-migrated big app. It reuses
+everything already built: repository pattern, EF Core + SQLite, the
+shared component library (DataTable, Pagination, FormField).
+
+**Legacy retained as evidence.** The `legacy/` folder (.NET 4 /
+AngularJS Events) stays in the repo permanently as the before-state.
+Crucially, the migration is raised as a PR so the *diff* captures the
+transformation — the legacy folder shows the starting point, the PR shows
+the change. Both preserved for the interview walkthrough. Concrete,
+honest before/after that maps onto the real modernisation brief.
+
+**Tooling.** Cursor Auto for the legacy build and the conversion —
+mechanical, pattern-following work that protects the Claude allowance for
+higher-value synthesis. Model routing tracked explicitly.
+
+### The shared loop pattern
+
+The implement-test-review loop (make change → run the right suite →
+review the diff → fix Blockers/Majors and re-loop → propose Minors for
+review, NOT auto-added) is designed once and used twice: interactively
+in-session (ephemeral) and as the nightly agent's core logic (durable).
+Same brain, two wrappers. Minors are *proposed* not auto-written, keeping
+the human as the gate on what becomes durable backlog work.
+
+### Monday sequence locked
+
+1. Anthropic API orientation (fresh, clean view)
+2. API key vs Agent SDK billing decision (the fork that gates everything
+   — decided after the orientation, not pre-committed)
+3. Build the automated PR review (bounded input, built first)
+
+### Ideas and observations
+
+- The strongest discipline today was resisting additions. The instinct
+  that surfaces new ideas each week can also expand scope mid-week. Week
+  5's strength comes from doing three builds well, not adding a fourth.
+  The bounded-backlog discipline applies to the week itself.
+- "Scope not size" and "draft when stuck" both came from rejecting a
+  first instinct (line cap; always-raise-a-normal-PR). Worth noting that
+  the better design came from interrogating the first answer, not
+  accepting it.
+- Two autonomous builds now share the same safety patterns
+  (3-attempts-then-draft, daylight-first, T0X tracking). Consistency
+  across them makes both easier to reason about and to demo.
+- Deliberately deferred the API key vs Agent SDK decision to Monday with
+  a clean view rather than forcing it at the end of a design session.
+  Better decisions come from fresh attention on a real fork.
+    
+## Week 4 Day 5 — Saturday 13 June 2026
+
+### Summary
+
+Week 4 Day 5 (Saturday). Friday 12 June was a planned day off — moving
+out of the house and a long drive to stay with family for the next few
+weeks. Picked the programme back up today: introduction to loops
+(ephemeral vs durable), Week 5 plan strengthened with two design
+decisions, and the CTO progress update written and logged. No PRs — a
+design and consolidation day.
+
+### Loops — ephemeral vs durable
+
+The core distinction for the Week 5 nightly agent. **Ephemeral** means it
+exists only for the lifetime of the session — a `/loop` in Claude Code
+runs inside the active session and vanishes when the session closes; no
+schedule, no persistence. **Durable** means it survives session
+boundaries — a GitHub Actions cron job lives on GitHub's servers, fires
+on schedule whether or not the laptop is on, and runs unattended.
+
+The nightly agent must run with no session open, so it has to be durable
+(GitHub Actions), not `/loop`. `/loop` is the right tool for tight
+in-session iteration ("keep fixing until the build passes" while you
+watch), the wrong tool for the overnight headline build.
+
+### Ran two ephemeral loops
+
+**Newline check-and-stop.** Ensure learning-notes.md ends with exactly
+one trailing newline. The loop checked, found the condition already met
+(file ends CR LF — Windows line endings), and stopped without editing.
+Demonstrated the loop terminating correctly on the done condition. Also
+a reminder: any file-formatting task in the nightly agent needs to be
+CRLF-aware or it will "fix" line endings that aren't broken.
+
+**DataTable implement-test-stop.** Add an accessible name to the
+DataTable `<table>` element (a real WCAG backlog item). The agent made
+the change, ran the suite (9/9 passed), and stopped — 1 iteration.
+
+**Key insight: a loop only iterates when something fails.** Both runs
+completed in one pass because the work was correct first time. The loop
+construct is insurance, not a guarantee of repetition — iterations are a
+cost, not a goal. The nightly agent should converge fast and stop, not
+churn. This is exactly the behaviour to want.
+
+### Discarded the DataTable fix on purpose
+
+The DataTable change passed cleanly but was discarded rather than
+committed — deliberately. The WCAG backlog items are the nightly agent's
+first real tasks. Hand-fixing them now would spend the agent's best
+demonstration material. Protecting the backlog as fuel for the headline
+build is the right discipline: it gives the agent real, verifiable work
+for its first run, and gives a genuine "here's a PR it raised overnight"
+to show at interview.
+
+### Durable wrapper — the GitHub Actions skeleton
+
+Saw what the nightly agent's durable wrapper looks like. The YAML is
+boilerplate: a `cron` trigger (`0 2 * * *` = 2am daily), checkout, Node
+setup, a step that runs the agent script, and a step that raises the PR.
+The single line `on.schedule.cron` is the entire difference between
+ephemeral and durable.
+
+The real design work is not the YAML — it's the agent script
+(`nightly-agent.js`): how it picks a bounded task safely, how it knows
+when to stop, and what guardrails prevent a bad PR. The loop logic from
+the in-session runs lives inside this script, except the prompt is sent
+to the API programmatically rather than typed in a session. Same brain,
+different life support.
+
+### Week 5 design decisions
+
+**API key vs Agent SDK billing path.** The nightly agent and automated
+PR review both call the Anthropic API directly (not via Claude Code or
+Cursor, which abstract auth away). An unattended script on a GitHub
+runner needs an API key as its credential, stored as a GitHub secret.
+From 15 June 2026, paid Claude plans receive a monthly Agent SDK credit
+(Pro ~$20/month) covering Agent SDK usage and apps built on it — but raw
+API-key calls do NOT receive this credit and bill at standard
+pay-as-you-go rates. Both unattended builds share whichever path is
+chosen, so this is a deliberate Day 1 decision, not an accident. Added
+to the Week 5 plan.
+
+**Build sequencing — PR review first.** The automated PR review and the
+nightly agent share the same API + GitHub Actions + secrets plumbing.
+The PR review is lower-risk (it only comments, never changes code), so
+building it first validates the whole foundation with nothing autonomous
+at stake. The nightly agent builds second, on proven plumbing.
+
+**The implement-test-review loop pattern.** Designed once, used twice:
+the loop that bundles make-change → run the right suite (frontend or
+backend) → review the diff → fix Blockers/Majors and re-loop → propose
+Minors for review (NOT auto-added to the backlog). Run interactively
+in-session (ephemeral), then reused as the nightly agent's core logic
+(durable). Minors are proposed not auto-written, keeping the human as
+the gate on what becomes durable work and protecting the backlog's
+quality.
+
+### CTO progress update
+
+Wrote the build-phase update promised for the weekend. Structured the
+arc Week 5 → Week 4 → Week 3 — leading with where it's heading (the
+autonomous overnight agent and automated PR review using the existing
+code-reviewer skill), then the advanced patterns under control, then the
+foundation, landing on "foundations set, learning a lot as I go." Framed
+Week 5 honestly as what's coming next rather than done — which arguably
+demonstrates frontier-awareness better than a finished feature. Closed
+with an offer to share the repo and a light process check on the
+interview booking. Logged in cto-emails.md with names stripped to role
+descriptors.
+
+### Ideas and observations
+
+- The loop only iterating on failure is the cleanest demonstration that
+  the nightly agent's value is convergence-then-stop, not activity for
+  its own sake.
+- Discarding a passing fix felt counterintuitive but was the right
+  portfolio call — the backlog is more valuable as agent fuel than as
+  ticked items.
+- The billing fork (API key vs Agent SDK) is a good example of "keeping
+  up with the frontier" — the 15 June credit change is days old and
+  directly shapes an architecture decision.
+- Document consolidation discipline held: every change today went into
+  existing files (phase-2-build.md, seven-week-plan.md, cto-emails.md),
+  no new files spawned.
+
 ## Week 4 Day 4 — Thursday 11 June 2026
 
 ### Summary
