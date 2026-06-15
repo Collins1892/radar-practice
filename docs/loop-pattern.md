@@ -173,7 +173,7 @@ cd client && npm test
 Run all three on every loop iteration unless the PR diff is provably scoped
 to one area (e.g. frontend-only) — when in doubt, run the full suite. For a
 **markdown-only** diff (no code, tests, config, or build files), skip the suite
-entirely per Step 0 — the change-type check in [Full sequence](#3-full-sequence).
+entirely per the Step 0 change-type check in [Full sequence](#3-full-sequence).
 
 For automated PR review, the review job is gated behind `needs: test` in CI
 so the agent does not spend calls on code that already failed CI. After the
@@ -318,15 +318,16 @@ Attempt counter: starts at 1, limit 3 (shared across test fixes and
 Blocker/Major fixes).
 
 Sequence:
-0. Change-type check: if the diff touches only .md files (no code, tests,
-   config, or build files), skip the test suite and go straight to step 2.
+0. Change-type check (re-run before every test run): if the diff touches
+   only .md files, skip the test suite and go straight to step 2.
 1. Run full CI test suite. If tests fail — flag clearly, attempt fix,
    increment counter, re-run. If still failing after 3 attempts, proceed
    to step 6.
 2. Review full PR diff using code-reviewer severity (Blocker/Major/Minor/
    Suggestion).
 3. Fix one Blocker or Major at a time; after each fix, re-run tests and
-   re-review full diff from scratch.
+   re-review full diff from scratch — unless the diff is markdown-only,
+   skip tests and re-review directly.
 4. Repeat up to 3 attempts (shared counter across test fixes and
    Blocker/Major fixes).
 5. If clean within 3 attempts — collect Minors/Suggestions and present
@@ -357,15 +358,16 @@ Attempt counter: starts at 1, limit 3 (shared across test fixes and
 Blocker/Major fixes).
 
 Sequence:
-0. Change-type check: if the diff touches only .md files (no code, tests,
-   config, or build files), skip the test suite and go straight to step 2.
+0. Change-type check (re-run before every test run): if the diff touches
+   only .md files, skip the test suite and go straight to step 2.
 1. Run full CI test suite. If tests fail — flag clearly, attempt fix,
    increment counter, re-run. If still failing after 3 attempts, proceed
    to step 6.
 2. Review full PR diff using code-reviewer severity (Blocker/Major/Minor/
    Suggestion).
 3. Fix one Blocker or Major at a time; after each fix, re-run tests and
-   re-review full diff from scratch. Commit and push each fix.
+   re-review full diff from scratch — unless the diff is markdown-only,
+   skip tests and re-review directly. Commit and push each fix.
    (autonomous CI context only — never applies to interactive sessions;
    see CLAUDE.md)
 4. Repeat up to 3 attempts (shared counter across test fixes and
