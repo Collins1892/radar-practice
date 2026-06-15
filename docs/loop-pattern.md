@@ -85,19 +85,21 @@ flowchart TD
   changeType -->|markdown-only: skip tests| review
   changeType -->|code or tests touched| runTests
   runTests --> testFail
-  testFail -->|yes, attempts remain| fixTest --> incAttempt --> runTests
+  testFail -->|yes, attempts remain| fixTest --> incAttempt --> changeType
   testFail -->|yes, no attempts left| draftPR
   testFail -->|no| review --> blockers
-  blockers -->|yes, attempts remain| fixOne --> incAttempt --> runTests
+  blockers -->|yes, attempts remain| fixOne --> incAttempt --> changeType
   blockers -->|no| postMinors
   blockers -->|yes, no attempts left| draftPR
 ```
 
-**Pre-flight — Change-type check.** Before Step 1, inspect the diff. If it
+**Step 0 — Change-type check.** Before Step 1, inspect the diff. If it
 touches **only** `.md` files (no code, tests, config, or build files), skip the
 test suite and go straight to Step 2 (review) — running tests adds wait time
 with no value on a documentation-only change. If any non-`.md` file is touched,
 or the file set is mixed or ambiguous, run the full suite as normal.
+The check is re-evaluated at the start of each attempt, so a loop whose diff
+stays markdown-only keeps skipping the suite on every re-run.
 
 **Step 1 — Run tests.** Execute the full CI test suite (see
 [Test failure handling](#5-test-failure-handling)). If tests fail, attempt to
@@ -171,7 +173,7 @@ cd client && npm test
 Run all three on every loop iteration unless the PR diff is provably scoped
 to one area (e.g. frontend-only) — when in doubt, run the full suite. For a
 **markdown-only** diff (no code, tests, config, or build files), skip the suite
-entirely per the pre-flight change-type check in [Full sequence](#3-full-sequence).
+entirely per Step 0 — the change-type check in [Full sequence](#3-full-sequence).
 
 For automated PR review, the review job is gated behind `needs: test` in CI
 so the agent does not spend calls on code that already failed CI. After the
