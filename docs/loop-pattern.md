@@ -11,8 +11,8 @@ Related: [code-reviewer skill](../.claude/skills/code-reviewer/SKILL.md)
 
 ## 1. Purpose
 
-The **implement-test-review loop** bundles four steps into one bounded
-cycle:
+The **implement-test-review loop** bundles four core activities into one
+bounded cycle, expanded into a six-step sequence in Section 3:
 
 1. Run the test suite.
 2. Review the **full PR diff** against the
@@ -115,9 +115,10 @@ collect all Minors (and Suggestions) and post them as a **single comment** at
 the end. Leave the PR ready (not draft).
 
 **Step 6 — Exhausted exit.** If Blockers or Majors remain after 3 attempts,
-or tests still fail after 3 attempts, mark the PR as **draft**. Post a comment
-with the specific unresolved findings and a clear **needs human review**
-message.
+or tests still fail after 3 attempts: in autonomous mode, mark the PR as
+**draft** and post a comment with the specific unresolved findings and a clear
+**needs human review** message. In interactive mode, report the unresolved
+findings with the same human-review message — do not mark draft.
 
 **Suggestions:** Treat like Minors — collect only at the end; never
 auto-actioned.
@@ -147,7 +148,8 @@ When tests fail:
 4. **Re-run** the full test suite from Step 1.
 
 Test commands match
-[`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml). On a clean
+checkout, run `npm ci` in `client/` before `npm test`.
 
 ```bash
 dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj --verbosity normal
@@ -291,6 +293,9 @@ Mode: interactive. Propose each fix and wait for my explicit approval
 before applying. Do not commit unless I ask.
 
 Scope: full PR diff (git diff main...HEAD).
+- Committed branch or PR: git diff main...HEAD
+- Uncommitted in-session changes (working tree): git diff main
+  (or git diff for unstaged changes)
 Review against: .claude/skills/code-reviewer/SKILL.md
 Conventions: CLAUDE.md
 
@@ -322,6 +327,10 @@ PR / branch: <branch name or "working tree">
 Follow docs/loop-pattern.md — autonomous mode.
 
 Mode: autonomous. Apply fixes directly. No approval gates.
+
+Note: commit/push, PR comments, and draft-marking apply only in the
+GitHub Actions CI context and never override CLAUDE.md's no-commit/
+no-push rules in interactive sessions.
 
 Scope: full PR diff for PR #<number> (git diff origin/main...HEAD).
 Review against: .claude/skills/code-reviewer/SKILL.md
