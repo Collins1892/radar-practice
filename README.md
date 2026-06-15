@@ -62,7 +62,8 @@ radar-practice/
 │   ├── playwright-test-writer/
 │   ├── code-reviewer/
 │   ├── wcag/
-│   └── component-builder/
+│   ├── component-builder/
+│   └── modernisation/
 ├── .claude/commands/      # Claude Code slash commands (/review, /standup, /observations, /tidy)
 ├── docs/                  # Workflow friction log and supporting documentation
 ├── .github/workflows/     # GitHub Actions CI
@@ -104,11 +105,11 @@ These are practical lessons from building this project with Claude Code (termina
 — fetches live library documentation into agent context so agents work from current API references rather than training-data snapshots.
 
 **Skill-specific agents (`.claude/skills/`)**
-- Six repo-level skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`.
+- Seven repo-level skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`, `modernisation`.
 - Test-writer skills are built after real code exists — the agent reads real patterns before writing anything. Build-guide skills (e.g. wcag) should be built before feature work to prevent retrofitting.
 - Skills drive consistent output across sessions and developers — the direct fix for the confirmed Core team reusable-patterns problem.
-- All six skills include effort calibration — **think hard** for complex work (multi-file diffs, a11y-heavy UI, journey tests); **standard** for pattern-following tasks.
-- Formal evals across all six skills confirmed the delta is test quality and convention consistency, not just pass rate. Skill agents refused duplicate tests, used higher-priority RTL queries, and caught cross-stack issues that no-skill agents missed. The real measure is variance reduction — skills narrow the agent's output possibility space toward convention-consistent, high-quality results.
+- All seven skills include effort calibration — **think hard** for complex work (multi-file diffs, a11y-heavy UI, journey tests); **standard** for pattern-following tasks.
+- Formal evals across the original six skills confirmed the delta is test quality and convention consistency, not just pass rate. Skill agents refused duplicate tests, used higher-priority RTL queries, and caught cross-stack issues that no-skill agents missed. The real measure is variance reduction — skills narrow the agent's output possibility space toward convention-consistent, high-quality results.
 
 **Slash commands (`.claude/commands/`)**
 - `/standup` — runs the daily session start: reads learning notes and the active phase file, derives the current week and day, summarises yesterday, and lists open PRs.
