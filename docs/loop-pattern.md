@@ -84,9 +84,9 @@ flowchart TD
   testFail -->|yes, attempts remain| fixTest --> incAttempt --> runTests
   testFail -->|yes, no attempts left| draftPR
   testFail -->|no| review --> blockers
-  blockers -->|yes, attempt 3 or less| fixOne --> incAttempt --> runTests
+  blockers -->|yes, attempts remain| fixOne --> incAttempt --> runTests
   blockers -->|no| postMinors
-  blockers -->|yes, after failed attempt 3 fix| draftPR
+  blockers -->|yes, no attempts left| draftPR
 ```
 
 **Step 1 — Run tests.** Execute the full CI test suite (see
@@ -115,8 +115,9 @@ collect all Minors (and Suggestions) and post them as a **single comment** at
 the end. Leave the PR ready (not draft).
 
 **Step 6 — Exhausted exit.** If Blockers or Majors remain after 3 attempts,
-mark the PR as **draft**. Post a comment with the specific unresolved findings
-and a clear **needs human review** message.
+or tests still fail after 3 attempts, mark the PR as **draft**. Post a comment
+with the specific unresolved findings and a clear **needs human review**
+message.
 
 **Suggestions:** Treat like Minors — collect only at the end; never
 auto-actioned.
@@ -223,6 +224,8 @@ The loop could not resolve the following findings within the attempt limit.
 
 ### Unresolved Blockers / Majors
 
+For test-failure exhaustion, adapt this section — list the failing suite, test name, and error summary instead of Blockers/Majors.
+
 - **[Blocker|Major] — <short title>**
   - **Where:** `<file>` line N
   - **Rule:** <Universal|Backend|Frontend> — <rule name>
@@ -295,17 +298,20 @@ Attempt counter: starts at 1, limit 3 (shared across test fixes and
 Blocker/Major fixes).
 
 Sequence:
-1. Run full CI test suite (ItemsApi, IncidentsApi, client Vitest).
-2. If tests fail — flag failure clearly, attempt fix, increment counter,
-   re-run. Do not silently retry.
-3. Review full PR diff using code-reviewer severity (Blocker/Major/Minor/
+1. Run full CI test suite. If tests fail — flag clearly, attempt fix,
+   increment counter, re-run. If still failing after 3 attempts, proceed
+   to step 6.
+2. Review full PR diff using code-reviewer severity (Blocker/Major/Minor/
    Suggestion).
-4. Fix one Blocker or Major at a time; after each fix, re-run tests and
+3. Fix one Blocker or Major at a time; after each fix, re-run tests and
    re-review full diff from scratch.
+4. Repeat up to 3 attempts (shared counter across test fixes and
+   Blocker/Major fixes).
 5. If clean within 3 attempts — collect Minors/Suggestions and present
    as a single proposed list (do not auto-action).
-6. If not clean after 3 attempts — report unresolved Blockers/Majors with
-   a clear "needs human review" message.
+6. If not clean after 3 attempts (unresolved Blockers/Majors or
+   persistent test failures) — report unresolved findings with a clear
+   "needs human review" message.
 
 PR / branch: <branch name or "working tree">
 ```
@@ -325,20 +331,22 @@ Attempt counter: starts at 1, limit 3 (shared across test fixes and
 Blocker/Major fixes).
 
 Sequence:
-1. Run full CI test suite (ItemsApi, IncidentsApi, client Vitest).
-2. If tests fail — flag failure clearly in job output, attempt fix,
-   increment counter, re-run. Do not silently retry.
-3. Review full PR diff using code-reviewer severity (Blocker/Major/Minor/
+1. Run full CI test suite. If tests fail — flag clearly, attempt fix,
+   increment counter, re-run. If still failing after 3 attempts, proceed
+   to step 6.
+2. Review full PR diff using code-reviewer severity (Blocker/Major/Minor/
    Suggestion).
-4. Fix one Blocker or Major at a time; after each fix, re-run tests and
+3. Fix one Blocker or Major at a time; after each fix, re-run tests and
    re-review full diff from scratch. Commit and push each fix.
    (autonomous CI context only — never applies to interactive sessions;
    see CLAUDE.md)
+4. Repeat up to 3 attempts (shared counter across test fixes and
+   Blocker/Major fixes).
 5. If clean within 3 attempts — post a single PR comment with all
    Minors/Suggestions (proposed only, not auto-actioned). Leave PR ready.
-6. If not clean after 3 attempts — mark PR as draft. Post a PR comment
-   listing unresolved Blockers/Majors and a clear "needs human review"
-   message.
+6. If not clean after 3 attempts (unresolved Blockers/Majors or
+   persistent test failures) — mark PR as draft and post unresolved
+   findings with a clear "needs human review" message.
 
 On API or auth failure: fail loudly; do not silently skip the loop.
 ```
