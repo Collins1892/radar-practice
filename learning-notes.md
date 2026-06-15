@@ -143,7 +143,7 @@ the human as the gate on what becomes durable backlog work.
 - Deliberately deferred the API key vs Agent SDK decision to Monday with
   a clean view rather than forcing it at the end of a design session.
   Better decisions come from fresh attention on a real fork.
-    
+
 ## Week 4 Day 5 — Saturday 13 June 2026
 
 ### Summary
@@ -658,17 +658,17 @@ Four plan runs of the same extraction task (formatReportedDate) at
 increasing effort levels, comparing plan output:
 
 - **No keyword** — complete plan: both locations, correct home module,
-unused import cleanup, tests included.
+  unused import cleanup, tests included.
 - **"think"** — structurally identical. Referenced the existing test
-assertion as a safety net; noted CLAUDE.md as optional.
+  assertion as a safety net; noted CLAUDE.md as optional.
 - **"think hard"** — CLAUDE.md update added as a concrete plan step (not
-optional); three test cases vs two; pre-commit hook explicitly called
-out in verification.
+  optional); three test cases vs two; pre-commit hook explicitly called
+  out in verification.
 - **"ultrathink"** — call sites confirmed explicitly ("Call site at line
-158 is unchanged"); `String(value)` faithfulness note added (subtle
-correctness observation the others missed). `ultrathink` highlighted in
-rainbow colour in the Claude Code terminal — visual signal the keyword
-is recognised.
+  158 is unchanged"); `String(value)` faithfulness note added (subtle
+  correctness observation the others missed). `ultrathink` highlighted in
+  rainbow colour in the Claude Code terminal — visual signal the keyword
+  is recognised.
 
 Conclusion: effort calibration matters most on genuinely complex tasks.
 For a mechanical extraction, the plans were structurally identical. The
@@ -704,38 +704,38 @@ incidentPageCopy.
 ### What I would not trust the agent to do unsupervised
 
 - Respect "do not commit or push" without the explicit phrase in the prompt
-— Cursor Auto completed the full git workflow on every task today until
-the boundary rules were added
+  — Cursor Auto completed the full git workflow on every task today until
+  the boundary rules were added
 - Raise PRs or post review comments without instruction — treated both as
-part of "apply changes"
+  part of "apply changes"
 - Know that a worktree needs npm install before tests can run — attempted
-to run tests immediately and discovered it mid-task
+  to run tests immediately and discovered it mid-task
 - Manage three parallel agents without coordination overhead — two is the
-practical ceiling
+  practical ceiling
 - Produce meaningfully different plans for pattern-following tasks at
-higher effort levels — four runs of the same extraction were structurally
-identical; effort calibration for mechanical work is wasted cost
+  higher effort levels — four runs of the same extraction were structurally
+  identical; effort calibration for mechanical work is wasted cost
 - Detect that a test was passing vacuously — both expected and actual were
-`undefined | Radar Practice`; it looked green
+  `undefined | Radar Practice`; it looked green
 
 ### Ideas and observations
 
 - 158 tests, 8 PRs (#66–#73), all six skills calibrated — in one day,
-mostly from home on a hotspot.
+  mostly from home on a hotspot.
 - The thinking budget experiment is strong Week 6 material — four concrete
-data points showing when effort calibration adds value and when it
-doesn't. That's a nuanced answer, not just "ultrathink everything."
+  data points showing when effort calibration adds value and when it
+  doesn't. That's a nuanced answer, not just "ultrathink everything."
 - Six Week 7 tidy list items closed via parallel agents in a single
-afternoon session. The worktree pattern is the direct answer to the CTO's
-"agentic AI across the SDLC" requirement.
+  afternoon session. The worktree pattern is the direct answer to the CTO's
+  "agentic AI across the SDLC" requirement.
 - The merge conflict is the best portfolio story from Week 4 Day 2 — it's not
-just "I used worktrees", it's "here's what went wrong, here's why, and
-here's exactly how I resolved it." That's the difference between having
-done it and having understood it.
+  just "I used worktrees", it's "here's what went wrong, here's why, and
+  here's exactly how I resolved it." That's the difference between having
+  done it and having understood it.
 - Cursor Auto's autonomous git workflow is a boundary problem now but a
-target capability by Week 5 — when agents work across worktrees on
-parallel tasks, autonomous commit and PR raising becomes the feature.
-Noted in decisions log.
+  target capability by Week 5 — when agents work across worktrees on
+  parallel tasks, autonomous commit and PR raising becomes the feature.
+  Noted in decisions log.
 
 ## Week 4 Day 1 — 8 June 2026
 
@@ -1044,111 +1044,111 @@ end of day to capture decisions and update CLAUDE.md and .cursor/rules.
 ### Code review findings
 
 - Two-review approach (Claude Code + Cursor) caught different issues
-consistently — neither review alone was complete
+  consistently — neither review alone was complete
 - Badge placed in `src/components/ui/` by agent — code-reviewer caught it.
-Vendor directory is ESLint-ignored; all hand-authored components must go
-in `src/components/`
+  Vendor directory is ESLint-ignored; all hand-authored components must go
+  in `src/components/`
 - App.css global `button {}` rule overriding all Tailwind utility classes on
-buttons — caused active state styling failure in ComponentsView sidebar.
-Found by browser devtools computed styles after agent correctly diagnosed
-the cascade conflict
+  buttons — caused active state styling failure in ComponentsView sidebar.
+  Found by browser devtools computed styles after agent correctly diagnosed
+  the cascade conflict
 - react-day-picker v10 removed `initialFocus` — agent used the old API.
-Claude Code with Context7 caught this on PR review. CI passes because the
-prop is accepted and ignored, not rejected — a silent regression
+  Claude Code with Context7 caught this on PR review. CI passes because the
+  prop is accepted and ignored, not rejected — a silent regression
 - `react-refresh/only-export-components` fires on `componentRegistry.tsx` — 
-file-level eslint-disable added as interim fix. FormField.tsx was resolved 
-by extracting formFieldErrorId to formFieldUtils.ts instead; architectural
-fix deferred to Week 7
+  file-level eslint-disable added as interim fix. FormField.tsx was resolved 
+  by extracting formFieldErrorId to formFieldUtils.ts instead; architectural
+  fix deferred to Week 7
 
 ### React Router — replacing state toggle
 
 - Replaced local state view toggle in App.tsx with react-router-dom 7.16.0
 - BrowserRouter in main.tsx, Routes and NavLink in App.tsx
 - ItemsView extracted from App — unprompted agent decision that was correct.
-Scopes the items fetch to the `/` route so it does not run on `/components`
+  Scopes the items fetch to the `/` route so it does not run on `/components`
 - App.test.tsx needed MemoryRouter wrapper — review caught this before merge
 - MemoryRouter renderApp() helper added with explicit `(): void` return type,
-consistent with existing Vitest conventions
+  consistent with existing Vitest conventions
 
 ### Component library — all 9 components (Item 4)
 
 - Built standalone with a components view (mini-Storybook), not emerging from
-the incident module as originally planned. Clearer portfolio signal and
-decouples component quality from incident module pace
+  the incident module as originally planned. Clearer portfolio signal and
+  decouples component quality from incident module pace
 - Components view: sidebar nav with active state, preview pane, registry-
-driven. componentRegistry.tsx holds all entries; file-level eslint-disable
-for react-refresh pending Week 7 architectural fix
+  driven. componentRegistry.tsx holds all entries; file-level eslint-disable
+  for react-refresh pending Week 7 architectural fix
 - All components live in `src/components/` not `src/components/ui/`
 - Vitest tests deferred to item 8 — react-test-writer skill first (item 7)
 - formFieldErrorId extracted to formFieldUtils.ts — pure module imported by
-both FormField and SelectField to avoid the react-refresh rule
+  both FormField and SelectField to avoid the react-refresh rule
 - FormField uses cloneElement to auto-inject aria-describedby and aria-invalid
-onto child inputs — removes the magic string convention from consumers
+  onto child inputs — removes the magic string convention from consumers
 - SelectField: Radix Select.Root renders no DOM node so aria-* must go on
-SelectTrigger directly, not on the Select root. Comment added explaining why
+  SelectTrigger directly, not on the Select root. Comment added explaining why
 - DatePickerField: shadcn Calendar + Popover. react-day-picker v10 uses
-`autoFocus` not `initialFocus` — version discipline catch
+  `autoFocus` not `initialFocus` — version discipline catch
 - DataTable: generic `DataTable<T extends Record<string, unknown>>`, sortable
-headers, aria-sort, overflow-x-auto keyboard-focusable region, controlled
-sort via onSort callback. No internal sort state
+  headers, aria-sort, overflow-x-auto keyboard-focusable region, controlled
+  sort via onSort callback. No internal sort state
 - Pagination: getPageTokens with 5-button ellipsis logic, aria-current="page",
-aria-label on each button, cn() for class composition
+  aria-label on each button, cn() for class composition
 
 ### App.css global button rule removal
 
 - Removed `button { background: var(--app-accent); color: #fff; }` from App.css
 - Rule was overriding all Tailwind utility classes on every button element
 - Discovered when ComponentsView sidebar active state showed identical styling
-for active and inactive items despite correct Tailwind classes
+  for active and inactive items despite correct Tailwind classes
 - Agent added `!important` Tailwind modifiers as a workaround; after root cause
-was found the overrides were removed and the global rule deleted
+  was found the overrides were removed and the global rule deleted
 - All three affected buttons (Add item, Refresh, Try again) updated with
-explicit Tailwind classes
+  explicit Tailwind classes
 - Lesson: browser devtools computed styles tab is the correct diagnostic tool
-for unexplained Tailwind class failures
+  for unexplained Tailwind class failures
 
 ### Cursor usage limits
 
 - Hit the Pro plan credit ceiling mid-day. Cursor Pro includes a $20/month
-credit pool — exhausted by heavy agentic use across 9 components
+  credit pool — exhausted by heavy agentic use across 9 components
 - Downgraded silently to Auto mode (Cursor's smart router within the plan)
 - Quality held up reasonably well for remaining components on Auto mode
 - Key difference from Claude limits: Cursor degrades silently without
-notification; Claude issues a hard lock with a clear reset time
+  notification; Claude issues a hard lock with a clear reset time
 - Cursor limits do not reset daily — check usage at the start of each session
-not just when failures appear
+  not just when failures appear
 - Lesson: save frontier model quota for complex tasks (DataTable, DatePicker);
-use manual edits or Auto mode for simple single-file changes
+  use manual edits or Auto mode for simple single-file changes
 
 ### What I would not trust the agent to do unsupervised
 
 - Choose the correct directory for a new component without explicit instruction
-— agent defaulted to `src/components/ui/` (vendor directory) for Badge
+  — agent defaulted to `src/components/ui/` (vendor directory) for Badge
 - Know which library API version is current without Context7 — react-day-picker
-initialFocus was removed in v10 and the agent used the old API silently
+  initialFocus was removed in v10 and the agent used the old API silently
 - Notice CSS cascade conflicts — requires browser devtools investigation, not
-just reading the code
+  just reading the code
 - Continue at consistent quality after Cursor credit exhaustion — degradation
-is silent and the drop can be gradual
+  is silent and the drop can be gradual
 - Run tsc reliably — the Cursor shell environment was unresponsive all day;
-tsc was run manually after every component
+  tsc was run manually after every component
 
 ### Ideas and observations
 
 - 9 components in one day is the evidence for the Week 6 impact story — the
-component library is the day-one Radar contribution piece, now in the repo
+  component library is the day-one Radar contribution piece, now in the repo
 - Token economy is real: 9 PRs × 2–3 review cycles each = significant Claude
-and Cursor budget. Tighter prompts upfront reduce review cycles downstream
+  and Cursor budget. Tighter prompts upfront reduce review cycles downstream
 - Two independent reviews consistently catch different things — Claude Code
-caught the test gap and ESLint violations; Cursor caught the fallback route,
-the stale h1, and the react-day-picker API regression. Run both for PRs that
-matter
+  caught the test gap and ESLint violations; Cursor caught the fallback route,
+  the stale h1, and the react-day-picker API regression. Run both for PRs that
+  matter
 - `react-refresh/only-export-components` is a structural problem with the
-componentRegistry pattern. The Week 7 fix (preview: React.ComponentType)
-eliminates it properly — do not keep adding file-level disables
+  componentRegistry pattern. The Week 7 fix (preview: React.ComponentType)
+  eliminates it properly — do not keep adding file-level disables
 - Cursor vs Claude usage model is a meaningful workflow difference. Cursor's
-silent degradation is more dangerous than Claude's hard lock for agentic
-work — you might not notice until the output is wrong
+  silent degradation is more dangerous than Claude's hard lock for agentic
+  work — you might not notice until the output is wrong
 
 ## Week 3 Day 1 — 1 June 2026
 
@@ -1165,7 +1165,7 @@ the week.
 
 - No open PRs at start of day — clean repo after merging Week 2 work
 - `/review` skipped — shell not returning output in Claude Code. Clean repo,
-no diff to review. Documented as acceptable when repo is known clean
+  no diff to review. Documented as acceptable when repo is known clean
 
 ### Claude Project — cold start
 
@@ -1177,98 +1177,98 @@ no diff to review. Documented as acceptable when repo is known clean
 ### shadcn/ui and Tailwind v4 setup (Item 1)
 
 - Decision confirmed: shadcn + Tailwind v4. Real decision was "are we adopting
-Tailwind" — shadcn follows from that. Radix primitives handle WCAG heavy lifting
+  Tailwind" — shadcn follows from that. Radix primitives handle WCAG heavy lifting
 - Ran `npx shadcn@latest init` from the repo root instead of `client/` — created
-a nested `radar-practice/` folder inside the repo. Lesson: always verify working
-directory before running CLI tools
+  a nested `radar-practice/` folder inside the repo. Lesson: always verify working
+  directory before running CLI tools
 - Config files lost in lint-staged CRLF revert — `vite.config.ts`, `tsconfig.json`,
-`tsconfig.app.json`, `src/index.css`, `package.json` all wiped from the commit.
-Had to re-apply all four manually. Lesson: after any lint-staged failure, run
-`git show HEAD --stat` to verify what actually landed before pushing
+  `tsconfig.app.json`, `src/index.css`, `package.json` all wiped from the commit.
+  Had to re-apply all four manually. Lesson: after any lint-staged failure, run
+  `git show HEAD --stat` to verify what actually landed before pushing
 - ESLint pre-commit failures on shadcn-generated files — fixed by excluding
-`src/components/ui/**` and `src/lib/utils.ts` from linting. Vendor-generated
-files should not be held to project lint conventions
+  `src/components/ui/**` and `src/lib/utils.ts` from linting. Vendor-generated
+  files should not be held to project lint conventions
 - `--no-warn-ignored` flag needed in lint-staged to suppress `--max-warnings 0`
-failure on ignored files. Not disabling a rule — suppressing a noise message
+  failure on ignored files. Not disabling a rule — suppressing a noise message
 - `radix-ui` umbrella package vs `@radix-ui/react-slot` individual package —
-shadcn 4.9.0 imports from the umbrella. Only the individual package was installed.
-TypeScript would have failed in CI without the fix
+  shadcn 4.9.0 imports from the umbrella. Only the individual package was installed.
+  TypeScript would have failed in CI without the fix
 - shadcn theme tokens missing from `index.css` — lost in the lint-staged revert.
-Added manually using OKLCH Nova preset values
+  Added manually using OKLCH Nova preset values
 - Duplicate CSS variable conflict — `--border`, `--accent`, `--muted` existed in
-both the shadcn token block and original project CSS. Renamed original vars to
-`--app-border`, `--app-accent`, `--app-muted` and updated all usages across
-`App.css` and `ItemsList.css`
+  both the shadcn token block and original project CSS. Renamed original vars to
+  `--app-border`, `--app-accent`, `--app-muted` and updated all usages across
+  `App.css` and `ItemsList.css`
 
 ### Responsive rules and WCAG principles (Item 2)
 
 - Responsive rules drafted in chat and applied to CLAUDE.md — mobile-first,
-three breakpoints (none/md/lg), container, grid, table overflow, form conventions
+  three breakpoints (none/md/lg), container, grid, table overflow, form conventions
 - WCAG 2.1 AA principles documented — semantic HTML, form labels, colour contrast,
-focus rings, motion, touch targets
+  focus rings, motion, touch targets
 - Mobile accessibility section added specifically — Google mobile usability signals,
-viewport meta, 16px minimum font size, touch target spacing, no zoom disabling
+  viewport meta, 16px minimum font size, touch target spacing, no zoom disabling
 - `.cursorrules` task deferred — modern Cursor convention is `.cursor/rules/project.mdc`.
-Moved to end of day after CLAUDE.md is updated so the file reflects the final stack
+  Moved to end of day after CLAUDE.md is updated so the file reflects the final stack
 
 ### SQLite + EF Core persistence (Item 3)
 
 - `AppDbContext` in `Data/` — shared context for all modules. `DbSet<Item>` now,
-`DbSet<Incident>` follows later this week. One context, one database, no refactoring needed
-when incidents land
+  `DbSet<Incident>` follows later this week. One context, one database, no refactoring needed
+  when incidents land
 - `EfItemsRepository` implements `IItemsRepository` — interface unchanged, endpoints
-untouched, scoped lifetime with `AsNoTracking()` reads
+  untouched, scoped lifetime with `AsNoTracking()` reads
 - Database starts empty — seed data was a development convenience, not a requirement.
-EmptyState component handles the empty list view
+  EmptyState component handles the empty list view
 - `Price` stored as TEXT via `HasConversion<string>()` — exact decimal precision.
-`REAL` silences the EF warning but loses precision. SQLite TEXT sorts
-lexicographically so avoid DB-side price ordering — sort in memory instead
+  `REAL` silences the EF warning but loses precision. SQLite TEXT sorts
+  lexicographically so avoid DB-side price ordering — sort in memory instead
 - `TestWebApplicationFactory` — per-class isolated in-memory SQLite DB. Data
-persists within a class fixture, not across classes. Schema applied via
-`Database.Migrate()`
+  persists within a class fixture, not across classes. Schema applied via
+  `Database.Migrate()`
 - Migration churn: three migrations landed in quick succession. Squashed to a
-single clean `InitialCreate` with `Price TEXT` from the start — unreleased
-schema, free operation
+  single clean `InitialCreate` with `Price TEXT` from the start — unreleased
+  schema, free operation
 
 ### Two independent reviews caught a real precision bug
 
 - Both Cursor and Claude Code Opus 4.8 independently flagged `Price` as `REAL`
-as a [Major] finding
+  as a [Major] finding
 - Round-trip test gave false confidence — `Add()` returns the in-memory tracked
-entity, not a DB re-read. POST response price is never lossy. `9.99m` surviving
-was coincidence, not proof
+  entity, not a DB re-read. POST response price is never lossy. `9.99m` surviving
+  was coincidence, not proof
 - Fixed to `HasConversion<string>()` and strengthened test to use `0.1m + 0.2m`
-asserting `0.3m` — a value that fails under IEEE-754 double, proving TEXT
-conversion is genuinely lossless
+  asserting `0.3m` — a value that fails under IEEE-754 double, proving TEXT
+  conversion is genuinely lossless
 - Two independent reviewers agreeing on a finding is a strong signal. Trust it
 - Key "what the AI gets wrong" observation: agent suggested `HasColumnType("REAL")`
-to silence the EF decimal warning without flagging the precision trade-off.
-The warning exists for a reason
+  to silence the EF decimal warning without flagging the precision trade-off.
+  The warning exists for a reason
 
 ### Skill reviews
 
 - `dotnet-test-writer` — updated for `TestWebApplicationFactory`, EF Core patterns,
-corrected `CreateDefaultClient()` guidance (now valid for persistence tests, not
-just validation errors), new SQLite isolation gotchas
+  corrected `CreateDefaultClient()` guidance (now valid for persistence tests, not
+  just validation errors), new SQLite isolation gotchas
 - `code-reviewer` — updated for Tailwind v4, shadcn/ui, Radix, EF Core rules,
-vendor file exemption for `src/components/ui/**`
+  vendor file exemption for `src/components/ui/**`
 - Both skills' version tables updated to reflect full new stack
 
 ### End-of-day documentation — heavier than expected
 
 - Full stack change day means full documentation pass — CLAUDE.md, README.md,
-both skills, seven-week-plan decisions log, and `.cursor/rules/project.mdc`
+  both skills, seven-week-plan decisions log, and `.cursor/rules/project.mdc`
 - Lesson: documentation volume scales with stack change volume. On a day that
-adds Tailwind, shadcn, EF Core, and SQLite, budget extra time at close of day
+  adds Tailwind, shadcn, EF Core, and SQLite, budget extra time at close of day
 - Task reordering cost time — `.cursorrules` was on the morning list, deferred
-to end of day once the modern `.cursor/rules/` convention was identified.
-Deferring was correct but added a late context switch
+  to end of day once the modern `.cursor/rules/` convention was identified.
+  Deferring was correct but added a late context switch
 - Four decisions log entries added to seven-week-plan.md — shadcn adoption,
-AppDbContext shared context, precision bug catch, `.cursor/rules/` convention
+  AppDbContext shared context, precision bug catch, `.cursor/rules/` convention
 - README corrected — test count 12 → 13, in-memory references removed,
-architecture table updated for EF Core
+  architecture table updated for EF Core
 - CLAUDE.md line 124 corrected — `WebApplicationFactory` → `TestWebApplicationFactory`
-in the testing approach section. Last pre-existing stale reference resolved
+  in the testing approach section. Last pre-existing stale reference resolved
 
 ### .cursor/rules/project.mdc
 
@@ -1280,24 +1280,24 @@ in the testing approach section. Last pre-existing stale reference resolved
 ### What I would not trust the agent to do unsupervised
 
 - Run `npx` CLI tools without confirming the working directory — wrong directory
-cost significant time today
+  cost significant time today
 - Commit after a lint-staged failure without checking `git show HEAD --stat` —
-config files can silently disappear from the commit
+  config files can silently disappear from the commit
 - Choose `HasColumnType("REAL")` for decimal without flagging the precision
-trade-off — the warning exists for a reason
+  trade-off — the warning exists for a reason
 
 ### Ideas and observations
 
 - 55 tests (13 xUnit, 42 Vitest), 3 PRs, full stack addition, two skill updates,
-documentation pass, and `.cursor/rules/` created — all in one day. Week 3 is
-moving
+  documentation pass, and `.cursor/rules/` created — all in one day. Week 3 is
+  moving
 - Two independent reviews (different models, different tools, different sessions)
-agreeing on a finding = strong signal. Run both when the change matters
+  agreeing on a finding = strong signal. Run both when the change matters
 - The precision bug story is Week 6 material — the AI suggested a fix that
-silenced a warning by trading away correctness, the tests passed, and only
-independent review caught it
+  silenced a warning by trading away correctness, the tests passed, and only
+  independent review caught it
 - Documentation load at end of a big stack change day is a planning observation
-for future weeks — factor it into the estimate
+  for future weeks — factor it into the estimate
 
 ## Week 2 Day 5 — 29 May 2026
 
@@ -1415,7 +1415,7 @@ tokens held up well throughout the day.
 
 - `/review` command now working correctly with code-reviewer skill
 - HIPAA jurisdiction error caught by `/review` — HIPAA applies to US
-operations only, not Middle East
+  operations only, not Middle East
 - Duplicate "never expose stack traces" rule caught and merged
 - Redundant step 5 in review.md caught and removed
 - Running `/review <PR number>` before merging is now part of the workflow
@@ -1424,37 +1424,37 @@ operations only, not Middle East
 ### GDPR and AI session
 
 - GDPR principles for AI development: lawfulness, data minimisation,
-privacy by design
+  privacy by design
 - Prompt hygiene is the practical control — strip everything not needed
-to solve the technical problem before sending to an agent
+  to solve the technical problem before sending to an agent
 - HIPAA adds PHI-specific technical safeguards — encryption at rest
-and in transit, audit logs, minimum necessary access
+  and in transit, audit logs, minimum necessary access
 - HIPAA training is a personal strength relevant to Radar's US expansion
 - GDPR and HIPAA section added to CLAUDE.md — legal framework behind
-the existing no-PII rules now explicit
+  the existing no-PII rules now explicit
 - Key addition: HIPAA applies to US operations only — Middle East
-jurisdictions have their own requirements
+  jurisdictions have their own requirements
 
 ### Program.cs — error handling fixes
 
 - Redundant per-endpoint try/catch blocks removed — global exception
-handler already covers unhandled exceptions
+  handler already covers unhandled exceptions
 - `Results.Created((string?)null, item)` — fixed RFC 9110 violation,
-Location header was pointing to non-existent `/items/{id}` endpoint
+  Location header was pointing to non-existent `/items/{id}` endpoint
 - `(string?)null` cast required to resolve C# overload ambiguity
 - CLAUDE.md C# convention updated — global exception handler is the
-pattern, do not add per-endpoint try/catch
+  pattern, do not add per-endpoint try/catch
 - 13/13 tests passing after changes
 
 ### Custom /review command
 
 - Created `.claude/commands/review.md` — custom command that loads
-the code-reviewer skill and enforces the structured findings template
+  the code-reviewer skill and enforces the structured findings template
 - Fixes the issue where `/review` used built-in behaviour instead of
-the skill
+  the skill
 - Output now follows exact template: Blocker/Major/Minor/Suggestion
-severity levels, Where/Rule/Issue/Suggested fix structure, closes
-with "I have not made any code changes."
+  severity levels, Where/Rule/Issue/Suggested fix structure, closes
+  with "I have not made any code changes."
 - `/review <PR number>` before merging is now the workflow
 - Automated version planned for Week 5 via GitHub Actions
 
@@ -1464,7 +1464,7 @@ with "I have not made any code changes."
 - RAG verified — correctly reads context from attached files
 - From Week 2 Day 5 onwards, daily sessions run inside the Project
 - End of day pattern: notes PR merged, update Project files, verify,
-delete chat
+  delete chat
 
 ### .claude folder — capabilities noted
 
@@ -1476,24 +1476,24 @@ delete chat
 ### GitHub CLI authenticated
 
 - `gh auth login` required after install — Claude Code uses gh for
-PR status in `/review`
+  PR status in `/review`
 - Verify with `gh auth status`
 
 ### What I would not trust the agent to do unsupervised
 
 - Follow the /review template without a custom command — built-in
-behaviour overrides the skill without explicit instruction
+  behaviour overrides the skill without explicit instruction
 - Get HIPAA jurisdiction right without a legal prompt — assumed HIPAA
-applied to Middle East, it does not
+  applied to Middle East, it does not
 
 ### Ideas and observations
 
 - `/review before merge` is a discipline that catches real issues —
-three findings in today's PRs that improved the codebase
+  three findings in today's PRs that improved the codebase
 - Automated PR review via GitHub Actions + Anthropic API is a natural
-Week 5 task alongside the daily digest
+  Week 5 task alongside the daily digest
 - Claude Project RAG is significantly more token-efficient than long
-chat sessions — confirmed by today's usage patterns
+  chat sessions — confirmed by today's usage patterns
 
 ## Week 2 Day 3 — 27 May 2026
 
@@ -1502,32 +1502,32 @@ chat sessions — confirmed by today's usage patterns
 - No code issues on main — clean start to the day
 - `/review` slash command in Claude Code runs structured review automatically
 - First real use of `/review` caught two issues in CLAUDE.md PR: missing
-trailing newline and under-specified version discipline scope in skill files
+  trailing newline and under-specified version discipline scope in skill files
 - Both fixed in a follow-up PR same day — AI review more consistent than
-manual eyeballing
+  manual eyeballing
 - Daily `/review` added to the daily structure going forward
 - Note for tomorrow: verify code-reviewer skill triggers correctly on
-first `/review` run — confirm output follows structured findings template
+  first `/review` run — confirm output follows structured findings template
 
 ### PR #7 — Context7 README badge finally merged
 
 - CI not triggering across two days and multiple pushes on the original branch
 - Root cause: accumulated messy commits from trigger attempts made the branch
-unclean
+  unclean
 - Fix: close PR, fresh branch, single clean commit — CI triggered immediately
 - Lesson: when CI is not triggering, start with a clean single-commit branch
-before debugging infrastructure
+  before debugging infrastructure
 
 ### CLAUDE.md updated — two PRs
 
 - Duplicate Tooling section removed
 - Version discipline added — versions must stay in sync with package.json,
-.csproj, and affected skill files including description frontmatter and
-code examples
+  .csproj, and affected skill files including description frontmatter and
+  code examples
 - Idiomatic React migration rule added — never translate AngularJS patterns
-directly to React, rewrite using hooks and component composition. Based on
-real production experience at Radar where ModelCode.IO produced working
-but wrong-pattern code shipped past deadline
+  directly to React, rewrite using hooks and component composition. Based on
+  real production experience at Radar where ModelCode.IO produced working
+  but wrong-pattern code shipped past deadline
 - Skills folder added to repo layout and agent guidance
 - Context7 MCP added to AI tools list
 - Trailing newline and version discipline scope fixed in follow-up PR
@@ -1539,8 +1539,8 @@ but wrong-pattern code shipped past deadline
 - Context7 fetched live xUnit and NSubstitute docs before writing
 - Four new integration tests generated using the skill — all passing
 - Skill self-corrected after a real failure: shared-state warning for
-`CreateDefaultClient` added to SKILL.md after `Get_NoItems` test failed
-due to seeded repository data from other tests
+  `CreateDefaultClient` added to SKILL.md after `Get_NoItems` test failed
+  due to seeded repository data from other tests
 - Final test count: 13/13 passing
 
 ### code-reviewer skill — built and shipped to repo
@@ -1552,13 +1552,13 @@ due to seeded repository data from other tests
 - Structured findings output: Blocker, Major, Minor, Suggestion severity levels
 - Includes Mermaid review flow diagram — renders on GitHub
 - Built manually in Cursor using dotnet-test-writer as a template — no skill
-creator needed for a documentation-only skill
+  creator needed for a documentation-only skill
 - Self-reviewed before committing — two issues caught and fixed
 
 ### GET /items 500 test — relocated and fixed
 
 - `Get_WhenRepositoryThrows_Returns500` already existed in PostItemsTests.cs
-— wrong file, missing Arrange/Act/Assert comments
+  — wrong file, missing Arrange/Act/Assert comments
 - Plan mode in Cursor caught this before writing any new code
 - Test relocated to GetItemsTests.cs with proper A/A/A comments
 - Duplicate removed from PostItemsTests.cs — coverage unchanged
@@ -1585,46 +1585,46 @@ creator needed for a documentation-only skill
 - 5-hour rolling window starts when first message is sent
 - Weekly limit: resets Sunday 8:00 PM — 36% used at end of Week 2 Day 3
 - Claude Project from Week 3 will significantly reduce token consumption
-via RAG — no more pasting context into every session
+  via RAG — no more pasting context into every session
 
 ### Tool selection going forward
 
 - Cursor for coding tasks Monday to Wednesday — separate token budget
 - Claude Code reserved for Thursday and Friday — skill creator, Plan mode,
-heavier agentic sessions
+  heavier agentic sessions
 - Exception: Plan mode in Cursor works well for focused coding tasks
 
 ### What I would not trust the agent to do unsupervised
 
 - Start a skill creator task without confirming output location first —
-defaults to `~/.claude/` not the repo, wasted work if not redirected
+  defaults to `~/.claude/` not the repo, wasted work if not redirected
 - Use `CreateDefaultClient()` for tests asserting on data shape — shared
-repository singleton causes order-dependent failures
+  repository singleton causes order-dependent failures
 
 ### Time saved today
 
 - CLAUDE.md structured review caught two real issues before they caused
-agent confusion in future sessions
+  agent confusion in future sessions
 - dotnet-test-writer skill generated four passing tests and self-corrected
-— manually writing with correct conventions would have taken an hour
+  — manually writing with correct conventions would have taken an hour
 - Plan mode in Cursor caught a misplaced duplicate test before writing
-any new code — saved writing a duplicate and debugging the confusion
+  any new code — saved writing a duplicate and debugging the confusion
 - Private notes rebuilt comprehensively — single source of truth for
-strategic context saves significant context-setting time every session
+  strategic context saves significant context-setting time every session
 
 ### Ideas and observations
 
 - Claude Project with RAG is the right architecture for Week 3 onwards
 - Weekly `week-N-summary.md` files as Project knowledge — efficient
-growing record without full notes file token cost
+  growing record without full notes file token cost
 - Mermaid diagrams in skill files render on GitHub — good portfolio signal
 - Morning standup structure transfers directly to team standup at Radar
 - ModelCode.IO failure at Radar (working but wrong patterns, inferior
-visual quality, shipped past deadline) is a concrete AI impact story
-for Week 6 — know what good looks like and where AI fell short
+  visual quality, shipped past deadline) is a concrete AI impact story
+  for Week 6 — know what good looks like and where AI fell short
 - Two lockouts and CI trigger issue this week are stronger portfolio
-stories than a smooth week — real experience, real lessons, real
-discipline put in place to prevent recurrence
+  stories than a smooth week — real experience, real lessons, real
+  discipline put in place to prevent recurrence
 
 ## Week 2 Day 2 — 26 May 2026
 
