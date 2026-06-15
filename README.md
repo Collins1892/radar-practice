@@ -62,7 +62,8 @@ radar-practice/
 │   ├── playwright-test-writer/
 │   ├── code-reviewer/
 │   ├── wcag/
-│   └── component-builder/
+│   ├── component-builder/
+│   └── modernisation/
 ├── .claude/commands/      # Claude Code slash commands (/review, /standup, /observations, /tidy)
 ├── docs/                  # Workflow friction log and supporting documentation
 ├── .github/workflows/     # GitHub Actions CI
