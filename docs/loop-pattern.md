@@ -11,7 +11,7 @@ Related: [code-reviewer skill](../.claude/skills/code-reviewer/SKILL.md)
 
 ## 1. Purpose
 
-The **implement-test-review loop** bundles three activities into one bounded
+The **implement-test-review loop** bundles four steps into one bounded
 cycle:
 
 1. Run the test suite.
@@ -81,17 +81,20 @@ flowchart TD
   draftPR[Step 6: Mark draft; post unresolved findings]
 
   start --> runTests --> testFail
-  testFail -->|yes| fixTest --> incAttempt --> runTests
+  testFail -->|yes, attempts remain| fixTest --> incAttempt --> runTests
+  testFail -->|yes, no attempts left| draftPR
   testFail -->|no| review --> blockers
-  blockers -->|yes, attempt less than 3| fixOne --> runTests
+  blockers -->|yes, attempt 3 or less| fixOne --> incAttempt --> runTests
   blockers -->|no| postMinors
-  blockers -->|yes, attempt equals 3| draftPR
+  blockers -->|yes, after failed attempt 3 fix| draftPR
 ```
 
 **Step 1 — Run tests.** Execute the full CI test suite (see
 [Test failure handling](#5-test-failure-handling)). If tests fail, attempt to
 fix the failure, **flag the failure clearly** in the output (do not silently
-retry), increment the shared attempt counter, and re-run from Step 1.
+retry), increment the shared attempt counter, and re-run from Step 1. If tests
+still fail after 3 attempts, proceed to Step 6 — mark the PR as **draft** and
+post the same **needs human review** output as unresolved Blockers/Majors.
 
 **Step 2 — Review.** Run a full diff review against the
 [code-reviewer skill](../.claude/skills/code-reviewer/SKILL.md). Always review
@@ -100,9 +103,9 @@ changed in the current iteration. Read [CLAUDE.md](../CLAUDE.md) if not already
 in context. Use the skill's severity levels and output template.
 
 **Step 3 — Fix Blockers and Majors.** If Blockers or Majors are found, fix
-**one** finding at a time. After each fix, re-run tests (Step 1) and
-re-review the **full PR diff from scratch** (Step 2). Do not review only the
-file just edited.
+**one** finding at a time, increment the shared attempt counter, re-run tests
+(Step 1), and re-review the **full PR diff from scratch** (Step 2). Do not
+review only the file just edited.
 
 **Step 4 — Repeat up to 3 attempts.** The shared attempt counter limits the
 whole loop (see [Attempt counter](#4-attempt-counter)).
@@ -201,6 +204,7 @@ been applied or added to any backlog.
 
 - **[Suggestion] — <short title>**
   - **Where:** ...
+  - **Rule:** ...
   - **Issue:** ...
   - **Suggested fix:** ...
 ```
@@ -264,8 +268,7 @@ observations**, not fixed upfront. After each Week 5+ standup (see
 
 **Log tuning decisions in `docs/ai-observations.md` (create on first entry)** —
 what was observed and what was changed (e.g. attempt limit raised to 4,
-stricter scope check added). Create the file on first entry if it does not
-exist.
+stricter scope check added).
 
 Workflow friction that informs loop changes may also be logged in
 [`docs/workflow-friction.md`](workflow-friction.md) via
