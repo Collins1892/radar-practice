@@ -12,7 +12,7 @@ Related: [code-reviewer skill](../.claude/skills/code-reviewer/SKILL.md)
 ## 1. Purpose
 
 The **implement-test-review loop** bundles four core activities into one
-bounded cycle, expanded into a six-step sequence in Section 3:
+bounded cycle, expanded into Step 0 plus a six-step sequence in Section 3:
 
 1. Run the test suite.
 2. Review the **full PR diff** against the
@@ -115,9 +115,10 @@ changed in the current iteration. Read [CLAUDE.md](../CLAUDE.md) if not already
 in context. Use the skill's severity levels and output template.
 
 **Step 3 — Fix Blockers and Majors.** If Blockers or Majors are found, fix
-**one** finding at a time, increment the shared attempt counter, re-run tests
-(Step 1), and re-review the **full PR diff from scratch** (Step 2). Do not
-review only the file just edited.
+**one** finding at a time, increment the shared attempt counter, re-run from
+Step 0 (change-type check), which skips tests when the diff remains
+markdown-only, then re-review the **full PR diff from scratch** (Step 2). Do
+not review only the file just edited.
 
 **Step 4 — Repeat up to 3 attempts.** The shared attempt counter limits the
 whole loop (see [Attempt counter](#4-attempt-counter)).
