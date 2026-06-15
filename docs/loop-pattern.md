@@ -77,7 +77,7 @@ flowchart TD
   blockers{Blockers or Majors?}
   fixOne[Step 3: Fix one finding]
   incAttempt[Increment shared attempt counter]
-  postMinors[Step 5: Post Minors comment; leave PR ready]
+  postMinors[Step 5: Clean exit]
   draftPR[Step 6: Exhausted exit]
 
   start --> runTests --> testFail
