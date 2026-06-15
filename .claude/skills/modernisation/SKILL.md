@@ -1,6 +1,6 @@
 ---
 name: modernisation
-description: Guide migration from legacy .NET 4 / AngularJS to .NET 8 minimal API and React 19 in this repo. Use when the user asks to migrate, modernise, port, or convert legacy code from legacy/, or mentions the Audits module or audits migration. Legacy code is reference for WHAT to build, not HOW. One cohesive vertical slice per request (e.g. API layer, one screen, or one route). Always read legacy/ first; never edit legacy/. Run dotnet test and npm test after changes. Raise work on a feature branch as a PR so the diff captures the transformation. Calibrate effort: think hard for all migration work — complex reasoning, not mechanical translation.
+description: Guide migration from legacy .NET 4 / AngularJS to .NET 8 minimal API and React 19 in this repo. Use when the user asks to migrate, modernise, port, or convert legacy code from legacy/, or mentions the Audits module or audits migration. Target: IncidentsApi-style backends and Incidents-module-style frontend. Legacy code is reference for WHAT to build, not HOW. One cohesive vertical slice per request (e.g. API layer, one screen, or one route). Always read legacy/ first; never edit legacy/. Run dotnet test and npm test after changes. Confirm the suite passes before declaring done. Raise work on a feature branch as a PR so the diff captures the transformation. Calibrate effort: think hard for all migration work — complex reasoning, not mechanical translation.
 ---
 
 # Modernisation
@@ -11,6 +11,7 @@ Guides agents porting **behaviour and domain** from `legacy/` (.NET 4 / AngularJ
 
 | Rule | Detail |
 |------|--------|
+| **Read `CLAUDE.md` first** | Treat [`CLAUDE.md`](../../../CLAUDE.md) as source of truth for versions, boundaries, and conventions |
 | **Read legacy first** | Inspect `legacy/` to extract routes, fields, validation rules, API contracts, and user-visible copy — before writing modern code |
 | **Never edit `legacy/`** | Permanent before-state evidence; no fixes, refactors, or formatting in that tree |
 | **Rewrite, don't translate** | No AngularJS idioms in React; no Web API controllers pasted into minimal API shape without redesign |
@@ -18,6 +19,7 @@ Guides agents porting **behaviour and domain** from `legacy/` (.NET 4 / AngularJ
 | **Match Incidents shape** | New domains (e.g. Audits) follow IncidentsApi + Incidents module conventions — see [Positive references](#positive-references) |
 | **Plan mode for non-trivial slices** | Multi-file backend + frontend → plan before implement (per project workflow) |
 | **Tests after migration** | `dotnet test` for API changes; `npm test` from `client/` for UI — defer test *authorship* to [dotnet-test-writer](../dotnet-test-writer/SKILL.md) / [react-test-writer](../react-test-writer/SKILL.md) unless the user asks in the same turn |
+| **Confirm suite passes before declaring done** | After `dotnet test` and `npm test`, confirm the full suite passes before declaring done |
 | **PR captures transformation** | Feature branch + PR; the diff is part of the deliverable narrative |
 | **Synthetic data only** | No PII, patient data, or realistic-looking personal identifiers in migrated fixtures |
 | **Use Context7** | For ASP.NET Core minimal API, EF Core, React 19, or react-router-dom when API details are uncertain |
@@ -71,6 +73,8 @@ Versions aligned with [`CLAUDE.md`](../../../CLAUDE.md):
 | Frontend tests | Vitest 4.1.7 — run `npm test` from `client/` |
 
 ## Project layout
+
+> **Note:** `legacy/` is created per-migration and may not exist in the repo yet. Before reading legacy code, verify the folder exists. If it is absent, ask the user for the source location before proceeding.
 
 ### Read-only legacy (before-state)
 
@@ -147,7 +151,7 @@ flowchart LR
 | Legacy (.NET 4) | Modern (.NET 8 in this repo) |
 |-----------------|------------------------------|
 | `Global.asax` / `Application_Start` | Top-level `Program.cs`: `WebApplication.CreateBuilder`, DI, `app.Map*` — see [IncidentsApi/Program.cs](../../../IncidentsApi/Program.cs) |
-| `Web.config` (`connectionStrings`, `appSettings`) | `appsettings.json` + `builder.Configuration`; SQLite path e.g. `audits.db` |
+| `Web.config` (`connectionStrings`, `appSettings`) | `appsettings.json` + `builder.Configuration` for logging and host config only; SQLite DB path follows Incidents precedent — hardcoded in `Program.cs` (`DataSource=audits.db`), not in `appsettings.json` |
 | `System.Web` / `HttpContext` | `Microsoft.AspNetCore.*`; minimal API delegates |
 | Web API controllers + `HttpResponseMessage` | `Results.Ok` / `Results.Created` / `Results.BadRequest` / `Results.NotFound` |
 | EF6 / ADO in controllers | Dedicated `DbContext` in `Data/`, `Ef*Repository` implementing `I*Repository`, **scoped** DI |
@@ -213,6 +217,11 @@ Match patterns already used for Incidents when building Audits (or any new migra
 | Typed fetch layer | [api/incidents.ts](../../../client/src/api/incidents.ts) → `api/audits.ts` |
 | Shared UI primitives | `Badge`, `LoadingState`, `EmptyState`, `ErrorState`, `FormField`, `SelectField`, `DatePickerField`, `DataTable`, `Pagination` |
 | Routing + nav + page title | [App.tsx](../../../client/src/App.tsx), [pageTitle.ts](../../../client/src/pageTitle.ts) |
+| Page copy constants | [incidentPageCopy.ts](../../../client/src/components/incidentPageCopy.ts) → `auditPageCopy.ts` |
+| Runtime guards + response parsing | [guards.ts](../../../client/src/guards.ts) — use runtime guards, not bare `as` casts |
+| API env var pattern | `import.meta.env.VITE_INCIDENTS_API_URL` in [api/incidents.ts](../../../client/src/api/incidents.ts) → `VITE_AUDITS_API_URL` |
+| PUT and GET by id endpoints | `PUT /incidents/:id`, `GET /incidents/:id` in [IncidentsApi/Program.cs](../../../IncidentsApi/Program.cs) — detail and edit views depend on these |
+| Success toasts | `toast.success` via Sonner in [IncidentForm.tsx](../../../client/src/components/IncidentForm.tsx) → `AuditForm` |
 
 The **Audits** module is the planned vertical slice: CRUD with table and pagination, reusing the shared component library and repository pattern — same shape as Incidents, different domain.
 
@@ -227,10 +236,23 @@ The **Audits** module is the planned vertical slice: CRUD with table and paginat
 7. **Run tests before declaring done** — `dotnet test AuditsApi.Tests/AuditsApi.Tests.csproj` (or the relevant `.Tests` project); `npm test` from `client/`.
 8. **Raise migration as a PR** — work on a feature branch so the diff captures the transformation; do not commit or `gh pr create` unless the user asks.
 9. **One test per follow-up request** — project convention; use [dotnet-test-writer](../dotnet-test-writer/SKILL.md) and [react-test-writer](../react-test-writer/SKILL.md).
+10. **Apply code-reviewer conventions to all new files** — no `any`, explicit return types, no non-null assertion (`!`), no `console.log` in TypeScript; repository pattern with no per-endpoint try/catch in C#.
+11. **No secrets in migrated config** — never port connection strings or credentials from Web.config into appsettings.json or committed files; use environment variables.
+12. **Accessibility built-in** — all migrated screens and forms must meet WCAG 2.2 AA; cross-ref [wcag](../wcag/SKILL.md) and [component-builder](../component-builder/SKILL.md) essentials. Do not defer accessibility to a separate pass unless the user asks.
+13. **App shell and page title** — new Audits routes must preserve the skip link and `aria-label="Views"` nav in [App.tsx](../../../client/src/App.tsx); add a `resolvePageTitle` branch in [pageTitle.ts](../../../client/src/pageTitle.ts) for every new route.
 
 ## Use Context7
 
-When uncertain about ASP.NET Core minimal API, EF Core, React 19, or react-router-dom APIs:
+**Use Context7 when:**
+
+- Uncertain about ASP.NET Core minimal API endpoint signatures or middleware order
+- Uncertain about EF Core migration commands or DbContext configuration
+- Uncertain about React 19 hook behaviour or react-router-dom 7 APIs
+
+**Skip Context7 when:**
+
+- The answer is already in a positive reference file in this repo — check those first
+- The question is about project conventions — read CLAUDE.md instead
 
 **Claude Code:**
 
@@ -266,9 +288,10 @@ When uncertain about ASP.NET Core minimal API, EF Core, React 19, or react-route
 4. **Map to modern layout** — name API project (`AuditsApi/`), entities, routes, components (Incidents parallel).
 5. **Implement backend** — `AuditsDbContext`, `EfAuditRepository`, `Program.cs` endpoints, EF migration.
 6. **Implement frontend** — `api/audits.ts`, `AuditsView`, `AuditForm`, route shells; wire [App.tsx](../../../client/src/App.tsx). Defer component detail to [component-builder](../component-builder/SKILL.md).
-7. **Wire and verify** — CORS, port, Vite proxy if needed (Incidents uses `http://localhost:5134` with CORS; Items uses Vite proxy to 5133).
+7. **Wire and verify** — CORS, port, Vite proxy if needed (Incidents uses `http://localhost:5134` with CORS; Items uses Vite proxy to 5133). Also register AuditsApi.Tests in `.github/workflows/ci.yml` — add a new `dotnet test` step mirroring the existing IncidentsApi.Tests step. Use port 5135 in `launchSettings.json` (Items=5133, Incidents=5134, Audits=5135) — confirm no collision before running.
 8. **Test** — run `dotnet test` and `npm test`; add tests via sibling skills when asked.
 9. **Summarise** — behaviour preserved vs intentionally changed; files touched; remind user the PR diff is the transformation record.
+10. **Offer follow-ups** — after summarising, prompt the user with next steps: test authoring via [dotnet-test-writer](../dotnet-test-writer/SKILL.md) and [react-test-writer](../react-test-writer/SKILL.md), accessibility audit via [wcag](../wcag/SKILL.md), and pre-PR advisory review via [code-reviewer](../code-reviewer/SKILL.md).
 
 ```mermaid
 flowchart TD
