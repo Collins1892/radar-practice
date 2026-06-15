@@ -1,3 +1,44 @@
+## Week 5 Day 1 — Monday 15 June 2026
+
+### Summary
+
+Week 5 Day 1 — foundation day. No legacy code touched, no automation 
+built — this was the day to put everything in place before the headline 
+builds start. Anthropic API orientation completed, billing and API key 
+set up at console.anthropic.com, modernisation skill built and reviewed 
+(PR #84, #85), implement-test-review loop pattern designed and documented 
+(PR #86), and the loop tested interactively against a real backlog item 
+(PR #87). Loop pattern improvement raised and merged same day after the 
+first test run revealed a gap (PR #88). Nightly agent backlog consolidated 
+from phase-2-build.md into phase-3-articulate.md as T26–T42. 5 PRs merged.
+
+### Anthropic API orientation
+
+Covered the five essentials for the unattended builds: authentication 
+(Bearer token, `x-api-key` header, `anthropic-version` required), messages 
+endpoint request/response structure (`POST /v1/messages`, text response at 
+`content[0].text`), model selection (`claude-sonnet-4-6` as default, 
+`claude-opus-4-8` for novel reasoning only), passing secrets via GitHub 
+Actions environment variables (`${{ secrets.ANTHROPIC_API_KEY }}`), and 
+error handling (400 insufficient credits, 401 bad key, 429 rate limit, 500/529 
+server errors — fail loudly on non-transient errors, retry with backoff on 
+transient ones).
+
+For local testing, the API key goes in `.env` (gitignored). `.env.example`
+with a placeholder is already in the repo root. `npm ci` is required in
+`client/` before tests on a clean checkout — 
+noted as a gap in docs/loop-pattern.md after the first loop run.
+
+### API key vs Agent SDK billing decision
+
+From 15 June 2026, paid Claude plans receive a monthly Agent SDK credit 
+(~$20/month on Pro) covering Agent SDK / Claude Code GitHub Actions usage. 
+Raw API key calls — direct HTTP to `api.anthropic.com` — do NOT draw from
+this credit; they bill at standard pay-as-you-go rates. Both unattended builds
+use the raw API path, so the Agent SDK monthly credit does not apply — budget
+for pay-as-you-go API usage on the GitHub runner. Deliberate Day 1 decision,
+not an accident; both builds share the same billing path.
+
 ## Week 4 Day 6 — Sunday 14 June 2026
 
 ### Summary
@@ -6,7 +47,7 @@ Week 4 close and Week 5 pre-flight. No code, no PRs — a design and
 decision session. Week 4 confirmed complete (outcome met and exceeded).
 All three Week 5 headline builds designed in detail, with the reasoning
 behind each decision captured here because the *why* is what demonstrates
-judgement for the CTO conversation and the Week 6 impact story. Monday's
+judgement for the conversation and the Week 6 impact story. Monday's
 sequence locked. Closing with a fresh chat to start Week 5 clean.
 
 ### Week 4 outcome — met and exceeded
@@ -17,8 +58,7 @@ across worktrees shipping 8 PRs in a day, formal evals across all six
 skills, the two-review discipline, durable slash commands, and a reframe
 of what evals even measure. Not just met — exceeded. The pattern of
 "revealing new things each week" isn't scope creep; it's the evidence of
-moving up the learning curve and keeping pace with a fast-moving field,
-which is exactly what the CTO asked for.
+moving up the learning curve and keeping pace with a fast-moving field.
 
 ### Automated PR review — design and rationale
 
@@ -92,16 +132,16 @@ condition right — and the guardrails are tightened from observed
 behaviour. This is also a strong interview narrative: not "built it and
 hoped" but "ran it, reviewed every morning, tuned from what I saw."
 
-### Modernisation refactor — Events module
+### Modernisation refactor — Audits module
 
-**The slice.** An Events module — a CRUD screen with table and
+**The slice.** An Audits module — a CRUD screen with table and
 pagination, mirroring the Incidents module's shape. One believable
 vertical slice migrated well beats a half-migrated big app. It reuses
 everything already built: repository pattern, EF Core + SQLite, the
 shared component library (DataTable, Pagination, FormField).
 
 **Legacy retained as evidence.** The `legacy/` folder (.NET 4 /
-AngularJS Events) stays in the repo permanently as the before-state.
+AngularJS Audits) stays in the repo permanently as the before-state.
 Crucially, the migration is raised as a PR so the *diff* captures the
 transformation — the legacy folder shows the starting point, the PR shows
 the change. Both preserved for the interview walkthrough. Concrete,
@@ -124,7 +164,7 @@ the human as the gate on what becomes durable backlog work.
 
 1. Anthropic API orientation (fresh, clean view)
 2. API key vs Agent SDK billing decision (the fork that gates everything
-   — decided after the orientation, not pre-committed)
+  — decided after the orientation, not pre-committed)
 3. Build the automated PR review (bounded input, built first)
 
 ### Ideas and observations
@@ -152,7 +192,7 @@ Week 4 Day 5 (Saturday). Friday 12 June was a planned day off — moving
 out of the house and a long drive to stay with family for the next few
 weeks. Picked the programme back up today: introduction to loops
 (ephemeral vs durable), Week 5 plan strengthened with two design
-decisions, and the CTO progress update written and logged. No PRs — a
+decisions, and the progress update written and logged. No PRs — a
 design and consolidation day.
 
 ### Loops — ephemeral vs durable
@@ -228,9 +268,10 @@ to the Week 5 plan.
 
 **Build sequencing — PR review first.** The automated PR review and the
 nightly agent share the same API + GitHub Actions + secrets plumbing.
-The PR review is lower-risk (it only comments, never changes code), so
-building it first validates the whole foundation with nothing autonomous
-at stake. The nightly agent builds second, on proven plumbing.
+The PR review is lower-risk (bounded diff input, fixes Blockers/Majors
+under the loop), so building it first validates the whole foundation with
+a simpler autonomous surface before the nightly agent. The nightly agent
+builds second, on proven plumbing.
 
 **The implement-test-review loop pattern.** Designed once, used twice:
 the loop that bundles make-change → run the right suite (frontend or
@@ -240,19 +281,6 @@ in-session (ephemeral), then reused as the nightly agent's core logic
 (durable). Minors are proposed not auto-written, keeping the human as
 the gate on what becomes durable work and protecting the backlog's
 quality.
-
-### CTO progress update
-
-Wrote the build-phase update promised for the weekend. Structured the
-arc Week 5 → Week 4 → Week 3 — leading with where it's heading (the
-autonomous overnight agent and automated PR review using the existing
-code-reviewer skill), then the advanced patterns under control, then the
-foundation, landing on "foundations set, learning a lot as I go." Framed
-Week 5 honestly as what's coming next rather than done — which arguably
-demonstrates frontier-awareness better than a finished feature. Closed
-with an offer to share the repo and a light process check on the
-interview booking. Logged in cto-emails.md with names stripped to role
-descriptors.
 
 ### Ideas and observations
 
@@ -266,7 +294,7 @@ descriptors.
   up with the frontier" — the 15 June credit change is days old and
   directly shapes an architecture decision.
 - Document consolidation discipline held: every change today went into
-  existing files (phase-2-build.md, seven-week-plan.md, cto-emails.md),
+  existing files (phase-2-build.md, seven-week-plan.md, private email log),
   no new files spawned.
 
 ## Week 4 Day 4 — Thursday 11 June 2026
@@ -340,8 +368,7 @@ Two gaps identified in the Week 4 Day 3 eval and PR #76 reviews:
 
 **Backdrop dismiss.** Radix Dialog overlay has no ARIA role and is portaled
 to the document body — a `data-radix-dialog-overlay` attribute does not exist
-in this Radix version. Located structurally: `document.querySelector('div
-[data-state="open"]:not([role="dialog"])')`. Radix dismisses on
+in this Radix version. Located structurally: `document.querySelector('div[data-state="open"]:not([role="dialog"])')`. Radix dismisses on
 `pointerDown` at the document level, not `click` — a plain click event would
 not trigger dismissal in jsdom. The DOM inspection approach (writing a temp
 test to log all div attributes) was the right way to discover the correct
@@ -386,14 +413,14 @@ committed, feeds the Week 6 AI impact story.
 - Slash commands are durable agentic patterns that persist across sessions.
   The `/standup` command already feels like a genuine daily workflow tool
   rather than a demo.
-  
+
 ## Week 4 Day 3 — Wednesday 10 June 2026
 
 ### Summary
 
 Week 4 Day 3 (Wednesday). Full day — date fix pass across all .md files,
 formal evals across all six skills, Modal and InlineAlert components built
-and merged (PR #76), job application submitted to Radar Healthcare, and
+and merged (PR #76), job application submitted to organisation, and
 Week 5 reshaped around the nightly autonomous agent. 169 Vitest, 25
 IncidentsApi xUnit, 13 ItemsApi xUnit at close.
 
@@ -423,8 +450,7 @@ real-persistence round-trip test rather than a duplicate.
 
 **The delta is quality, not pass rate.** Skill agent refused to write
 duplicate tests (react-test-writer prompt 1 — identified existing coverage,
-offered genuine gaps instead). Skill agent used `getByRole('button', {
-name: label })` over `getByLabelText` — higher-priority RTL query, with
+offered genuine gaps instead). Skill agent used `getByRole('button', { name: label })` over `getByLabelText` — higher-priority RTL query, with
 explicit justification against the skill's §6 guidance. No-skill agent
 used the lower-priority query. Both tests passed; the skill agent's test
 was more deliberate and rigorous.
@@ -451,7 +477,8 @@ unconfirmed matters.
 **component-builder directory violation.** No-skill agent wrote Modal to
 `src/components/ui/` on prompt 1 — the shadcn vendor directory, explicitly
 forbidden in CLAUDE.md. Skill agent wrote to `src/components/` correctly
-both times. This is the Core team reusable patterns problem in miniature.
+both times. This is exactly the kind of convention drift that shared skills and
+CLAUDE.md are designed to prevent.
 
 **Time cost.** Skill agent consistently took longer on complex tasks:
 DataTable wcag audit 8m 20s vs no-skill 3m 26s; code-reviewer PR #46
@@ -506,11 +533,11 @@ sleeps.
 
 ### Job application submitted
 
-Full Stack Engineer role at Radar Healthcare submitted 10 June 2026. CV
-updated with agentic AI upskilling in the personal profile. Cover letter
-written in three paragraphs: who I am and why I am applying, what I built
-during the personal development plan, and why the modernisation brief is
-where my passion lies.
+Full Stack Engineer role at a healthcare software company submitted 10
+June 2026. CV updated with agentic AI upskilling in the personal profile.
+Cover letter written in three paragraphs: who I am and why I am applying,
+what I built during the personal development plan, and why the
+modernisation brief is where my passion lies.
 
 ### What I would not trust the agent to do unsupervised
 
@@ -540,7 +567,7 @@ where my passion lies.
   explicitly in the Week 6 impact story.
 - 207 tests, 6 skills formally evalled, 2 new components, application
   submitted, Week 5 reshaped — all in one day.
-  
+
 ## Week 4 Day 2 — 9 June 2026
 
 ### Summary
@@ -563,8 +590,8 @@ In Claude Code, effort is controlled via keywords: "think" / "think hard"
 coding and agentic work.
 
 The plan's framing of "thinking budgets" was one version behind. Spotting
-that immediately is exactly the "keeping up with the frontier" the CTO
-asked for.
+that immediately is exactly the "keeping up with the frontier" the
+conversation calls for.
 
 Other key extractions from the guide: subagent orchestration is native in
 latest models (Opus 4.8 spawns fewer subagents than 4.6 by default);
@@ -726,8 +753,7 @@ incidentPageCopy.
   data points showing when effort calibration adds value and when it
   doesn't. That's a nuanced answer, not just "ultrathink everything."
 - Six Week 7 tidy list items closed via parallel agents in a single
-  afternoon session. The worktree pattern is the direct answer to the CTO's
-  "agentic AI across the SDLC" requirement.
+  afternoon session. The worktree pattern is the direct answer to the "agentic AI across the SDLC" requirement.
 - The merge conflict is the best portfolio story from Week 4 Day 2 — it's not
   just "I used worktrees", it's "here's what went wrong, here's why, and
   here's exactly how I resolved it." That's the difference between having
@@ -762,8 +788,8 @@ Plugged the accessibility gap where create/edit success redirected silently with
 **Key findings:**
 
 - `next-themes` added by shadcn CLI but unused — generated `sonner.tsx` imports `useTheme` from `next-themes` by default. This project doesn't use Next.js. Fix: hardcode `theme="system"`. Always check for unused dependencies after shadcn CLI installs.
-- **CSS variable specificity** — Sonner's inline style CSS variables (`--success-bg` etc.) override Tailwind `classNames`. `toastOptions.classNames` for colours silently loses. Fix: define `--sonner-*` variables in `index.css` across all three dark mode sync points and wire through the `style` prop with `richColors` enabled.
-- **`<Toaster />` DOM placement** — must sit after the skip link in DOM order. When placed first, the toast close button becomes the first Tab stop instead of the skip link (WCAG 2.4.1).
+- **CSS variable specificity** — Sonner's inline style CSS variables (`--success-bg` etc.) override Tailwind `classNames`. `toastOptions.classNames` for colours silently loses. Fix: define `--sonner-`* variables in `index.css` across all three dark mode sync points and wire through the `style` prop with `richColors` enabled.
+- `**<Toaster />` DOM placement** — must sit after the skip link in DOM order. When placed first, the toast close button becomes the first Tab stop instead of the skip link (WCAG 2.4.1).
 - **Sonner uses `aria-live="polite"` for all variants** including error. No assertive live region. Acceptable for this project but a known limitation for more critical error contexts.
 
 **Test patterns:**
@@ -795,7 +821,9 @@ Hardcoded test counts become maintenance toil as the suite grows. CI badge is th
 ### Ideas and observations
 
 - Three review passes on a documentation file caught a Major, two Minors, and multiple Suggestions. Documentation quality is as reviewable as code — the discipline applies equally.
-- The component-builder skill is the strongest single portfolio piece from Week 4 Day 1 — a universal React build guide that directly solves the Core team reusable patterns problem.
+- The component-builder skill is the strongest single portfolio piece from
+  Week 4 Day 1 — a universal React build guide that directly solves the
+  reusable patterns problem.
 - 129 tests, 6 skills, PRs #63–#65 in one day. Still accelerating despite a late start.
 
 ## Week 3 Day 6 — 6 June 2026
@@ -909,7 +937,7 @@ Week 3 Day 4. Five PRs merged: IncidentsApi standalone backend (PR #46), 23 back
 
 ### IncidentsApi — standalone backend
 
-Built as a separate .NET 8 project with its own IncidentsDbContext and incidents.db — not added to ItemsApi. Mirrors the microservices direction Radar is moving toward. Incident entity with Severity and Status stored as int enums for correct sort order and query performance. CRU (no DELETE): GET /incidents (server-side filter/sort/paginate), POST /incidents, GET /incidents/{id}, PUT /incidents/{id}. Global exception handler, Enum.IsDefined validation, page size cap at 100. CI updated to run both test projects.
+Built as a separate .NET 8 project with its own IncidentsDbContext and incidents.db — not added to ItemsApi. Mirrors the microservices direction the target employer is moving toward. Incident entity with Severity and Status stored as int enums for correct sort order and query performance. CRU (no DELETE): GET /incidents (server-side filter/sort/paginate), POST /incidents, GET /incidents/{id}, PUT /incidents/{id}. Global exception handler, Enum.IsDefined validation, page size cap at 100. CI updated to run both test projects.
 
 ### Backend tests — 23 in one day
 
@@ -946,7 +974,7 @@ Week 3 Day 4 was the most thorough validation of the two-review pattern yet. Cla
 - Choose the correct architecture (standalone vs shared context) without explicit direction — the first plan proposed adding everything to ItemsApi
 - Know that Radix Select needs a scrollIntoView shim — this breaks silently until the test runs
 - Use local date methods for form submission — UTC getters are the natural default and the bug is invisible until you're in a UTC+ timezone
-- Keep enum sort order correct with string storage — the agent suggested HasConversion<string>() without flagging the alphabetical sort trap
+- Keep enum sort order correct with string storage — the agent suggested HasConversion() without flagging the alphabetical sort trap
 - Identify that MemoryRouter is needed when a Link is added — the error message is clear but non-obvious to trace back to the missing router context
 
 ### Ideas and observations
@@ -1037,7 +1065,7 @@ single day: Badge, LoadingState, EmptyState, ErrorState, FormField,
 SelectField, DatePickerField, DataTable, and Pagination. ComponentsView
 scaffold with React Router also landed on Week 3 Day 2. Cursor Pro credit limit hit
 mid-day; switched to Auto mode and continued. Progress update email sent to
-the CTO. Heavy review back-and-forth — most PRs went through 2–3 review
+the stakeholder. Heavy review back-and-forth — most PRs went through 2–3 review
 cycles before merging. Token spend was significant. Documentation session at
 end of day to capture decisions and update CLAUDE.md and .cursor/rules.
 
@@ -1136,7 +1164,7 @@ end of day to capture decisions and update CLAUDE.md and .cursor/rules.
 ### Ideas and observations
 
 - 9 components in one day is the evidence for the Week 6 impact story — the
-  component library is the day-one Radar contribution piece, now in the repo
+  component library is the day-one contribution piece, now in the repo
 - Token economy is real: 9 PRs × 2–3 review cycles each = significant Claude
   and Cursor budget. Tighter prompts upfront reduce review cycles downstream
 - Two independent reviews consistently catch different things — Claude Code
@@ -1186,7 +1214,7 @@ the week.
   Had to re-apply all four manually. Lesson: after any lint-staged failure, run
   `git show HEAD --stat` to verify what actually landed before pushing
 - ESLint pre-commit failures on shadcn-generated files — fixed by excluding
-  `src/components/ui/**` and `src/lib/utils.ts` from linting. Vendor-generated
+  `src/components/ui/`** and `src/lib/utils.ts` from linting. Vendor-generated
   files should not be held to project lint conventions
 - `--no-warn-ignored` flag needed in lint-staged to suppress `--max-warnings 0`
   failure on ignored files. Not disabling a rule — suppressing a noise message
@@ -1251,7 +1279,7 @@ the week.
   corrected `CreateDefaultClient()` guidance (now valid for persistence tests, not
   just validation errors), new SQLite isolation gotchas
 - `code-reviewer` — updated for Tailwind v4, shadcn/ui, Radix, EF Core rules,
-  vendor file exemption for `src/components/ui/**`
+  vendor file exemption for `src/components/ui/`**
 - Both skills' version tables updated to reflect full new stack
 
 ### End-of-day documentation — heavier than expected
@@ -1405,7 +1433,7 @@ tokens held up well throughout the day.
 ### Ideas and observations
 
 - Only 10 working days in — 54 tests, CI pipeline, custom skills, structured PR workflow, CLAUDE.md driving agent behaviour. The acceleration is the story for Week 6.
-- pr-workflow.md is proposable as a Radar team standard from day one
+- pr-workflow.md is proposable as a team standard from day one
 - AI evals identified as a gap — added to Week 4
 - Week 3 is ambitious at ~34 hours — if pressure builds, slip from the bottom not the top
 
@@ -1429,7 +1457,7 @@ tokens held up well throughout the day.
   to solve the technical problem before sending to an agent
 - HIPAA adds PHI-specific technical safeguards — encryption at rest
   and in transit, audit logs, minimum necessary access
-- HIPAA training is a personal strength relevant to Radar's US expansion
+- HIPAA training is a personal strength relevant to healthcare US operations
 - GDPR and HIPAA section added to CLAUDE.md — legal framework behind
   the existing no-PII rules now explicit
 - Key addition: HIPAA applies to US operations only — Middle East
@@ -1526,8 +1554,8 @@ tokens held up well throughout the day.
   code examples
 - Idiomatic React migration rule added — never translate AngularJS patterns
   directly to React, rewrite using hooks and component composition. Based on
-  real production experience at Radar where ModelCode.IO produced working
-  but wrong-pattern code shipped past deadline
+  real production experience where AI-generated code produced working but
+  wrong-pattern results shipped past deadline
 - Skills folder added to repo layout and agent guidance
 - Context7 MCP added to AI tools list
 - Trailing newline and version discipline scope fixed in follow-up PR
@@ -1618,8 +1646,8 @@ tokens held up well throughout the day.
 - Weekly `week-N-summary.md` files as Project knowledge — efficient
   growing record without full notes file token cost
 - Mermaid diagrams in skill files render on GitHub — good portfolio signal
-- Morning standup structure transfers directly to team standup at Radar
-- ModelCode.IO failure at Radar (working but wrong patterns, inferior
+- Morning standup structure transfers directly to team standup
+- AI-generated migration (working but wrong patterns, inferior
   visual quality, shipped past deadline) is a concrete AI impact story
   for Week 6 — know what good looks like and where AI fell short
 - Two lockouts and CI trigger issue this week are stronger portfolio
@@ -1803,7 +1831,7 @@ tokens held up well throughout the day.
 - Conflicting conventions between teams is a real unsolved problem
 - Different squads may have different styles — one CLAUDE.md cannot serve all
 - Industry has not fully solved this yet
-- Opportunity to propose a thoughtful approach when back at Radar
+- Opportunity to propose a thoughtful approach to the team
 
 ### What I would not trust the agent to do unsupervised
 
@@ -1823,7 +1851,7 @@ tokens held up well throughout the day.
 - CLAUDE.md is a living document — will grow as the project grows
 - Exact package versions in CLAUDE.md prevent agent making wrong version assumptions
 - TypeScript 6.0.2 is very new — worth being explicit about
-- Multi-repo CLAUDE.md complexity is an unsolved industry problem — opportunity to propose a thoughtful approach at Radar
+- Multi-repo CLAUDE.md complexity is an unsolved industry problem — opportunity to propose a thoughtful approach at a new organisation
 
 ## Week 1 Day 5 — 23 May 2026
 
@@ -1866,7 +1894,7 @@ tokens held up well throughout the day.
 
 ### Ideas and observations
 
-- Incident reporting module to be added in week 3 — Radar-relevant domain
+- Incident reporting module to be added in week 3 — healthcare-relevant domain
 - Playwright e2e tests — week 3
 - Vitest unit tests for React — week 3
 - Fluid responsive design with breakpoint tiers — week 3
@@ -1886,7 +1914,7 @@ tokens held up well throughout the day.
 
 - The `record` type is new to me — modern .NET shorthand for immutable data classes
 - In-memory repo with hardcoded `nextId` starting at 4 — fragile, goes away when we add SQLite in week 3
-- `Program.cs` minimal API pattern is different to controller pattern I am used to — not legacy thinking, just a different approach, will encounter both at Radar
+- `Program.cs` minimal API pattern is different to controller pattern I am used to — not legacy thinking, just a different approach, will encounter both in enterprise codebases
 - Responsive design not checked — flagged for next frontend session
 
 ### Anthropic engineering blog observations
@@ -2009,9 +2037,9 @@ Assuming the workspace set up as context, Cursor was able to scan what was gener
 
 Nothing — worked first time, although a boilerplate project so not to get too excited yet.
 
-**Which tool would I reach for first on a real Radar ticket?**
+**Which tool would I reach for first on a real ticket?**
 
-Difficult to say based on tasks so far — Radar is a complex beast. Would experiment with both before committing to a real ticket; going straight in would be dangerous.
+Difficult to say based on tasks so far. Would experiment with both before committing to a real ticket; going straight in would be dangerous.
 
 ### What surprised me today
 

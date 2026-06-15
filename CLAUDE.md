@@ -262,8 +262,7 @@ any system handling personal data about patients, staff, or clients.
 - No test fixtures with realistic-looking personal data
 
 **International context:**
-Radar Healthcare is expanding to the US and Middle East. HIPAA applies
-to US operations. Middle East jurisdictions will have their own
+HIPAA applies to US operations. Middle East jurisdictions will have their own
 requirements — confirm with legal before any data handling decisions
 in those markets. Key HIPAA addition: Protected Health Information (PHI)
 has specific technical safeguard requirements — encryption at rest and

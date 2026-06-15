@@ -107,7 +107,7 @@ These are practical lessons from building this project with Claude Code (termina
 **Skill-specific agents (`.claude/skills/`)**
 - Seven repo-level skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`, `modernisation`.
 - Test-writer skills are built after real code exists — the agent reads real patterns before writing anything. Build-guide skills (e.g. wcag) should be built before feature work to prevent retrofitting.
-- Skills drive consistent output across sessions and developers — the direct fix for the confirmed Core team reusable-patterns problem.
+- Skills drive consistent output across sessions and developers — the direct fix for the reusable patterns problem.
 - All seven skills include effort calibration — **think hard** for complex work (multi-file diffs, a11y-heavy UI, journey tests); **standard** for pattern-following tasks.
 - Formal evals across the original six skills confirmed the delta is test quality and convention consistency, not just pass rate. Skill agents refused duplicate tests, used higher-priority RTL queries, and caught cross-stack issues that no-skill agents missed. The real measure is variance reduction — skills narrow the agent's output possibility space toward convention-consistent, high-quality results.
 
