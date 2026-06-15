@@ -104,7 +104,8 @@ stays markdown-only keeps skipping the suite on every re-run.
 **Step 1 — Run tests.** Execute the full CI test suite (see
 [Test failure handling](#5-test-failure-handling)). If tests fail, attempt to
 fix the failure, **flag the failure clearly** in the output (do not silently
-retry), increment the shared attempt counter, and re-run from Step 1. If tests
+retry), increment the shared attempt counter, and re-run from Step 0
+(the change-type check). If tests
 still fail after 3 attempts, proceed to Step 6 (the exhausted-exit path),
 reporting the test failures the same way as unresolved Blockers/Majors.
 
@@ -159,7 +160,7 @@ When tests fail:
 2. **Flag the failure clearly** in output — which suite, which test, and a
    summary of the error. Do not silently retry.
 3. **Increment** the shared attempt counter.
-4. **Re-run** the full test suite from Step 1.
+4. **Re-run** from Step 0 (the change-type check).
 
 Test commands match
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). On a clean
