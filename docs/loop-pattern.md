@@ -78,7 +78,7 @@ flowchart TD
   fixOne[Step 3: Fix one finding]
   incAttempt[Increment shared attempt counter]
   postMinors[Step 5: Post Minors comment; leave PR ready]
-  draftPR[Step 6: Mark draft; post unresolved findings]
+  draftPR[Step 6: Exhausted exit]
 
   start --> runTests --> testFail
   testFail -->|yes, attempts remain| fixTest --> incAttempt --> runTests
@@ -93,8 +93,8 @@ flowchart TD
 [Test failure handling](#5-test-failure-handling)). If tests fail, attempt to
 fix the failure, **flag the failure clearly** in the output (do not silently
 retry), increment the shared attempt counter, and re-run from Step 1. If tests
-still fail after 3 attempts, proceed to Step 6 — mark the PR as **draft** and
-post the same **needs human review** output as unresolved Blockers/Majors.
+still fail after 3 attempts, proceed to Step 6 (the exhausted-exit path),
+reporting the test failures the same way as unresolved Blockers/Majors.
 
 **Step 2 — Review.** Run a full diff review against the
 [code-reviewer skill](../.claude/skills/code-reviewer/SKILL.md). Always review
@@ -111,8 +111,9 @@ review only the file just edited.
 whole loop (see [Attempt counter](#4-attempt-counter)).
 
 **Step 5 — Clean exit.** If no Blockers or Majors remain within 3 attempts,
-collect all Minors (and Suggestions) and post them as a **single comment** at
-the end. Leave the PR ready (not draft).
+collect all Minors (and Suggestions). In autonomous mode, post as a single PR
+comment and leave the PR ready. In interactive mode, present the Minors list
+once in chat.
 
 **Step 6 — Exhausted exit.** If Blockers or Majors remain after 3 attempts,
 or tests still fail after 3 attempts: in autonomous mode, mark the PR as
