@@ -12,7 +12,7 @@ Related: [code-reviewer skill](../.claude/skills/code-reviewer/SKILL.md)
 ## 1. Purpose
 
 The **implement-test-review loop** bundles four core activities into one
-bounded cycle, expanded into a six-step sequence in Section 3:
+bounded cycle, expanded into Step 0 plus a six-step sequence in Section 3:
 
 1. Run the test suite.
 2. Review the **full PR diff** against the
@@ -70,6 +70,7 @@ in both modes.
 ```mermaid
 flowchart TD
   start[Start attempt N of 3]
+  changeType{Diff touches only .md files?}
   runTests[Step 1: Run full CI test suite]
   testFail{Tests fail?}
   fixTest[Attempt fix; flag failure clearly]
@@ -80,19 +81,31 @@ flowchart TD
   postMinors[Step 5: Clean exit]
   draftPR[Step 6: Exhausted exit]
 
-  start --> runTests --> testFail
-  testFail -->|yes, attempts remain| fixTest --> incAttempt --> runTests
+  start --> changeType
+  changeType -->|markdown-only: skip tests| review
+  changeType -->|code or tests touched| runTests
+  runTests --> testFail
+  testFail -->|yes, attempts remain| fixTest --> incAttempt --> changeType
   testFail -->|yes, no attempts left| draftPR
   testFail -->|no| review --> blockers
-  blockers -->|yes, attempts remain| fixOne --> incAttempt --> runTests
+  blockers -->|yes, attempts remain| fixOne --> incAttempt --> changeType
   blockers -->|no| postMinors
   blockers -->|yes, no attempts left| draftPR
 ```
 
+**Step 0 — Change-type check.** Before Step 1, inspect the diff. If it
+touches **only** `.md` files (no code, tests, config, or build files), skip the
+test suite and go straight to Step 2 (review) — running tests adds wait time
+with no value on a documentation-only change. If any non-`.md` file is touched,
+or the file set is mixed or ambiguous, run the full suite as normal.
+The check is re-evaluated at the start of each attempt, so a loop whose diff
+stays markdown-only keeps skipping the suite on every re-run.
+
 **Step 1 — Run tests.** Execute the full CI test suite (see
 [Test failure handling](#5-test-failure-handling)). If tests fail, attempt to
 fix the failure, **flag the failure clearly** in the output (do not silently
-retry), increment the shared attempt counter, and re-run from Step 1. If tests
+retry), increment the shared attempt counter, and re-run from Step 0
+(the change-type check). If tests
 still fail after 3 attempts, proceed to Step 6 (the exhausted-exit path),
 reporting the test failures the same way as unresolved Blockers/Majors.
 
@@ -103,9 +116,10 @@ changed in the current iteration. Read [CLAUDE.md](../CLAUDE.md) if not already
 in context. Use the skill's severity levels and output template.
 
 **Step 3 — Fix Blockers and Majors.** If Blockers or Majors are found, fix
-**one** finding at a time, increment the shared attempt counter, re-run tests
-(Step 1), and re-review the **full PR diff from scratch** (Step 2). Do not
-review only the file just edited.
+**one** finding at a time, increment the shared attempt counter, re-run from
+Step 0 (change-type check), which skips tests when the diff remains
+markdown-only, then re-review the **full PR diff from scratch** (Step 2). Do
+not review only the file just edited.
 
 **Step 4 — Repeat up to 3 attempts.** The shared attempt counter limits the
 whole loop (see [Attempt counter](#4-attempt-counter)).
@@ -146,7 +160,7 @@ When tests fail:
 2. **Flag the failure clearly** in output — which suite, which test, and a
    summary of the error. Do not silently retry.
 3. **Increment** the shared attempt counter.
-4. **Re-run** the full test suite from Step 1.
+4. **Re-run** from Step 0 (the change-type check).
 
 Test commands match
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). On a clean
@@ -159,7 +173,9 @@ cd client && npm test
 ```
 
 Run all three on every loop iteration unless the PR diff is provably scoped
-to one area (e.g. frontend-only) — when in doubt, run the full suite.
+to one area (e.g. frontend-only) — when in doubt, run the full suite. For a
+**markdown-only** diff (no code, tests, config, or build files), skip the suite
+entirely per the Step 0 change-type check in [Full sequence](#3-full-sequence).
 
 For automated PR review, the review job is gated behind `needs: test` in CI
 so the agent does not spend calls on code that already failed CI. After the
@@ -304,13 +320,16 @@ Attempt counter: starts at 1, limit 3 (shared across test fixes and
 Blocker/Major fixes).
 
 Sequence:
+0. Change-type check (re-run before every test run): if the diff touches
+   only .md files, skip the test suite and go straight to step 2.
 1. Run full CI test suite. If tests fail — flag clearly, attempt fix,
    increment counter, re-run. If still failing after 3 attempts, proceed
    to step 6.
 2. Review full PR diff using code-reviewer severity (Blocker/Major/Minor/
    Suggestion).
 3. Fix one Blocker or Major at a time; after each fix, re-run tests and
-   re-review full diff from scratch.
+   re-review full diff from scratch — unless the diff is markdown-only,
+   skip tests and re-review directly.
 4. Repeat up to 3 attempts (shared counter across test fixes and
    Blocker/Major fixes).
 5. If clean within 3 attempts — collect Minors/Suggestions and present
@@ -341,13 +360,16 @@ Attempt counter: starts at 1, limit 3 (shared across test fixes and
 Blocker/Major fixes).
 
 Sequence:
+0. Change-type check (re-run before every test run): if the diff touches
+   only .md files, skip the test suite and go straight to step 2.
 1. Run full CI test suite. If tests fail — flag clearly, attempt fix,
    increment counter, re-run. If still failing after 3 attempts, proceed
    to step 6.
 2. Review full PR diff using code-reviewer severity (Blocker/Major/Minor/
    Suggestion).
 3. Fix one Blocker or Major at a time; after each fix, re-run tests and
-   re-review full diff from scratch. Commit and push each fix.
+   re-review full diff from scratch — unless the diff is markdown-only,
+   skip tests and re-review directly. Commit and push each fix.
    (autonomous CI context only — never applies to interactive sessions;
    see CLAUDE.md)
 4. Repeat up to 3 attempts (shared counter across test fixes and
