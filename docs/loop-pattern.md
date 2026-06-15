@@ -70,6 +70,7 @@ in both modes.
 ```mermaid
 flowchart TD
   start[Start attempt N of 3]
+  changeType{Diff touches only .md files?}
   runTests[Step 1: Run full CI test suite]
   testFail{Tests fail?}
   fixTest[Attempt fix; flag failure clearly]
@@ -80,7 +81,10 @@ flowchart TD
   postMinors[Step 5: Clean exit]
   draftPR[Step 6: Exhausted exit]
 
-  start --> runTests --> testFail
+  start --> changeType
+  changeType -->|markdown-only: skip tests| review
+  changeType -->|code or tests touched| runTests
+  runTests --> testFail
   testFail -->|yes, attempts remain| fixTest --> incAttempt --> runTests
   testFail -->|yes, no attempts left| draftPR
   testFail -->|no| review --> blockers
@@ -88,6 +92,12 @@ flowchart TD
   blockers -->|no| postMinors
   blockers -->|yes, no attempts left| draftPR
 ```
+
+**Pre-flight — Change-type check.** Before Step 1, inspect the diff. If it
+touches **only** `.md` files (no code, tests, config, or build files), skip the
+test suite and go straight to Step 2 (review) — running tests adds wait time
+with no value on a documentation-only change. If any non-`.md` file is touched,
+or the file set is mixed or ambiguous, run the full suite as normal.
 
 **Step 1 — Run tests.** Execute the full CI test suite (see
 [Test failure handling](#5-test-failure-handling)). If tests fail, attempt to
@@ -159,7 +169,9 @@ cd client && npm test
 ```
 
 Run all three on every loop iteration unless the PR diff is provably scoped
-to one area (e.g. frontend-only) — when in doubt, run the full suite.
+to one area (e.g. frontend-only) — when in doubt, run the full suite. For a
+**markdown-only** diff (no code, tests, config, or build files), skip the suite
+entirely per the pre-flight change-type check in [Full sequence](#3-full-sequence).
 
 For automated PR review, the review job is gated behind `needs: test` in CI
 so the agent does not spend calls on code that already failed CI. After the
@@ -304,6 +316,8 @@ Attempt counter: starts at 1, limit 3 (shared across test fixes and
 Blocker/Major fixes).
 
 Sequence:
+0. Change-type check: if the diff touches only .md files (no code, tests,
+   config, or build files), skip the test suite and go straight to step 2.
 1. Run full CI test suite. If tests fail — flag clearly, attempt fix,
    increment counter, re-run. If still failing after 3 attempts, proceed
    to step 6.
@@ -341,6 +355,8 @@ Attempt counter: starts at 1, limit 3 (shared across test fixes and
 Blocker/Major fixes).
 
 Sequence:
+0. Change-type check: if the diff touches only .md files (no code, tests,
+   config, or build files), skip the test suite and go straight to step 2.
 1. Run full CI test suite. If tests fail — flag clearly, attempt fix,
    increment counter, re-run. If still failing after 3 attempts, proceed
    to step 6.
