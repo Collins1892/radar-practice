@@ -24,18 +24,20 @@ error handling (400 insufficient credits, 401 bad key, 429 rate limit, 500/529
 server errors — fail loudly on non-transient errors, retry with backoff on 
 transient ones).
 
-For local testing, the API key goes in `.env` (gitignored). `.env.example` 
-with a placeholder was created and will ship with the first PR that uses the 
-key. `npm ci` is required in `client/` before tests on a clean checkout — 
+For local testing, the API key goes in `.env` (gitignored). `.env.example`
+with a placeholder is already in the repo root. `npm ci` is required in
+`client/` before tests on a clean checkout — 
 noted as a gap in docs/loop-pattern.md after the first loop run.
 
 ### API key vs Agent SDK billing decision
 
 From 15 June 2026, paid Claude plans receive a monthly Agent SDK credit 
 (~$20/month on Pro) covering Agent SDK / Claude Code GitHub Actions usage. 
-Raw API key calls — direct HTTP to `api.anthropic.com` — do NOT draw from 
-this credit; they bill at standard pay-as-you-go rates. Both unattended builds 
-use the raw API path, so the
+Raw API key calls — direct HTTP to `api.anthropic.com` — do NOT draw from
+this credit; they bill at standard pay-as-you-go rates. Both unattended builds
+use the raw API path, so the Agent SDK monthly credit does not apply — budget
+for pay-as-you-go API usage on the GitHub runner. Deliberate Day 1 decision,
+not an accident; both builds share the same billing path.
 
 ## Week 4 Day 6 — Sunday 14 June 2026
 
@@ -239,7 +241,7 @@ to show at interview.
 ### Durable wrapper — the GitHub Actions skeleton
 
 Saw what the nightly agent's durable wrapper looks like. The YAML is
-boilerplate: a `cron` trigger (`0 2 * `* * = 2am daily), checkout, Node
+boilerplate: a `cron` trigger (`0 2 * * *` = 2am daily), checkout, Node
 setup, a step that runs the agent script, and a step that raises the PR.
 The single line `on.schedule.cron` is the entire difference between
 ephemeral and durable.
@@ -365,7 +367,7 @@ Two gaps identified in the Week 4 Day 3 eval and PR #76 reviews:
 
 **Backdrop dismiss.** Radix Dialog overlay has no ARIA role and is portaled
 to the document body — a `data-radix-dialog-overlay` attribute does not exist
-in this Radix version. Located structurally: `document.querySelector('div [data-state="open"]:not([role="dialog"])')`. Radix dismisses on
+in this Radix version. Located structurally: `document.querySelector('div[data-state="open"]:not([role="dialog"])')`. Radix dismisses on
 `pointerDown` at the document level, not `click` — a plain click event would
 not trigger dismissal in jsdom. The DOM inspection approach (writing a temp
 test to log all div attributes) was the right way to discover the correct
