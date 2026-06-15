@@ -43,8 +43,8 @@ flowchart LR
     fix --> tests
     review --> minors
   end
-  interactive[Interactive wrapper\napproval gates]
-  autonomous[Autonomous wrapper\nGitHub Actions]
+  interactive["Interactive wrapper<br/>approval gates"]
+  autonomous["Autonomous wrapper<br/>GitHub Actions"]
   interactive --> core
   autonomous --> core
 ```
@@ -262,7 +262,7 @@ observations**, not fixed upfront. After each Week 5+ standup (see
 - Did it mark draft correctly when stuck?
 - Were Minors useful or noise?
 
-**Log tuning decisions in [`ai-observations.md`](ai-observations.md)** —
+**Log tuning decisions in `docs/ai-observations.md` (create on first entry)** —
 what was observed and what was changed (e.g. attempt limit raised to 4,
 stricter scope check added). Create the file on first entry if it does not
 exist.
@@ -329,6 +329,8 @@ Sequence:
    Suggestion).
 4. Fix one Blocker or Major at a time; after each fix, re-run tests and
    re-review full diff from scratch. Commit and push each fix.
+   (autonomous CI context only — never applies to interactive sessions;
+   see CLAUDE.md)
 5. If clean within 3 attempts — post a single PR comment with all
    Minors/Suggestions (proposed only, not auto-actioned). Leave PR ready.
 6. If not clean after 3 attempts — mark PR as draft. Post a PR comment
