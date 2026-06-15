@@ -202,6 +202,8 @@ To call the APIs directly from the browser (without the Vite proxy), copy `clien
 
 Both APIs allow CORS from `http://localhost:5173`. Incidents routes use direct CORS fetch — not proxied like `/items`.
 
+Copy root `.env.example` to `.env` and add your `ANTHROPIC_API_KEY` for local Claude Code and direct Anthropic API usage.
+
 ### CI
 
 Pushes and pull requests targeting `main` trigger the [CI workflow](.github/workflows/ci.yml), which runs `dotnet test` and `npm test` (Vitest) on Ubuntu. The workflow fails if any test fails.

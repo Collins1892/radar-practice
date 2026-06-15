@@ -298,16 +298,17 @@ flowchart TD
   trigger[User_requests_migration]
   scope[Confirm_one_slice]
   calibrate[think_hard_or_Plan_mode]
-  readLegacy[Read_legacy_Audits_only]
+  readLegacy[Read_legacy_verify_exists]
   map[Map_to_AuditsApi_and_client]
   backend[Implement_backend]
   frontend[Implement_frontend]
-  wire[Wire_routes_CORS_ports]
+  wire[Wire_CORS_ports_and_CI_registration]
   test[dotnet_test_and_npm_test]
-  done[Summarise_PR_ready]
+  done[Summarise]
+  offer_followups[Offer_followups]
 
   trigger --> scope --> calibrate --> readLegacy --> map
-  map --> backend --> frontend --> wire --> test --> done
+  map --> backend --> frontend --> wire --> test --> done --> offer_followups
 ```
 
 ## Related skills
