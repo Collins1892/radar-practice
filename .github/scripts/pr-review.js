@@ -700,7 +700,7 @@ async function requestFileFix(
 
   log(`Received fix response for "${filePath}"`);
   const fixedContent = stripFileWrappers(text);
-  if (fixedContent.length > fileContent.length * 3) {
+  if (fixedContent.length > Math.max(fileContent.length * 3, 2000)) {
     return { content: null, reason: 'oversized' };
   }
   return { content: fixedContent };
@@ -824,16 +824,43 @@ async function runTestCommand({ label, command, args, cwd }) {
   }
 }
 
-async function runPostPushTestSuite() {
-  log('Starting post-push test suite (4 commands)...');
+async function getUntrackedPaths() {
+  const output = await runGitOutput([
+    'ls-files',
+    '--others',
+    '--exclude-standard',
+  ]);
+  const paths = output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
+  return new Set(paths);
+}
+
+async function hasWorkingTreeChanges() {
+  const status = await runGitOutput(['status', '--porcelain']);
+  return status.trim() !== '';
+}
+
+async function discardFixChanges(untrackedToRemove) {
+  log('Discarding working-tree changes from failed fix attempt...');
+  await runGit(['reset', '--hard', 'HEAD']);
+  if (untrackedToRemove.length > 0) {
+    await runGit(['clean', '-fd', '--', ...untrackedToRemove]);
+  }
+  log('Working tree restored to last commit');
+}
+
+async function runTestSuite() {
+  log('Starting test suite before commit (4 commands)...');
   for (const step of POST_PUSH_TEST_COMMANDS) {
     const result = await runTestCommand(step);
     if (!result.ok) {
-      log('Post-push test suite failed — stopping fix loop');
+      log('Test suite failed — stopping fix loop');
       return result;
     }
   }
-  log('Post-push test suite passed — continuing to re-review');
+  log('Test suite passed — proceeding to commit');
   return { ok: true };
 }
 
@@ -983,7 +1010,7 @@ function formatTestFailureComment(failedCommand, attemptsUsed, skippedCount) {
 
 ## Automated PR review — needs human review
 
-Reviewed against the code-reviewer skill. The fix loop pushed automated changes that **failed the test suite**.
+Reviewed against the code-reviewer skill. The fix loop applied automated changes that **failed the test suite** before commit. No fix commit was pushed to the branch.
 
 **Attempts used:** ${attemptsUsed} of ${MAX_FIX_ATTEMPTS}
 **Status:** PR marked as **draft**. Do not merge without human review.
@@ -1091,6 +1118,7 @@ async function runFixLoop({
     log(
       `Found ${actionable.length} actionable finding(s), ${advisory.length} advisory finding(s) this attempt`,
     );
+    const untrackedBeforeFixAttempt = await getUntrackedPaths();
     const demotedDuringFix = await applyBlockerMajorFixes(
       actionable,
       owner,
@@ -1110,9 +1138,8 @@ async function runFixLoop({
       );
     }
 
-    log('Committing and pushing fixes...');
-    const { pushed } = await commitAndPushFixes(attempt);
-    if (!pushed) {
+    const hasChanges = await hasWorkingTreeChanges();
+    if (!hasChanges) {
       warn(
         'Fix produced no changes for the current actionable findings — demoting to advisory and skipping re-review',
       );
@@ -1131,11 +1158,17 @@ async function runFixLoop({
       continue;
     }
 
-    const testResult = await runPostPushTestSuite();
+    const untrackedAfterFixAttempt = await getUntrackedPaths();
+    const untrackedCreatedByFix = [...untrackedAfterFixAttempt].filter(
+      (filePath) => !untrackedBeforeFixAttempt.has(filePath),
+    );
+
+    const testResult = await runTestSuite();
     if (!testResult.ok) {
       log(
-        'Automated fixes broke the test suite — marking PR draft and stopping fix loop',
+        'Automated fixes failed the test suite — discarding changes, marking PR draft, and stopping fix loop',
       );
+      await discardFixChanges(untrackedCreatedByFix);
       await markPrDraft(owner, repo, prNumber, token);
       return {
         outcome: 'tests_failed',
@@ -1145,6 +1178,14 @@ async function runFixLoop({
           skipped,
         ),
       };
+    }
+
+    log('Committing and pushing fixes...');
+    const { pushed } = await commitAndPushFixes(attempt);
+    if (!pushed) {
+      fail(
+        'Test suite passed but commit produced no changes — inconsistent state',
+      );
     }
 
     log(`Waiting ${FIX_LOOP_WAIT_MS}ms before re-review...`);
