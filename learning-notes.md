@@ -1,3 +1,68 @@
+## Week 5 Day 2 — Tuesday 16 June 2026
+
+### Summary
+
+Automated PR review shipped end to end. Three PRs: #90 (the review script,
+merged), #91 (the GitHub Actions workflow, merged), and #92 (the autonomous
+Blocker/Major fix loop — built, hardened, but NOT merged; left open and
+marked draft by its own loop, to finish Day 3). The bot now reviews every PR
+to main after tests pass and posts findings as an upserted comment. The fix
+loop extends this to autonomously fix Blockers/Majors, run tests before
+committing, and push back to the branch — with the morning PR review as the
+human gate. Test suite grew from 12 to 35 unit tests. Heavy API spend day
+(~$1+), driven by PR #92 reviewing its own growing diff across many iterations.
+
+### What was built
+
+- **PR #90** — `pr-review.js`: fetches PR diff, loads code-reviewer skill,
+  calls Anthropic API, parses JSON findings, upserts a grouped comment by
+  severity using a hidden marker. 12 unit tests, root package.json.
+- **PR #91** — `pr-review.yml`: full test suite (.NET + root node:test +
+  client Vitest) gated behind needs:test; pr-review job runs only on
+  pull_request events; fork guard, concurrency control, job-level
+  permissions, timeouts. Validated green in daylight, bot comment confirmed.
+- **PR #92 (not merged)** — autonomous fix loop. Actions-only; local runs stay
+  advisory. Fixes actionable Blockers/Majors (extractable path, in diff, not
+  sensitive), runs the full test suite on the working tree BEFORE committing,
+  pushes only if tests pass, discards changes and marks draft on test failure.
+  Up to 3 attempts; marks draft if demoted Blockers remain or attempts exhaust.
+
+### Key decisions and learnings
+
+- **Cursor Auto for all coding** — Claude session tokens hit the limit twice
+  on Day 1 using Claude Code for coding. From Day 2: Cursor handles all
+  implementation, commits, pushes, PR creation. Claude (chat) handles
+  planning, design, review assessment.
+- **Fix loop autonomy + the human gate** — the reviewer repeatedly flagged
+  autonomous commit/push as a tension with the "AI code human-reviewed before
+  merge" rule. Decision: proceed. The human gate is the morning PR review
+  before merge, not per-fix approval. The capability being demonstrated IS
+  autonomous code-changing under a clear human merge gate. Deliberate,
+  articulated position for the CTO.
+- **Run tests before commit, not after** — the original fix-loop ordering
+  committed and pushed, then tested. Inverted so tests run on the working
+  tree first; broken fixes never reach the branch. Last fix of the day.
+- **PR_HEAD_REF not GITHUB_REF_NAME** — Actions sets GITHUB_REF_NAME to the
+  merge ref (92/merge) on pull_request events, breaking the Contents API file
+  fetch. A custom env var must use a non-colliding name.
+- **Reviewer reviewing its own diff** inflates findings — PR #90 and #92 both
+  hit this. Bounded real feature PRs won't.
+- **Opus /review > Sonnet automated reviewer** — Opus gave materially better
+  output (no false Majors, honest advisory-vs-blocking). Two-review discipline
+  (Cursor + Claude Code) validated again.
+- **Recurring false positives to dismiss**: actions/*@v5 "don't exist" (they
+  do; ci.yml passes), package-lock.json integrity "malformed" (verified clean),
+  IncidentsApi.Tests "missing" (exists, passes).
+
+### Carried to Day 3 (FIRST TASK after standup)
+
+PR #92 has one genuine remaining issue: `fail()` calls process.exit(1) rather
+than throwing, and `runGitOutput` has a `return ''` after fail() — so a failed
+`git status --porcelain` reads as "no changes", a silent failure. Flagged by
+the reviewer on nearly every run; it is real, not a false positive. Fix:
+make fail() throw, propagate from git/API helpers, then one clean review pass,
+then merge PR #92. Full detail in the disposable handover scratch file.
+
 ## Week 5 Day 1 — Monday 15 June 2026
 
 ### Summary
