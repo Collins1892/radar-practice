@@ -588,7 +588,14 @@ async function requestFileFix(
   }
 
   log(`Received fix response for "${filePath}"`);
-  return stripFileWrappers(text);
+  const fixedContent = stripFileWrappers(text);
+  if (fixedContent.length > fileContent.length * 3) {
+    warn(
+      `Fix response for "${filePath}" is ${fixedContent.length} bytes (${fileContent.length} original) — exceeds 3× size limit`,
+    );
+    return null;
+  }
+  return fixedContent;
 }
 
 async function applyBlockerMajorFixes(
@@ -601,6 +608,7 @@ async function applyBlockerMajorFixes(
   apiCallCounter,
 ) {
   log(`Applying ${actionable.length} Blocker/Major fix(es)...`);
+  const demotedFindings = [];
 
   for (const { finding, filePath } of actionable) {
     log(`Fixing [${finding.severity}]: ${finding.description}`);
@@ -618,10 +626,22 @@ async function applyBlockerMajorFixes(
       apiKey,
       apiCallCounter,
     );
+    if (fixedContent === null) {
+      warn(
+        `Fix response too large — skipping fix for ${filePath}, treating finding as advisory`,
+      );
+      demotedFindings.push(finding);
+      continue;
+    }
     const absolutePath = path.join(repoRoot, filePath);
+    if (!absolutePath.startsWith(`${repoRoot}/`)) {
+      fail(`Rejected out-of-repo path: ${absolutePath}`);
+    }
     await writeFile(absolutePath, fixedContent, 'utf8');
     log(`Wrote corrected file to ${filePath}`);
   }
+
+  return demotedFindings;
 }
 
 async function runGit(args) {
@@ -645,10 +665,11 @@ async function runGitOutput(args) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     fail(`git ${args.join(' ')} failed: ${message}`);
+    return '';
   }
 }
 
-async function commitAndPushFixes() {
+async function commitAndPushFixes(attempt) {
   log('Configuring git identity for automated commit...');
   await runGit(['config', 'user.email', GIT_USER_EMAIL]);
   await runGit(['config', 'user.name', GIT_USER_NAME]);
@@ -663,7 +684,11 @@ async function commitAndPushFixes() {
   }
 
   log('Committing automated fixes...');
-  await runGit(['commit', '-m', 'fix(automated): apply PR review fixes']);
+  await runGit([
+    'commit',
+    '-m',
+    `fix(automated): apply PR review fixes (attempt ${attempt}/${MAX_FIX_ATTEMPTS})`,
+  ]);
   log('Pushing to origin HEAD...');
   await runGit(['push', 'origin', 'HEAD']);
   log('Push complete');
@@ -700,6 +725,11 @@ function formatMinorsOnlyComment(advisory, skippedCount, attemptsUsed) {
   const blockers = advisory.filter((f) => f.severity === 'Blocker');
   const majors = advisory.filter((f) => f.severity === 'Major');
   const minors = advisory.filter((f) => f.severity === 'Minor');
+  const hasDemotedBlockersOrMajors =
+    blockers.length > 0 || majors.length > 0;
+  const statusLine = hasDemotedBlockersOrMajors
+    ? '**Status:** Fix loop complete — no auto-fixable Blockers or Majors remain. Some Blockers/Majors could not be auto-fixed and are listed below for human review.'
+    : '**Status:** PR ready — no actionable Blockers or Majors remain.';
 
   if (advisory.length === 0) {
     return `${BOT_MARKER}
@@ -709,7 +739,7 @@ function formatMinorsOnlyComment(advisory, skippedCount, attemptsUsed) {
 Reviewed against the code-reviewer skill. Blocker/Major fix loop completed successfully.
 
 **Attempts used:** ${attemptsUsed} of ${MAX_FIX_ATTEMPTS}
-**Status:** PR ready — no actionable Blockers or Majors remain.
+${statusLine}
 
 **Summary:** No advisory findings.${skippedNote}
 
@@ -730,7 +760,7 @@ Reviewed against the code-reviewer skill. Blocker/Major fix loop completed succe
 Reviewed against the code-reviewer skill. Blocker/Major fix loop completed successfully.
 
 **Attempts used:** ${attemptsUsed} of ${MAX_FIX_ATTEMPTS}
-**Status:** PR ready — no actionable Blockers or Majors remain.
+${statusLine}
 
 **Summary:** ${advisory.length} advisory finding(s) — ${blockers.length} Blocker(s), ${majors.length} Major(s), ${minors.length} Minor(s)${skippedNote}
 
@@ -828,7 +858,7 @@ async function runFixLoop({
     log(
       `Found ${actionable.length} actionable finding(s), ${advisory.length} advisory finding(s) this attempt`,
     );
-    await applyBlockerMajorFixes(
+    const demotedDuringFix = await applyBlockerMajorFixes(
       actionable,
       owner,
       repo,
@@ -837,9 +867,18 @@ async function runFixLoop({
       apiKey,
       apiCallCounter,
     );
+    if (demotedDuringFix.length > 0) {
+      accumulatedAdvisory = mergeAdvisory(accumulatedAdvisory, demotedDuringFix);
+      const demotedKeys = new Set(
+        demotedDuringFix.map((f) => `${f.severity}:${f.description}`),
+      );
+      findings = findings.filter(
+        (f) => !demotedKeys.has(`${f.severity}:${f.description}`),
+      );
+    }
 
     log('Committing and pushing fixes...');
-    const { pushed } = await commitAndPushFixes();
+    const { pushed } = await commitAndPushFixes(attempt);
     if (!pushed) {
       warn(
         'Fix produced no changes for the current actionable findings — demoting to advisory and skipping re-review',
