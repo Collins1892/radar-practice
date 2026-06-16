@@ -584,7 +584,10 @@ async function requestFileFix(
   const data = await response.json();
 
   if (data.stop_reason === 'max_tokens') {
-    fail(`file fix truncated for "${filePath}" — raise max_tokens or reduce file size`);
+    warn(
+      `Fix response truncated for "${filePath}" — raise max_tokens or reduce file size`,
+    );
+    return null;
   }
 
   const textBlock = Array.isArray(data.content)
@@ -1038,7 +1041,7 @@ async function main() {
   const prNumber = parsePrNumber(requireEnv('PR_NUMBER'));
   const { owner, repo } = parseRepository(requireEnv('GITHUB_REPOSITORY'));
   const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
-  const branchName = isGitHubActions ? requireEnv('GITHUB_REF_NAME') : null;
+  const branchName = isGitHubActions ? requireEnv('PR_HEAD_REF') : null;
 
   log(`Reviewing PR #${prNumber} on ${owner}/${repo}`);
   if (isGitHubActions) {
