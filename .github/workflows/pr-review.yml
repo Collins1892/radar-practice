@@ -4,9 +4,11 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
+  # Manual runs: test job only — pr-review is skipped (no pull_request payload).
   workflow_dispatch:
 
 concurrency:
+  # On workflow_dispatch, pull_request.number is empty — all manual runs share one group (tests-only, so fine).
   group: pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
@@ -16,6 +18,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
 
