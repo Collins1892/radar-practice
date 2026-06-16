@@ -430,7 +430,7 @@ function extractFilePath(description) {
   return extracted;
 }
 
-function splitActionableFindings(findings) {
+function splitActionableFindings(findings, diff) {
   const actionable = [];
   const advisory = [];
 
@@ -448,6 +448,15 @@ function splitActionableFindings(findings) {
     if (filePath === null) {
       warn(
         'Could not extract file path from finding — treating as advisory for this run',
+      );
+      log(`Demoted finding: [${finding.severity}] ${finding.description}`);
+      advisory.push(finding);
+      continue;
+    }
+
+    if (!diff.includes(filePath)) {
+      warn(
+        'Extracted path not found in diff — treating as advisory for this run',
       );
       log(`Demoted finding: [${finding.severity}] ${finding.description}`);
       advisory.push(finding);
@@ -832,15 +841,17 @@ async function runFixLoop({
   skillContent,
   initialFindings,
   skippedCount,
+  initialDiff,
 }) {
   let findings = initialFindings;
   let skipped = skippedCount;
   let accumulatedAdvisory = [];
+  let diff = initialDiff;
   const apiCallCounter = { review: 1, fix: 0 };
 
   for (let attempt = 1; attempt <= MAX_FIX_ATTEMPTS; attempt += 1) {
     log(`Fix loop: attempt ${attempt}/${MAX_FIX_ATTEMPTS}`);
-    const { actionable, advisory } = splitActionableFindings(findings);
+    const { actionable, advisory } = splitActionableFindings(findings, diff);
     accumulatedAdvisory = mergeAdvisory(accumulatedAdvisory, advisory);
 
     if (actionable.length === 0) {
@@ -901,7 +912,7 @@ async function runFixLoop({
     log(`Waiting ${FIX_LOOP_WAIT_MS}ms before re-review...`);
     await sleep(FIX_LOOP_WAIT_MS);
 
-    const diff = await fetchPrDiff(owner, repo, prNumber, token);
+    diff = await fetchPrDiff(owner, repo, prNumber, token);
     apiCallCounter.review += 1;
     const raw = await requestReview(skillContent, diff, apiKey);
     ({ findings, skippedCount: skipped } = parseFindings(raw));
@@ -912,7 +923,7 @@ async function runFixLoop({
     );
   }
 
-  const { actionable, advisory } = splitActionableFindings(findings);
+  const { actionable, advisory } = splitActionableFindings(findings, diff);
   accumulatedAdvisory = mergeAdvisory(accumulatedAdvisory, advisory);
 
   if (actionable.length === 0) {
@@ -1068,6 +1079,7 @@ async function main() {
     skillContent,
     initialFindings: findings,
     skippedCount,
+    initialDiff: diff,
   });
 
   await upsertPrComment(owner, repo, prNumber, token, comment);
