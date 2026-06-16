@@ -126,7 +126,23 @@ async function readSkillContent() {
 }
 
 function buildReviewPrompt(skillContent, diff) {
-  return `${skillContent}
+  const jsonOpening = `You are a code reviewer. You must respond with ONLY a valid JSON array — no prose, no markdown, no headings, no explanation. Any response that is not a raw JSON array will be treated as an error.
+
+Format: [{"severity": "Blocker"|"Major"|"Minor", "description": "..."}]
+
+The review skill and diff follow below.`;
+
+  const jsonClosing = `Review the diff above using the code-reviewer skill. Return ONLY a JSON array of findings. Each item must have:
+- severity: "Blocker" | "Major" | "Minor"
+- description: string (include where/rule/issue/fix as appropriate)
+
+No markdown fences, no prose outside the JSON array.`;
+
+  return `${jsonOpening}
+
+---
+
+${skillContent}
 
 ---
 
@@ -134,11 +150,7 @@ ${diff}
 
 ---
 
-Review the diff above using the code-reviewer skill. Return ONLY a JSON array of findings. Each item must have:
-- severity: "Blocker" | "Major" | "Minor"
-- description: string (include where/rule/issue/fix as appropriate)
-
-No markdown fences, no prose outside the JSON array.`;
+${jsonClosing}`;
 }
 
 async function requestReview(skillContent, diff, apiKey) {
