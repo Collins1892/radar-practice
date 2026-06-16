@@ -23,7 +23,6 @@ const USER_AGENT = 'radar-practice-pr-review';
 const SEVERITIES = ['Blocker', 'Major', 'Minor'];
 const TRANSIENT_STATUS_CODES = new Set([429, 529]);
 const BOT_MARKER = '<!-- pr-review-bot -->';
-const ANTHROPIC_MODEL = 'claude-sonnet-4-6';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '../..');
@@ -31,6 +30,8 @@ const envPath = path.join(repoRoot, '.env');
 const skillPath = path.join(repoRoot, '.claude/skills/code-reviewer/SKILL.md');
 
 config({ path: envPath });
+
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
 
 function log(message) {
   // eslint-disable-next-line no-console
@@ -109,7 +110,7 @@ async function fetchWithRetry(url, options, label) {
 
       const { waitMs, reason } = getRetryWaitMs(response, transientAttempt);
       log(
-        `${label} returned ${response.status}; retrying (attempt ${transientAttempt + 1} of 3)...`,
+        `${label} returned ${response.status}; attempt ${transientAttempt} of 3 failed, retrying...`,
       );
       log(`${label}: waiting ${waitMs}ms before retry (${reason})`);
       await new Promise((resolve) => {
@@ -125,7 +126,7 @@ async function fetchWithRetry(url, options, label) {
       }
 
       const waitMs = 2000 * 2 ** (networkAttempt - 1) + Math.floor(Math.random() * 1000);
-      log(`${lastError}; retrying (network attempt ${networkAttempt + 1} of 2)...`);
+      log(`${lastError}; network attempt ${networkAttempt} of 2 failed, retrying...`);
       log(
         `${label}: waiting ${waitMs}ms before retry (exponential backoff with jitter)`,
       );
@@ -359,8 +360,8 @@ ${sections.join('\n')}
 }
 
 async function fetchPrComments(owner, repo, prNumber, token) {
-  const url = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
-  log(`Fetching PR comments from ${url}`);
+  const url = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments?per_page=100`;
+  log(`Fetching PR comments (up to 100) from ${url}`);
 
   const response = await fetchWithRetry(
     url,
@@ -374,10 +375,7 @@ async function fetchPrComments(owner, repo, prNumber, token) {
   );
 
   const comments = await response.json();
-  log(`Fetched ${comments.length} PR comment(s)`);
-  // TODO: The GitHub Issues comments endpoint paginates at 30 by default — if a PR has
-  // more than 30 comments the bot-marker comment may not be found and a duplicate will
-  // be posted. Full pagination support is a known deferred limitation.
+  log(`Fetched ${comments.length} PR comment(s) (per_page=100)`);
   return comments;
 }
 
@@ -456,6 +454,17 @@ async function main() {
   const skillContent = await readSkillContent();
   const rawFindings = await requestReview(skillContent, diff, apiKey);
   const { findings, skippedCount } = parseFindings(rawFindings);
+
+  if (findings.length === 0 && skippedCount > 0) {
+    // eslint-disable-next-line no-console
+    console.error('[pr-review] Raw API response text:');
+    // eslint-disable-next-line no-console
+    console.error(rawFindings);
+    fail(
+      `The model returned ${skippedCount} finding(s) but all were filtered out due to unrecognised severity — expected Blocker, Major, or Minor only`,
+    );
+  }
+
   const commentBody = formatComment(findings, skippedCount);
 
   await upsertPrComment(owner, repo, prNumber, token, commentBody);
