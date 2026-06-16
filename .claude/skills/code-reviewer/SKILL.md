@@ -151,7 +151,7 @@ Imports use the `@/` path alias (configured in `vite.config.ts` and `tsconfig.ap
 
 ## Backend rules (.NET / C#)
 
-Applies under `ItemsApi/` and `ItemsApi.Tests/`.
+Applies under `ItemsApi/`, `ItemsApi.Tests/`, `IncidentsApi/`, and `IncidentsApi.Tests/`.
 
 - **Repository pattern** — HTTP layer depends on abstractions (e.g. `IItemsRepository`), not concrete repository classes; use built-in DI.
 - **EF Core persistence** — data access goes through `AppDbContext` and `EfItemsRepository`; endpoints and other callers depend on `IItemsRepository`, never on `AppDbContext` or the concrete repository directly. `EfItemsRepository` is registered **scoped**.
