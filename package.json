@@ -1,0 +1,14 @@
+{
+  "name": "radar-practice-scripts",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "pr-review": "node .github/scripts/pr-review.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
