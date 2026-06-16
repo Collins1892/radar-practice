@@ -463,6 +463,16 @@ function splitActionableFindings(findings, diff) {
       continue;
     }
 
+    if (
+      filePath.startsWith('.github/workflows/') ||
+      filePath.startsWith('.github/scripts/')
+    ) {
+      warn('Rejected sensitive path — treating as advisory for this run');
+      log(`Demoted finding: [${finding.severity}] ${finding.description}`);
+      advisory.push(finding);
+      continue;
+    }
+
     log(`Extracted file path "${filePath}" from [${finding.severity}] finding`);
     actionable.push({ finding, filePath });
   }
