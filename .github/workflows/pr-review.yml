@@ -89,7 +89,11 @@ jobs:
         run: npm ci
 
       - name: Validate secrets
-        run: '[ -n "$ANTHROPIC_API_KEY" ] || (echo "ANTHROPIC_API_KEY secret is not set" && exit 1)'
+        run: |
+          if [[ -z "$ANTHROPIC_API_KEY" || ${#ANTHROPIC_API_KEY} -lt 20 ]]; then
+            echo "ANTHROPIC_API_KEY secret is not set or appears invalid"
+            exit 1
+          fi
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
