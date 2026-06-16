@@ -27,7 +27,7 @@ Mirrors microservices direction without over-engineering.
 - `ItemsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `IncidentsApi/` — standalone .NET 8 minimal API for incident reporting
 - `IncidentsApi/Data/IncidentsDbContext.cs` — dedicated DbContext (incidents.db)
-- `IncidentsApi/Repositories/EfIncidentRepository.cs` — EF Core repository
+- `IncidentsApi/Repositories/EfIncidentRepository.cs` — EF Core repository implementation
 - `IncidentsApi/Migrations/` — EF Core migrations
 - `IncidentsApi.Tests/` — xUnit integration tests
 - `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory

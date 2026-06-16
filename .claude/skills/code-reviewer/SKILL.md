@@ -87,6 +87,20 @@ ItemsApi.Tests/
   GetItemsTests.cs, PostItemsTests.cs, GlobalExceptionHandlerTests.cs
   TestWebApplicationFactory.cs  — custom factory; per-class in-memory SQLite DB
 
+IncidentsApi/
+  Program.cs                  — minimal API endpoints and middleware; registers CORS,
+                                AddDbContext<IncidentsDbContext> (SQLite "incidents.db"),
+                                AddScoped<IIncidentRepository, EfIncidentRepository>, Database.Migrate()
+  IIncidentRepository.cs      — repository interface
+  Incident.cs, IncidentRequest.cs — models / DTOs
+  Data/IncidentsDbContext.cs  — EF Core DbContext (DbSet<Incident>, model config)
+  Repositories/EfIncidentRepository.cs — EF Core implementation of IIncidentRepository
+  Migrations/                 — EF Core migrations
+
+IncidentsApi.Tests/
+  GetIncidentsTests.cs, GetIncidentByIdTests.cs, PostIncidentsTests.cs, PutIncidentsTests.cs
+  TestWebApplicationFactory.cs  — custom factory; per-class in-memory SQLite DB
+
 client/
   components.json               — shadcn/ui config
   src/App.tsx, main.tsx
@@ -121,7 +135,7 @@ private/ (agent-readable, not committed)
 
 Imports use the `@/` path alias (configured in `vite.config.ts` and `tsconfig.app.json`) for `src/`.
 
-- **`ItemsApi/`** or **`ItemsApi.Tests/`** → apply [Backend rules](#backend-rules-net--c) plus [Universal rules](#universal-rules-all-files).
+- **`ItemsApi/`**, **`ItemsApi.Tests/`**, **`IncidentsApi/`**, or **`IncidentsApi.Tests/`** → apply [Backend rules](#backend-rules-net--c) plus [Universal rules](#universal-rules-all-files).
 - **`client/`** (including `client/e2e/`) → apply [Frontend rules](#frontend-rules-react--typescript) plus universal rules.
 - **Repo-wide** (e.g. `.github/`, docs) → universal rules primarily.
 
