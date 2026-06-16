@@ -3,16 +3,21 @@ name: PR Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pull-requests: write
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
+  # Runs the full suite here (not only root node:test) so pr-review can use needs: test
+  # within this workflow. ci.yml also tests PRs to main, but pr-review cannot wait on it.
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -55,8 +60,14 @@ jobs:
   pr-review:
     name: PR Review
     needs: test
-    if: github.event_name == 'pull_request'
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout
