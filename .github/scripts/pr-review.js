@@ -32,10 +32,12 @@ const skillPath = path.join(repoRoot, '.claude/skills/code-reviewer/SKILL.md');
 config({ path: envPath });
 
 function log(message) {
+  // eslint-disable-next-line no-console
   console.log(`[pr-review] ${message}`);
 }
 
 function fail(message) {
+  // eslint-disable-next-line no-console
   console.error(`[pr-review] ERROR: ${message}`);
   process.exit(1);
 }
@@ -70,20 +72,32 @@ async function fetchWithRetry(url, options, label) {
   let lastError = null;
 
   for (let attempt = 1; attempt <= 2; attempt += 1) {
-    const response = await fetch(url, options);
+    try {
+      const response = await fetch(url, options);
 
-    if (response.ok) {
-      return response;
+      if (response.ok) {
+        return response;
+      }
+
+      const body = await response.text();
+      lastError = `${label} failed (${response.status}): ${body.slice(0, 500)}`;
+
+      if (!TRANSIENT_STATUS_CODES.has(response.status) || attempt === 2) {
+        fail(lastError);
+      }
+
+      log(`${label} returned ${response.status}; retrying in 2s...`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      lastError = `${label} failed (network error): ${message}`;
+
+      if (attempt === 2) {
+        fail(lastError);
+      }
+
+      log(`${lastError}; retrying in 2s...`);
     }
 
-    const body = await response.text();
-    lastError = `${label} failed (${response.status}): ${body.slice(0, 500)}`;
-
-    if (!TRANSIENT_STATUS_CODES.has(response.status) || attempt === 2) {
-      fail(lastError);
-    }
-
-    log(`${label} returned ${response.status}; retrying in 2s...`);
     await new Promise((resolve) => {
       setTimeout(resolve, 2000);
     });
@@ -167,7 +181,7 @@ async function requestReview(skillContent, diff, apiKey) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
+        max_tokens: 4096,
         messages: [
           {
             role: 'user',
@@ -207,7 +221,9 @@ function parseFindings(rawText) {
   try {
     parsed = JSON.parse(stripJsonWrappers(rawText));
   } catch {
+    // eslint-disable-next-line no-console
     console.error('[pr-review] Raw API response text:');
+    // eslint-disable-next-line no-console
     console.error(rawText);
     fail('Failed to parse findings JSON from API response');
   }
@@ -216,32 +232,44 @@ function parseFindings(rawText) {
     fail('Findings JSON must be an array');
   }
 
+  const accepted = [];
+  let skipped = 0;
+
   for (const [index, item] of parsed.entries()) {
     if (!item || typeof item !== 'object') {
       fail(`Finding at index ${index} is not an object`);
     }
 
     if (!SEVERITIES.includes(item.severity)) {
-      fail(
-        `Finding at index ${index} has invalid severity "${item.severity}"`,
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[pr-review] WARNING: Skipping finding at index ${index} — invalid severity "${item.severity}"`,
       );
+      skipped += 1;
+      continue;
     }
 
     if (typeof item.description !== 'string' || item.description.trim() === '') {
       fail(`Finding at index ${index} has an empty description`);
     }
+
+    accepted.push(item);
+  }
+
+  if (skipped > 0) {
+    log(`Skipped ${skipped} finding(s) with unrecognised severity`);
   }
 
   const counts = { Blocker: 0, Major: 0, Minor: 0 };
-  for (const item of parsed) {
+  for (const item of accepted) {
     counts[item.severity] += 1;
   }
 
   log(
-    `Parsed ${parsed.length} finding(s): ${counts.Blocker} Blocker(s), ${counts.Major} Major(s), ${counts.Minor} Minor(s)`,
+    `Parsed ${accepted.length} finding(s): ${counts.Blocker} Blocker(s), ${counts.Major} Major(s), ${counts.Minor} Minor(s)`,
   );
 
-  return parsed;
+  return accepted;
 }
 
 function formatSeveritySection(title, findings) {
@@ -310,6 +338,9 @@ async function fetchPrComments(owner, repo, prNumber, token) {
 
   const comments = await response.json();
   log(`Fetched ${comments.length} PR comment(s)`);
+  // TODO: The GitHub Issues comments endpoint paginates at 30 by default — if a PR has
+  // more than 30 comments the bot-marker comment may not be found and a duplicate will
+  // be posted. Full pagination support is a known deferred limitation.
   return comments;
 }
 
@@ -396,8 +427,10 @@ async function main() {
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
+  // eslint-disable-next-line no-console
   console.error('[pr-review] Unexpected error:', message);
   if (process.env.VERBOSE && error instanceof Error && error.stack) {
+    // eslint-disable-next-line no-console
     console.error(error.stack);
   }
   process.exit(1);
