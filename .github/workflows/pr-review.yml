@@ -67,6 +67,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          # Root lock file only — pr-review uses root deps (dotenv), not client packages.
           cache-dependency-path: package-lock.json
 
       - name: Install root dependencies
