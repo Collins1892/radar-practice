@@ -2,9 +2,14 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   backoffMs,
+  extractFilePath,
   formatComment,
   getRetryWaitMs,
+  groupActionableByFilePath,
+  mergeAdvisory,
+  parseChangedFilePaths,
   parseFindings,
+  splitActionableFindings,
   stripJsonWrappers,
 } from './pr-review.js';
 
@@ -152,5 +157,279 @@ describe('backoffMs', () => {
     assert.ok(attempt1 >= 2000 && attempt1 <= 3000);
     assert.ok(attempt2 >= 4000 && attempt2 <= 5000);
     assert.ok(attempt3 >= 8000 && attempt3 <= 9000);
+  });
+});
+
+describe('extractFilePath', () => {
+  it('extracts a backtick-quoted path', () => {
+    assert.equal(
+      extractFilePath('`client/src/api.ts` has a bug'),
+      'client/src/api.ts',
+    );
+  });
+
+  it('extracts an unquoted path', () => {
+    assert.equal(
+      extractFilePath('Issue in client/src/foo.ts line 10'),
+      'client/src/foo.ts',
+    );
+  });
+
+  it('returns null when no path is present', () => {
+    assert.equal(extractFilePath('Missing null check'), null);
+  });
+
+  it('returns null and rejects a path containing ".." components', () => {
+    assert.equal(extractFilePath('Path `src/../etc/passwd`'), null);
+  });
+
+  it('handles dot-prefixed paths at arbitrary depth', () => {
+    assert.equal(
+      extractFilePath('`.github/workflows/pr-review.yml`'),
+      '.github/workflows/pr-review.yml',
+    );
+  });
+});
+
+const MULTI_FILE_DIFF = [
+  'diff --git a/client/src/a.ts b/client/src/a.ts',
+  '--- a/client/src/a.ts',
+  '+++ b/client/src/a.ts',
+  'diff --git a/client/src/b.ts b/client/src/b.ts',
+  '--- a/client/src/b.ts',
+  '+++ b/client/src/b.ts',
+].join('\n');
+
+describe('parseChangedFilePaths', () => {
+  it('extracts paths from +++ b/ lines', () => {
+    const paths = parseChangedFilePaths(MULTI_FILE_DIFF);
+
+    assert.equal(paths.size, 2);
+    assert.ok(paths.has('client/src/a.ts'));
+    assert.ok(paths.has('client/src/b.ts'));
+  });
+
+  it('extracts paths from diff --git lines when +++ is absent', () => {
+    const paths = parseChangedFilePaths('diff --git a/foo.ts b/foo.ts\n');
+
+    assert.equal(paths.size, 1);
+    assert.ok(paths.has('foo.ts'));
+  });
+
+  it('skips /dev/null for deleted files', () => {
+    const diff = ['--- a/removed.ts', '+++ /dev/null'].join('\n');
+    const paths = parseChangedFilePaths(diff);
+
+    assert.equal(paths.size, 0);
+    assert.equal(paths.has('/dev/null'), false);
+  });
+
+  it('deduplicates when diff --git and +++ b/ reference the same file', () => {
+    const diff = [
+      'diff --git a/client/src/foo.ts b/client/src/foo.ts',
+      '+++ b/client/src/foo.ts',
+    ].join('\n');
+    const paths = parseChangedFilePaths(diff);
+
+    assert.equal(paths.size, 1);
+    assert.ok(paths.has('client/src/foo.ts'));
+  });
+
+  it('returns an empty Set for an empty diff', () => {
+    const paths = parseChangedFilePaths('');
+
+    assert.equal(paths.size, 0);
+  });
+});
+
+describe('splitActionableFindings', () => {
+  const changedFiles = new Set(['client/src/foo.ts', 'client/src/bar.ts']);
+
+  it('sends Minor findings to advisory', () => {
+    const finding = { severity: 'Minor', description: 'nit' };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 0);
+    assert.deepEqual(advisory, [finding]);
+  });
+
+  it('sends actionable Blocker/Major findings with path in changedFiles to actionable', () => {
+    const finding = {
+      severity: 'Blocker',
+      description: 'bug in `client/src/foo.ts`',
+    };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(advisory.length, 0);
+    assert.equal(actionable.length, 1);
+    assert.equal(actionable[0].filePath, 'client/src/foo.ts');
+    assert.deepEqual(actionable[0].finding, finding);
+  });
+
+  it('demotes Blocker/Major when no path can be extracted', () => {
+    const finding = { severity: 'Major', description: 'no file mentioned' };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 0);
+    assert.deepEqual(advisory, [finding]);
+  });
+
+  it('demotes Blocker/Major when path is not in changedFiles', () => {
+    const finding = {
+      severity: 'Major',
+      description: 'issue in `other/path.ts`',
+    };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 0);
+    assert.deepEqual(advisory, [finding]);
+  });
+
+  it('demotes Blocker/Major on sensitive paths under .github/', () => {
+    const finding = {
+      severity: 'Blocker',
+      description: 'issue in `.github/workflows/ci.yml`',
+    };
+    const sensitiveChangedFiles = new Set(['.github/workflows/ci.yml']);
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      sensitiveChangedFiles,
+    );
+
+    assert.equal(actionable.length, 0);
+    assert.deepEqual(advisory, [finding]);
+  });
+
+  it('demotes Blocker/Major on sensitive paths such as .github/dependabot.yml', () => {
+    const finding = {
+      severity: 'Blocker',
+      description: 'issue in `.github/dependabot.yml`',
+    };
+    const changedFiles = new Set(['.github/dependabot.yml']);
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 0);
+    assert.deepEqual(advisory, [finding]);
+  });
+
+  it('does not demote findings for client/package.json', () => {
+    const finding = {
+      severity: 'Major',
+      description: 'bug in `client/package.json`',
+    };
+    const changedFiles = new Set(['client/package.json']);
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(advisory.length, 0);
+    assert.equal(actionable.length, 1);
+    assert.equal(actionable[0].filePath, 'client/package.json');
+    assert.deepEqual(actionable[0].finding, finding);
+  });
+});
+
+describe('groupActionableByFilePath', () => {
+  it('groups multiple findings by filePath into one array', () => {
+    const actionable = [
+      {
+        finding: { severity: 'Blocker', description: 'first' },
+        filePath: 'client/src/foo.ts',
+      },
+      {
+        finding: { severity: 'Major', description: 'second' },
+        filePath: 'client/src/foo.ts',
+      },
+    ];
+    const groups = groupActionableByFilePath(actionable);
+
+    assert.equal(groups.size, 1);
+    assert.equal(groups.get('client/src/foo.ts').length, 2);
+  });
+
+  it('creates separate groups for different file paths', () => {
+    const actionable = [
+      {
+        finding: { severity: 'Blocker', description: 'a' },
+        filePath: 'client/src/foo.ts',
+      },
+      {
+        finding: { severity: 'Major', description: 'b' },
+        filePath: 'client/src/bar.ts',
+      },
+    ];
+    const groups = groupActionableByFilePath(actionable);
+
+    assert.equal(groups.size, 2);
+    assert.equal(groups.get('client/src/foo.ts').length, 1);
+    assert.equal(groups.get('client/src/bar.ts').length, 1);
+  });
+
+  it('preserves finding order within each file group', () => {
+    const actionable = [
+      {
+        finding: { severity: 'Blocker', description: 'first on foo' },
+        filePath: 'client/src/foo.ts',
+      },
+      {
+        finding: { severity: 'Major', description: 'second on foo' },
+        filePath: 'client/src/foo.ts',
+      },
+      {
+        finding: { severity: 'Blocker', description: 'only on bar' },
+        filePath: 'client/src/bar.ts',
+      },
+    ];
+    const groups = groupActionableByFilePath(actionable);
+
+    assert.deepEqual(
+      groups.get('client/src/foo.ts').map((item) => item.finding.description),
+      ['first on foo', 'second on foo'],
+    );
+    assert.deepEqual(
+      groups.get('client/src/bar.ts').map((item) => item.finding.description),
+      ['only on bar'],
+    );
+  });
+});
+
+describe('mergeAdvisory', () => {
+  it('deduplicates findings by severity and description', () => {
+    const finding = { severity: 'Major', description: 'dup' };
+    const merged = mergeAdvisory([finding], [finding]);
+
+    assert.equal(merged.length, 1);
+    assert.deepEqual(merged[0], finding);
+  });
+
+  it('preserves existing accumulated findings when advisory is empty', () => {
+    const accumulated = [{ severity: 'Minor', description: 'keep' }];
+    const merged = mergeAdvisory(accumulated, []);
+
+    assert.deepEqual(merged, accumulated);
+  });
+
+  it('appends new unique findings from advisory', () => {
+    const advisory = [{ severity: 'Minor', description: 'new finding' }];
+    const merged = mergeAdvisory([], advisory);
+
+    assert.equal(merged.length, 1);
+    assert.deepEqual(merged[0], advisory[0]);
   });
 });

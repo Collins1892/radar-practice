@@ -84,10 +84,20 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          # Root lock file only — pr-review uses root deps (dotenv), not client packages.
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
 
       - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: client
         run: npm ci
 
       - name: Validate secrets
