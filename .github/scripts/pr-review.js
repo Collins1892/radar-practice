@@ -32,8 +32,8 @@ const FIX_LOOP_WAIT_MS = 5000;
 const FIX_MAX_TOKENS = 16384;
 const GIT_USER_NAME = 'github-actions[bot]';
 const GIT_USER_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com';
-const BACKTICK_PATH_RE = /`(\.?[\w.-]+(?:\/[\w.-]+)*\.[\w]+)`/;
-const UNQUOTED_PATH_RE = /(?:^|[\s`'"(])(\.?[\w.-]+(?:\/[\w.-]+)*\.[\w]+)/;
+const BACKTICK_PATH_RE = /`(\.?[\w.-]+(?:\/[\w.-]+)+\.[\w]+)`/;
+const UNQUOTED_PATH_RE = /(?:^|[\s`'"(])(\.?[\w.-]+(?:\/[\w.-]+)+\.[\w]+)/;
 
 const execFileAsync = promisify(execFile);
 
@@ -412,16 +412,22 @@ function sleep(ms) {
 
 function extractFilePath(description) {
   const backtickMatch = description.match(BACKTICK_PATH_RE);
-  if (backtickMatch) {
-    return backtickMatch[1];
+  const extracted = backtickMatch
+    ? backtickMatch[1]
+    : description.match(UNQUOTED_PATH_RE)?.[1] ?? null;
+
+  if (extracted === null) {
+    return null;
   }
 
-  const unquotedMatch = description.match(UNQUOTED_PATH_RE);
-  if (unquotedMatch) {
-    return unquotedMatch[1];
+  if (extracted.split('/').includes('..')) {
+    warn(
+      'Rejected extracted file path containing ".." path component — treating as unextractable',
+    );
+    return null;
   }
 
-  return null;
+  return extracted;
 }
 
 function splitActionableFindings(findings) {
