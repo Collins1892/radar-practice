@@ -1,0 +1,105 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  # Manual runs: test job only — pr-review is skipped (no pull_request payload).
+  workflow_dispatch:
+
+# PR runs: grouped by PR number, cancel in-progress on new pushes.
+# Manual runs: unique group per run_id — never cancel each other.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pr-review-{0}', github.event.pull_request.number) || format('manual-{0}', github.run_id) }}
+  cancel-in-progress: true
+
+jobs:
+  # Runs the full suite here (not only root node:test) so pr-review can use needs: test
+  # within this workflow. ci.yml also tests PRs to main, but pr-review cannot wait on it.
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Run Items API tests
+        run: dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj --verbosity normal
+
+      - name: Run Incidents API tests
+        run: dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj --verbosity normal
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Run root tests
+        run: npm test
+
+      - name: Run client tests
+        working-directory: client
+        run: npm test
+
+  pr-review:
+    name: PR Review
+    needs: test
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          # Root lock file only — pr-review uses root deps (dotenv), not client packages.
+          cache-dependency-path: package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Validate secrets
+        run: |
+          if [[ -z "$ANTHROPIC_API_KEY" || ${#ANTHROPIC_API_KEY} -lt 20 ]]; then
+            echo "ANTHROPIC_API_KEY secret is not set or appears invalid"
+            exit 1
+          fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Run PR review
+        run: npm run pr-review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}

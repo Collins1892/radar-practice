@@ -87,6 +87,20 @@ ItemsApi.Tests/
   GetItemsTests.cs, PostItemsTests.cs, GlobalExceptionHandlerTests.cs
   TestWebApplicationFactory.cs  — custom factory; per-class in-memory SQLite DB
 
+IncidentsApi/
+  Program.cs                  — minimal API endpoints and middleware; registers CORS,
+                                AddDbContext<IncidentsDbContext> (SQLite "incidents.db"),
+                                AddScoped<IIncidentRepository, EfIncidentRepository>, Database.Migrate()
+  IIncidentRepository.cs      — repository interface
+  Incident.cs, IncidentRequest.cs — models / DTOs
+  Data/IncidentsDbContext.cs  — EF Core DbContext (DbSet<Incident>, model config)
+  Repositories/EfIncidentRepository.cs — EF Core implementation of IIncidentRepository
+  Migrations/                 — EF Core migrations
+
+IncidentsApi.Tests/
+  GetIncidentsTests.cs, GetIncidentByIdTests.cs, PostIncidentsTests.cs, PutIncidentsTests.cs
+  TestWebApplicationFactory.cs  — custom factory; per-class in-memory SQLite DB
+
 client/
   components.json               — shadcn/ui config
   src/App.tsx, main.tsx
@@ -121,7 +135,7 @@ private/ (agent-readable, not committed)
 
 Imports use the `@/` path alias (configured in `vite.config.ts` and `tsconfig.app.json`) for `src/`.
 
-- **`ItemsApi/`** or **`ItemsApi.Tests/`** → apply [Backend rules](#backend-rules-net--c) plus [Universal rules](#universal-rules-all-files).
+- **`ItemsApi/`**, **`ItemsApi.Tests/`**, **`IncidentsApi/`**, or **`IncidentsApi.Tests/`** → apply [Backend rules](#backend-rules-net--c) plus [Universal rules](#universal-rules-all-files).
 - **`client/`** (including `client/e2e/`) → apply [Frontend rules](#frontend-rules-react--typescript) plus universal rules.
 - **Repo-wide** (e.g. `.github/`, docs) → universal rules primarily.
 
@@ -137,7 +151,7 @@ Imports use the `@/` path alias (configured in `vite.config.ts` and `tsconfig.ap
 
 ## Backend rules (.NET / C#)
 
-Applies under `ItemsApi/` and `ItemsApi.Tests/`.
+Applies under `ItemsApi/`, `ItemsApi.Tests/`, `IncidentsApi/`, and `IncidentsApi.Tests/`.
 
 - **Repository pattern** — HTTP layer depends on abstractions (e.g. `IItemsRepository`), not concrete repository classes; use built-in DI.
 - **EF Core persistence** — data access goes through `AppDbContext` and `EfItemsRepository`; endpoints and other callers depend on `IItemsRepository`, never on `AppDbContext` or the concrete repository directly. `EfItemsRepository` is registered **scoped**.
@@ -150,7 +164,7 @@ Applies under `ItemsApi/` and `ItemsApi.Tests/`.
 - **NSubstitute / test isolation** — tests use `TestWebApplicationFactory`, which gives each test class its own per-class in-memory SQLite database. Use `CreateClientWithRepo(mock)` to force specific `GetAll()` contents or simulate repository exceptions; `CreateDefaultClient()` now runs against a real, isolated, migrated DB and is fine for persistence/round-trip behaviour. Data persists across `[Fact]`s within a class (shared fixture) but not across classes, so still avoid asserting absolute counts/emptiness on a default client unless the test owns the state. See [.claude/skills/dotnet-test-writer/SKILL.md](../dotnet-test-writer/SKILL.md) (mocking section) for rationale.
 - **Repo test-generation convention** — new xUnit and Vitest tests are normally added one at a time per user request; if a diff adds many tests at once, note it as a process/convention observation where relevant.
 
-**Positive references:** [`ItemsApi/Program.cs`](../../../ItemsApi/Program.cs), [`ItemsApi/Data/AppDbContext.cs`](../../../ItemsApi/Data/AppDbContext.cs), [`ItemsApi/Repositories/EfItemsRepository.cs`](../../../ItemsApi/Repositories/EfItemsRepository.cs), [`ItemsApi.Tests/TestWebApplicationFactory.cs`](../../../ItemsApi.Tests/TestWebApplicationFactory.cs), [`ItemsApi.Tests/PostItemsTests.cs`](../../../ItemsApi.Tests/PostItemsTests.cs).
+**Positive references:** [`ItemsApi/Program.cs`](../../../ItemsApi/Program.cs), [`ItemsApi/Data/AppDbContext.cs`](../../../ItemsApi/Data/AppDbContext.cs), [`ItemsApi/Repositories/EfItemsRepository.cs`](../../../ItemsApi/Repositories/EfItemsRepository.cs), [`ItemsApi.Tests/TestWebApplicationFactory.cs`](../../../ItemsApi.Tests/TestWebApplicationFactory.cs), [`ItemsApi.Tests/PostItemsTests.cs`](../../../ItemsApi.Tests/PostItemsTests.cs), [`IncidentsApi/Program.cs`](../../../IncidentsApi/Program.cs), [`IncidentsApi/Repositories/EfIncidentRepository.cs`](../../../IncidentsApi/Repositories/EfIncidentRepository.cs), [`IncidentsApi.Tests/TestWebApplicationFactory.cs`](../../../IncidentsApi.Tests/TestWebApplicationFactory.cs).
 
 ## Frontend rules (React / TypeScript)
 
