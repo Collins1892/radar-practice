@@ -6,7 +6,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "pr-review": "node .github/scripts/pr-review.js"
+    "pr-review": "node .github/scripts/pr-review.js",
+    "test": "node --test .github/scripts/pr-review.test.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7"
