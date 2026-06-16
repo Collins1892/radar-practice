@@ -48,6 +48,8 @@ Mirrors microservices direction without over-engineering.
 - `client/src/**/*.test.{ts,tsx}` — Vitest tests
 - `client/src/test/setup.ts` — Vitest setup
 - `client/e2e/` — Playwright e2e tests
+- `package.json` (repo root) — scripting-only Node package (currently the PR review script in `.github/scripts/`). Unrelated to the `client/` workspace — do not confuse the two or add client dependencies here; frontend packages belong in `client/package.json`.
+- `.github/scripts/` — repo automation scripts (e.g. `pr-review.js`)
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
 - `.claude/commands/` — Claude Code slash commands (`/review`, `/standup`, `/observations`, `/tidy`)
