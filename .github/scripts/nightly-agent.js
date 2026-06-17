@@ -186,7 +186,8 @@ function computeColumnWidths(headerLine, dataLines, cellValueRows) {
   for (const line of dataLines) {
     const cells = line.split('|').slice(1, -1);
     for (let index = 0; index < cells.length; index += 1) {
-      widths[index] = Math.max(widths[index] ?? 0, cells[index].length);
+      const cellLen = cells[index] != null ? cells[index].length : 0;
+      widths[index] = Math.max(widths[index] ?? 0, cellLen);
     }
   }
 
@@ -202,7 +203,7 @@ function computeColumnWidths(headerLine, dataLines, cellValueRows) {
 
 function formatPaddedTableRow(cells, widths) {
   const parts = cells.map((cell, index) => {
-    const contentWidth = widths[index] - 2;
+    const contentWidth = Math.max((widths[index] ?? 2) - 2, 0);
     return ` ${cell.padEnd(contentWidth)} `;
   });
   return `|${parts.join('|')}|`;
