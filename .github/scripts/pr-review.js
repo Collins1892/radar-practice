@@ -801,6 +801,9 @@ async function runGit(args) {
   try {
     await execFileAsync('git', args, { cwd: repoRoot });
   } catch (error) {
+    if (error instanceof PrReviewFatalError) {
+      throw error;
+    }
     const message = error instanceof Error ? error.message : String(error);
     fail(`git ${args.join(' ')} failed: ${message}`);
   }
@@ -815,6 +818,9 @@ async function runGitOutput(args) {
     });
     return stdout;
   } catch (error) {
+    if (error instanceof PrReviewFatalError) {
+      throw error;
+    }
     const message = error instanceof Error ? error.message : String(error);
     fail(`git ${args.join(' ')} failed: ${message}`);
   }
