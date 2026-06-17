@@ -121,10 +121,13 @@ function parseRepository(repository) {
 }
 
 function isSensitivePath(filePath) {
-  if (SENSITIVE_PATH_EXACT.has(filePath)) {
-    return true;
-  }
-  return SENSITIVE_PATH_PREFIXES.some((prefix) => filePath.startsWith(prefix));
+  const rel = path
+    .relative(repoRoot, path.resolve(repoRoot, filePath))
+    .split(path.sep)
+    .join('/');
+  if (rel.startsWith('..')) return true;
+  if (SENSITIVE_PATH_EXACT.has(rel)) return true;
+  return SENSITIVE_PATH_PREFIXES.some((prefix) => rel.startsWith(prefix));
 }
 
 function demoteSensitivePlanChanges(plan) {
