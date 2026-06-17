@@ -70,22 +70,34 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
-          # Root lock file only — pr-review uses root deps (dotenv), not client packages.
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
 
       - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: client
         run: npm ci
 
       - name: Validate secrets
@@ -103,3 +115,4 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref || github.head_ref }}
