@@ -65,7 +65,9 @@ radar-practice/
 │   ├── component-builder/
 │   └── modernisation/
 ├── .claude/commands/      # Claude Code slash commands (/review, /standup, /observations, /tidy)
-├── docs/                  # Workflow friction log and supporting documentation
+├── docs/                  # Workflow friction log, agent backlog, and supporting documentation
+│   ├── nightly-agent-backlog.md   # Open tasks for the nightly agent
+│   └── nightly-agent-completed.md # Completed tasks log
 ├── .github/workflows/     # GitHub Actions CI
 └── learning-notes.md      # Daily observations from the build
 ```
@@ -116,6 +118,16 @@ These are practical lessons from building this project with Claude Code (termina
 - `/observations` — interactive workflow friction capture: asks eight structured questions and appends a categorised entry to `docs/workflow-friction.md`.
 - `/tidy` — status check against today's task list and the Week 7 tidy list; matches T0X identifiers in PR titles for deterministic status detection.
 - `/review` — structured code review against the `code-reviewer` skill.
+
+**Nightly autonomous agent**
+- A GitHub Actions workflow (`nightly-agent.yml`) runs on `workflow_dispatch` (cron pending daylight validation) and picks the lowest-priority open task from `docs/nightly-agent-backlog.md` matching `TASK_MODE` (default: `easy`).
+- Two-phase plan-then-act: a planning call returns a structured JSON plan; implementation calls execute per file. The agent never acts without a valid plan.
+- Runs the full 4-command test suite before committing — broken fixes never reach the branch. Up to 3 retry attempts with test-failure feedback to the model between attempts.
+- On success: moves the task row from backlog to `docs/nightly-agent-completed.md`, commits code + backlog update in one commit, raises a normal PR.
+- On failure: discards code changes, increments the attempt counter, adds a failure note, raises a draft PR for human review.
+- Hard cap of 10 Anthropic API calls per run. Sensitive path guard rejects plan changes to `.github/`, `.husky/`, `package.json`.
+- `TASK_MODE` controlled via GitHub repository variable — change difficulty without a commit.
+- First autonomous task: T02 shipped via PR #96 (dotnet-test-writer skill doc fix).
 
 **Two independent reviews catch different things**
 - Claude Code `/review` and Cursor review consistently flag different issues on the same diff. Running both for significant PRs is now a firm discipline — neither alone is complete.
@@ -208,3 +220,7 @@ Copy root `.env.example` to `.env` and add your `ANTHROPIC_API_KEY` for local Cl
 ### CI
 
 Pushes and pull requests targeting `main` trigger the [CI workflow](.github/workflows/ci.yml), which runs `dotnet test` and `npm test` (Vitest) on Ubuntu. The workflow fails if any test fails.
+
+The [PR review workflow](.github/workflows/pr-review.yml) runs after CI passes on every PR — it reviews the diff against the `code-reviewer` skill, autonomously fixes Blockers and Majors (up to 3 attempts), and posts findings as a PR comment.
+
+The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on `workflow_dispatch` (cron pending daylight validation) — it picks a backlog task, implements it, runs the full test suite, and raises a PR.
