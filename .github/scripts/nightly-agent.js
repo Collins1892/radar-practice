@@ -841,7 +841,8 @@ function descriptionToSlug(description) {
 async function createAgentBranch(taskId, description) {
   const slug = descriptionToSlug(description);
   const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  const branchName = `nightly-agent/${taskId}-${slug}-${timestamp}`;
+  const runId = process.env.GITHUB_RUN_ID ?? timestamp;
+  const branchName = `nightly-agent/${taskId}-${slug}-${runId}`;
   await runGit(['checkout', '-b', branchName]);
   return branchName;
 }

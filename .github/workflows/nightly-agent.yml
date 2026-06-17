@@ -76,3 +76,4 @@ jobs:
           GITHUB_ACTIONS: 'true'
           TASK_MODE: ${{ inputs.task_mode || vars.TASK_MODE || 'easy' }}
           TASK_CATEGORY: ${{ inputs.task_category || vars.TASK_CATEGORY || '' }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
