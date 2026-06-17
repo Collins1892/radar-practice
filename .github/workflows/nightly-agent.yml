@@ -11,9 +11,8 @@ on:
         description: 'Optional category filter (a11y, code-quality, docs, pr-review, infra)'
         required: false
         default: ''
-
-# cron: '0 19 * * *'  # 3am Perth (UTC+8) — enable after daylight validation
-# Update to '0 2 * * *' after 7 July (3am BST, UTC+1)
+  schedule:
+    - cron: '0 19 * * *'  # 3am Perth (UTC+8) — update to '0 2 * * *' after 7 July (3am BST, UTC+1)
 
 concurrency:
   group: nightly-agent
