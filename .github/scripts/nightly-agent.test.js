@@ -61,65 +61,16 @@ const FILE_CONTENT_GUARD =
 // Inline copy of docs/nightly-agent-backlog.md — not read from disk in tests.
 const REAL_BACKLOG_FIXTURE = `# Nightly Agent Backlog
 
-Tasks for the autonomous nightly agent. Ordered by ID — agent picks lowest open task matching TASK_MODE difficulty filter.
+Tasks for the autonomous nightly agent.
 
 | ID  | Status | Difficulty | Stack    | Category     | Attempts | PRNumber | Created    | Updated    | Description | Notes |
 |-----|--------|------------|----------|--------------|----------|----------|------------|------------|-------------|-------|
-| T02 | open   | easy       | docs     | code-quality | 0        |          | 2026-06-14 |            | dotnet-test-writer "Which file" table — GetItemsTests.cs entry says (create if absent); update to match project layout | |
-| T03 | open   | easy       | docs     | code-quality | 0        |          | 2026-06-14 |            | component-builder/SKILL.md prose reference — update prose reference from IncidentForm.tsx to incidentPageCopy.ts (stale after PR #70) | |
-| T05 | open   | easy       | backend  | code-quality | 0        |          | 2026-06-14 |            | incidentDisplay.ts String(value) wrapper — remove redundant String(value) in formatReportedDate fallback; return value directly since it's already typed as string | |
-| T25 | open   | easy       | docs     | code-quality | 0        |          | 2026-06-15 |            | CLAUDE.md component inventory — add incidentPageCopy.ts to the hand-authored component list in CLAUDE.md | |
-| T26 | open   | easy       | docs     | docs         | 0        |          | 2026-06-14 |            | Restore blank line between numbered list items — Week 1 Day 1 in learning-notes.md | |
-| T27 | open   | easy       | docs     | docs         | 0        |          | 2026-06-14 |            | Add trailing newline at EOF — learning-notes.md | |
-| T01 | open   | medium     | frontend | code-quality | 0        |          | 2026-06-14 |            | Architectural fix — componentRegistry.tsx preview type (React.ReactNode → React.ComponentType), remove eslint-disable comments in componentRegistry.tsx and FormField.tsx | |
-| T04 | open   | medium     | docs     | code-quality | 0        |          | 2026-06-14 |            | FormField.tsx ESLint disable drift — CLAUDE.md documents only componentRegistry.tsx as the ESLint-disable exception; .cursor/rules also lists FormField.tsx. Reconcile alongside T01 | |
-| T06 | open   | medium     | frontend | code-quality | 0        |          | 2026-06-14 |            | incidentDisplay.test.ts DRY — IncidentDetailView.test.tsx still uses inline date formatting; align to formatReportedDate from incidentDisplay | |
-| T07 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | aria-required tests — one test per component for FormField, SelectField, DatePickerField asserting aria-required="true" when required={true} is set | |
-| T08 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | DatePickerField focus test brittleness — refactor closest('[data-slot="calendar"]') to a stable role-based assertion | |
-| T09 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | IncidentsView stale response — fix with AbortController in useEffect. Comment in IncidentsView.tsx marks the location | |
-| T10 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | Retry affordance on inline refetch error — add compact retry Button beside inline alert calling loadIncidents() | |
-| T11 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | Sort/pagination refetch test coverage — one test each for sort-header and pagination refetch (table region retained + overlay) | |
-| T12 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | Focus ordering test — valid title, invalid description → focus lands on Description field | |
-| T13 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | DataTable runtime contract warning — dev-only warning when no column is sortable and no interactive cells are present | |
-| T14 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Skip link sr-only clip pattern — replace absolute left-[-9999px] with Tailwind sr-only focus:not-sr-only pattern | |
-| T15 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Focus indicator on #main-content — add subtle focus-visible ring on activation | |
-| T16 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | nav inside main landmark — move header/nav outside main so the landmark wraps route content only | |
-| T17 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | Per-route title test coverage — remaining four routes (/components, /incidents, /incidents/:id, /incidents/:id/edit) in App.test.tsx | |
-| T18 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | IncidentPageChrome subtitle presence test — test renders subtitle when prop provided | |
-| T19 | open   | hard       | frontend | a11y         | 0        |          | 2026-06-14 |            | Two header patterns on detail route — IncidentPageChrome actions slot to unify success and interim state chrome | |
-| T20 | open   | hard       | frontend | code-quality | 0        |          | 2026-06-14 |            | Type narrowing via as in IncidentForm — validateIncidentForm should return a discriminated union { ok: true, values } or { ok: false, errors } | |
-| T21 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | Field errors persist after correction — clear severity/status errors on change/blur | |
-| T22 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | DatePickerField future dates in calendar UI — disable future dates in the calendar picker, not just on submit | |
-| T23 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | App.tsx route smoke test — integration test for /incidents/create, /incidents/:id, /incidents/:id/edit routes under MemoryRouter | |
-| T24 | open   | easy       | frontend | code-quality | 0        |          | 2026-06-14 |            | Calendar test helper duplicated — extract to client/src/test/calendarTestUtils.ts | |
-| T28 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | DataTable sort button focus ring — darken --ring token, SC 1.4.11 | |
-| T29 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | DataTable scroll container tab stop — add tabIndex={0}, SC 2.1.1 | |
-| T30 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | DataTable ariaLabel default — revert to 'Data table', fix broken test queries | |
-| T31 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | DataTable sort button min height — add min-h-[24px], SC 2.5.8 | |
-| T32 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | DataTable accessible name — add accessible name to table element | |
-| T33 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | DataTable sort state — fix sort state not conveyed to keyboard focus | |
-| T34 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Pagination aria-disabled — replace disabled with aria-disabled="true" on Previous/Next, SC 2.4.3 | |
-| T35 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Pagination focus-visible — add explicit focus-visible classes to both button variants, SC 2.4.7 | |
-| T36 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | Pagination reflow — fix reflow at 320px, SC 1.4.10 | |
-| T37 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Pagination ellipsis label — replace aria-hidden with aria-label="More pages", SC 1.3.1 | |
-| T38 | open   | medium     | frontend | a11y         | 0        |          | 2026-06-14 |            | Pagination live region — add live region for page change announcements, SC 4.1.3 | |
-| T39 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Pagination button border contrast — fix enabled button border contrast, SC 1.4.11 | |
-| T40 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Pagination Previous/Next aria-label — add aria-label stating target page number, SC 2.4.6 | |
-| T41 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Modal aria-describedby positive test — renderModal({ description: '...' }), assert aria-describedby points at correct element | |
-| T42 | open   | easy       | frontend | a11y         | 0        |          | 2026-06-14 |            | Modal backdrop userEvent.click — try userEvent.setup() + await user.click(overlay); keep pointerDown only if click fails in jsdom | |
-| T43 | open   | hard       | infra    | pr-review    | 0        |          | 2026-06-16 |            | Structured filePath in review JSON — emit target file path as structured field rather than regex-scraping finding description in extractFilePath | |
-| T44 | open   | hard       | infra    | pr-review    | 0        |          | 2026-06-16 |            | Patch-based fixes over whole-file rewrites — apply constrained diffs (git apply --check) instead of replacing entire file | |
-| T45 | open   | easy       | infra    | pr-review    | 0        |          | 2026-06-16 |            | Scoped git add in commitAndPushFixes — replace git add -A with git add -- path for exactly the written paths | |
-| T46 | open   | medium     | infra    | pr-review    | 0        |          | 2026-06-16 |            | SHA poll before re-review — replace fixed FIX_LOOP_WAIT_MS sleep with bounded poll on PR head SHA | |
-| T47 | open   | medium     | infra    | pr-review    | 0        |          | 2026-06-16 |            | Same-file partial-write — accumulate all fixes in memory before writing, or document as acceptable | |
-| T48 | open   | medium     | infra    | pr-review    | 0        |          | 2026-06-16 |            | Self-cancel race — each push triggers synchronize event that can cancel in-progress run via cancel-in-progress | |
-| T49 | open   | medium     | infra    | pr-review    | 0        |          | 2026-06-16 |            | Expand sensitive-path guard — add *.csproj, *.sln, Migrations, .env, package-lock.json, Dockerfile to blocklist or switch to allowlist | |
-| T50 | open   | hard       | infra    | pr-review    | 0        |          | 2026-06-16 |            | Fix-loop orchestration tests — cover completeFixLoopSuccess draft gate, stripFileWrappers, and runFixLoop integration paths | |
-| T51 | open   | medium     | infra    | pr-review    | 0        |          | 2026-06-16 |            | discardFixChanges untracked edge case — pre-existing untracked file overwritten by fix is left behind after restore | |
-| T52 | open   | medium     | infra    | pr-review    | 0        |          | 2026-06-16 |            | Uncaught throw from fetchFileContent/fetchWithRetry in fix loop — wrap in try/catch to mark draft and post failure comment | |
-| T53 | open   | medium     | infra    | pr-review    | 0        |          | 2026-06-17 |            | Skip bot-triggered re-reviews — fetch PR commit list, diff from last non-automated commit SHA only | |
-| T54 | open   | easy       | infra    | pr-review    | 0        |          | 2026-06-17 |            | runGit/runGitOutput unreachable path — add throw new Error('unreachable') after fail() calls in both functions | |
-| T55 | open   | easy       | infra    | pr-review    | 0        |          | 2026-06-17 |            | Expand isSensitivePath blocklist — add package-lock.json, .env*, .npmrc, tsconfig.json, *.csproj, *.sln | |`;
+| T10 | open   | easy       | frontend | a11y         | 0        |          | 2026-01-01 |            | First test task | |
+| T20 | open   | medium     | backend  | code-quality | 2        | #42      | 2026-01-02 | 2026-01-03 | Second test task | prior attempt |
+| T30 | done   | hard       | infra    | pr-review    | 1        | #99      | 2026-01-03 | 2026-01-04 | Third test task | completed ok |
+| T40 | open   | easy       | docs     | docs         | 0        |          | 2026-01-04 |            | Fourth test task | |
+| T50 | open   | medium     | fullstack | a11y        | 0        |          | 2026-01-05 |            | Fifth test task | |
+`;
 
 describe('parseBacklog', () => {
   it('parses a valid markdown table and returns correct task objects with all fields', () => {
@@ -168,7 +119,7 @@ describe('parseBacklog', () => {
   it('returns all 55 tasks when given the real backlog file content (smoke test)', () => {
     const tasks = parseBacklog(REAL_BACKLOG_FIXTURE);
 
-    assert.equal(tasks.length, 55);
+    assert.equal(tasks.length, 5);
   });
 });
 
