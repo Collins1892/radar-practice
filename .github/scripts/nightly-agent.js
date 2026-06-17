@@ -800,6 +800,37 @@ async function runGitOutput(args) {
   }
 }
 
+function descriptionToSlug(description) {
+  const slug = description
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40)
+    .replace(/-+$/, '');
+  return slug === '' ? 'task' : slug;
+}
+
+async function createAgentBranch(taskId, description) {
+  const slug = descriptionToSlug(description);
+  const branchName = `nightly-agent/${taskId}-${slug}`;
+  await runGit(['checkout', '-b', branchName]);
+  return branchName;
+}
+
+async function getUntrackedPaths() {
+  const output = await runGitOutput([
+    'ls-files',
+    '--others',
+    '--exclude-standard',
+  ]);
+  const paths = output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
+  return new Set(paths);
+}
+
 async function runTestCommand({ label, command, args, cwd }) {
   log(`Test step starting: ${label}`);
   const { ANTHROPIC_API_KEY: _ak, GITHUB_TOKEN: _gt, ...safeEnv } = process.env;
@@ -1014,9 +1045,16 @@ async function applyFixFromTestFailure({
   return { ok: true };
 }
 
-async function discardWorkingTreeChanges() {
+async function discardWorkingTreeChanges(untrackedBeforeBaseline) {
   log('Discarding working-tree changes...');
+  const untrackedNow = await getUntrackedPaths();
+  const untrackedToRemove = [...untrackedNow].filter(
+    (filePath) => !untrackedBeforeBaseline.has(filePath),
+  );
   await runGit(['reset', '--hard', 'HEAD']);
+  if (untrackedToRemove.length > 0) {
+    await runGit(['clean', '-fd', '--', ...untrackedToRemove]);
+  }
   log('Working tree restored to last commit');
 }
 
@@ -1090,8 +1128,9 @@ async function handleFailurePath({
   failureNote,
   failedCommand,
   apiCallCounter,
+  untrackedBeforeImplementation,
 }) {
-  await discardWorkingTreeChanges();
+  await discardWorkingTreeChanges(untrackedBeforeImplementation);
 
   const updatedBacklog = updateBacklogRow(backlogContent, task.id, {
     attempts: task.attempts + 1,
@@ -1267,11 +1306,10 @@ async function main() {
     return;
   }
 
-  const branchName = (await runGitOutput(['branch', '--show-current'])).trim();
-  if (branchName === '') {
-    fail('Could not determine current branch name');
-  }
-  log(`Current branch: ${branchName}`);
+  const branchName = await createAgentBranch(task.id, task.description);
+  log(`Agent branch: ${branchName}`);
+
+  const untrackedBeforeImplementation = await getUntrackedPaths();
 
   let completedContent = await readRepoFile(COMPLETED_PATH);
   let writtenPaths = new Set();
@@ -1302,6 +1340,7 @@ async function main() {
       failureNote,
       failedCommand: null,
       apiCallCounter,
+      untrackedBeforeImplementation,
     });
     return;
   }
@@ -1341,7 +1380,7 @@ async function main() {
       log(`Failure output (truncated): ${testResult.output.slice(0, 200)}...`);
     }
 
-    await discardWorkingTreeChanges();
+    await discardWorkingTreeChanges(untrackedBeforeImplementation);
 
     if (apiCallCounter.total >= MAX_API_CALLS) {
       await handleFailurePath({
@@ -1356,6 +1395,7 @@ async function main() {
         failureNote: `API call limit reached after ${apiCallCounter.total} calls`,
         failedCommand: testResult.failedCommand,
         apiCallCounter,
+        untrackedBeforeImplementation,
       });
       return;
     }
@@ -1384,6 +1424,7 @@ async function main() {
           failureNote: `API call limit reached after ${apiCallCounter.total} calls`,
           failedCommand: testResult.failedCommand,
           apiCallCounter,
+          untrackedBeforeImplementation,
         });
         return;
       }
@@ -1408,6 +1449,7 @@ async function main() {
           failureNote: `Fix call failed (${fixResult.reason}); re-implement failed (${reimplement.reason})`,
           failedCommand: testResult.failedCommand,
           apiCallCounter,
+          untrackedBeforeImplementation,
         });
         return;
       }
@@ -1428,6 +1470,7 @@ async function main() {
     failureNote: `Failed after ${MAX_IMPLEMENTATION_ATTEMPTS} attempts — test failure: ${lastTestFailure?.failedCommand ?? 'unknown'}`,
     failedCommand: lastTestFailure?.failedCommand ?? null,
     apiCallCounter,
+    untrackedBeforeImplementation,
   });
 }
 
