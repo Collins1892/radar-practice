@@ -822,8 +822,9 @@ async function runGitOutput(args) {
 
 async function runTestCommand({ label, command, args, cwd }) {
   log(`Test step starting: ${label}`);
+  const { ANTHROPIC_API_KEY: _ak, GITHUB_TOKEN: _gt, ...safeEnv } = process.env;
   try {
-    await execFileAsync(command, args, { cwd });
+    await execFileAsync(command, args, { cwd, env: safeEnv });
     log(`Test step finished: ${label} (passed)`);
     return { ok: true };
   } catch (error) {
@@ -901,22 +902,68 @@ async function commitAndPushFixes(attempt) {
 }
 
 async function markPrDraft(owner, repo, prNumber, token) {
-  const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`;
-  log(`Marking PR #${prNumber} as draft at ${url}`);
+  const pullUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`;
+  log(`Fetching PR node ID for #${prNumber} from ${pullUrl}`);
 
-  await fetchWithRetry(
-    url,
+  const pullResponse = await fetchWithRetry(
+    pullUrl,
     {
-      method: 'PATCH',
       headers: {
         ...githubHeaders(token),
         Accept: 'application/vnd.github+json',
+      },
+    },
+    'GitHub PR fetch for draft conversion',
+  );
+
+  const pullData = await pullResponse.json();
+  const nodeId = pullData.node_id;
+
+  if (typeof nodeId !== 'string' || nodeId === '') {
+    warn(
+      `Could not read node_id for PR #${prNumber} — skipping draft conversion`,
+    );
+    return;
+  }
+
+  log(`Converting PR #${prNumber} to draft via GraphQL (node_id: ${nodeId})`);
+
+  const graphqlResponse = await fetchWithRetry(
+    'https://api.github.com/graphql',
+    {
+      method: 'POST',
+      headers: {
+        ...githubHeaders(token),
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ draft: true }),
+      body: JSON.stringify({
+        query:
+          'mutation($id: ID!) { convertPullRequestToDraft(input: { pullRequestId: $id }) { pullRequest { isDraft } } }',
+        variables: { id: nodeId },
+      }),
     },
-    'GitHub PR draft update',
+    'GitHub GraphQL convertPullRequestToDraft',
   );
+
+  const graphqlData = await graphqlResponse.json();
+
+  if (Array.isArray(graphqlData.errors) && graphqlData.errors.length > 0) {
+    const messages = graphqlData.errors
+      .map((entry) => entry.message)
+      .join('; ');
+    warn(`GraphQL draft conversion returned errors: ${messages}`);
+    return;
+  }
+
+  const isDraft =
+    graphqlData.data?.convertPullRequestToDraft?.pullRequest?.isDraft;
+
+  if (isDraft !== true) {
+    warn(
+      `PR #${prNumber} draft conversion did not confirm isDraft=true (got ${String(isDraft)})`,
+    );
+    return;
+  }
 
   log(`PR #${prNumber} marked as draft`);
 }
@@ -1191,7 +1238,26 @@ async function runFixLoop({
     }
 
     log('Committing and pushing fixes...');
-    const { pushed } = await commitAndPushFixes(attempt);
+    let pushed;
+    try {
+      ({ pushed } = await commitAndPushFixes(attempt));
+    } catch (commitError) {
+      const commitMessage =
+        commitError instanceof Error ? commitError.message : String(commitError);
+      log(
+        `Commit/push failed (e.g. pre-commit hook rejection) — discarding changes and marking PR draft`,
+      );
+      await discardFixChanges(untrackedCreatedByFix);
+      await markPrDraft(owner, repo, prNumber, token);
+      return {
+        outcome: 'commit_failed',
+        comment: formatTestFailureComment(
+          `git commit/push failed: ${commitMessage}`,
+          attempt,
+          skipped,
+        ),
+      };
+    }
     if (!pushed) {
       fail(
         'Test suite passed but commit produced no changes — inconsistent state',
