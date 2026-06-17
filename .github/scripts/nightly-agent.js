@@ -177,6 +177,80 @@ function splitTableRow(line) {
     .map((cell) => cell.trim());
 }
 
+function computeColumnWidths(headerLine, dataLines, cellValueRows) {
+  const widths = headerLine
+    .split('|')
+    .slice(1, -1)
+    .map((cell) => cell.length);
+
+  for (const line of dataLines) {
+    const cells = line.split('|').slice(1, -1);
+    for (let index = 0; index < cells.length; index += 1) {
+      widths[index] = Math.max(widths[index] ?? 0, cells[index].length);
+    }
+  }
+
+  for (const row of cellValueRows) {
+    for (let index = 0; index < row.length; index += 1) {
+      const needed = row[index].length + 2;
+      widths[index] = Math.max(widths[index] ?? 0, needed);
+    }
+  }
+
+  return widths;
+}
+
+function formatPaddedTableRow(cells, widths) {
+  const parts = cells.map((cell, index) => {
+    const contentWidth = widths[index] - 2;
+    return ` ${cell.padEnd(contentWidth)} `;
+  });
+  return `|${parts.join('|')}|`;
+}
+
+function formatPrNumberCell(prNumber, owner, repo) {
+  if (!prNumber || prNumber.trim() === '') {
+    return '';
+  }
+  if (!owner || !repo) {
+    return prNumber;
+  }
+  const num = prNumber.replace(/^#/, '');
+  return `[#${num}](https://github.com/${owner}/${repo}/pull/${num})`;
+}
+
+function taskToBacklogCells(task) {
+  return [
+    task.id,
+    task.status,
+    task.difficulty,
+    task.stack,
+    task.category,
+    String(task.attempts),
+    task.prNumber,
+    task.created,
+    task.updated,
+    task.description,
+    task.notes,
+  ];
+}
+
+function taskToCompletedCells(task, owner, repo) {
+  return [
+    task.id,
+    task.status,
+    task.difficulty,
+    task.stack,
+    task.category,
+    String(task.attempts),
+    formatPrNumberCell(task.prNumber, owner, repo),
+    task.created,
+    task.completed,
+    task.description,
+    task.notes,
+  ];
+}
+
 function findTableStart(lines) {
   for (let index = 0; index < lines.length; index += 1) {
     if (lines[index].startsWith('| ID')) {
@@ -205,12 +279,12 @@ function parseBacklogRow(cells) {
   };
 }
 
-function formatBacklogRow(task) {
-  return `| ${task.id} | ${task.status} | ${task.difficulty} | ${task.stack} | ${task.category} | ${task.attempts} | ${task.prNumber} | ${task.created} | ${task.updated} | ${task.description} | ${task.notes} |`;
+function formatBacklogRow(task, widths) {
+  return formatPaddedTableRow(taskToBacklogCells(task), widths);
 }
 
-function formatCompletedRow(task) {
-  return `| ${task.id} | ${task.status} | ${task.difficulty} | ${task.stack} | ${task.category} | ${task.attempts} | ${task.prNumber} | ${task.created} | ${task.completed} | ${task.description} | ${task.notes} |`;
+function formatCompletedRow(task, widths, owner = '', repo = '') {
+  return formatPaddedTableRow(taskToCompletedCells(task, owner, repo), widths);
 }
 
 function parseBacklog(markdownContent) {
@@ -261,9 +335,14 @@ function rebuildBacklogTable(markdownContent, tasks) {
     tableEnd += 1;
   }
 
+  const headerLine = lines[tableStart];
+  const dataLines = lines.slice(tableStart + 2, tableEnd);
+  const cellValueRows = tasks.map((task) => taskToBacklogCells(task));
+  const widths = computeColumnWidths(headerLine, dataLines, cellValueRows);
+
   const before = lines.slice(0, tableStart + 2);
   const after = lines.slice(tableEnd);
-  const rows = tasks.map((task) => formatBacklogRow(task));
+  const rows = tasks.map((task) => formatBacklogRow(task, widths));
   return [...before, ...rows, ...after].join('\n');
 }
 
@@ -333,7 +412,7 @@ function parseCompleted(markdownContent) {
   return tasks;
 }
 
-function rebuildCompletedTable(markdownContent, tasks) {
+function rebuildCompletedTable(markdownContent, tasks, owner = '', repo = '') {
   const lines = markdownContent.split('\n');
   const tableStart = findTableStart(lines);
   if (tableStart === -1) {
@@ -345,9 +424,14 @@ function rebuildCompletedTable(markdownContent, tasks) {
     tableEnd += 1;
   }
 
+  const headerLine = lines[tableStart];
+  const dataLines = lines.slice(tableStart + 2, tableEnd);
+  const cellValueRows = tasks.map((task) => taskToCompletedCells(task, owner, repo));
+  const widths = computeColumnWidths(headerLine, dataLines, cellValueRows);
+
   const before = lines.slice(0, tableStart + 2);
   const after = lines.slice(tableEnd);
-  const rows = tasks.map((task) => formatCompletedRow(task));
+  const rows = tasks.map((task) => formatCompletedRow(task, widths, owner, repo));
   return [...before, ...rows, ...after].join('\n');
 }
 
@@ -358,6 +442,8 @@ function moveToCompleted(
   completedDate,
   notes,
   prNumber = '',
+  owner = '',
+  repo = '',
 ) {
   const backlogTasks = parseBacklog(backlogContent);
   const taskIndex = backlogTasks.findIndex((task) => task.id === taskId);
@@ -383,18 +469,24 @@ function moveToCompleted(
 
   return {
     backlog: rebuildBacklogTable(backlogContent, backlogTasks),
-    completed: rebuildCompletedTable(completedContent, completedTasks),
+    completed: rebuildCompletedTable(completedContent, completedTasks, owner, repo),
   };
 }
 
-function updateCompletedPrNumber(completedContent, taskId, prNumber) {
+function updateCompletedPrNumber(
+  completedContent,
+  taskId,
+  prNumber,
+  owner = '',
+  repo = '',
+) {
   const tasks = parseCompleted(completedContent);
   const index = tasks.findIndex((task) => task.id === taskId);
   if (index === -1) {
     fail(`Task "${taskId}" not found in completed table`);
   }
   tasks[index] = { ...tasks[index], prNumber };
-  return rebuildCompletedTable(completedContent, tasks);
+  return rebuildCompletedTable(completedContent, tasks, owner, repo);
 }
 
 function skillPathForCategory(category) {
@@ -680,8 +772,9 @@ async function readRepoFile(filePath) {
 
 async function writeRepoFile(filePath, content) {
   const absolutePath = assertInRepo(filePath);
+  const normalized = content.endsWith('\n') ? content : `${content}\n`;
   await mkdir(path.dirname(absolutePath), { recursive: true });
-  await writeFile(absolutePath, content, 'utf8');
+  await writeFile(absolutePath, normalized, 'utf8');
   log(`Wrote ${filePath}`);
 }
 
@@ -1242,6 +1335,9 @@ async function handleSuccessPath({
     task.id,
     todayIsoDate(),
     `Completed by nightly agent`,
+    '',
+    owner,
+    repo,
   );
 
   await writeRepoFile(BACKLOG_PATH, backlog);
@@ -1279,6 +1375,8 @@ async function handleSuccessPath({
     completed,
     task.id,
     String(pullRequest.number),
+    owner,
+    repo,
   );
   await writeRepoFile(COMPLETED_PATH, completedWithPr);
   await commitScopedPaths(

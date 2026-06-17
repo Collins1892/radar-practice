@@ -267,7 +267,7 @@ describe('moveToCompleted', () => {
       'Completed by agent',
     );
 
-    assert.ok(result.completed.includes('| T02 | done |'));
+    assert.ok(result.completed.includes('T02 | done'));
   });
 
   it('sets the Completed date correctly', () => {
@@ -279,7 +279,8 @@ describe('moveToCompleted', () => {
       'Completed by agent',
     );
 
-    assert.ok(result.completed.includes('| 2026-06-17 | Fix docs |'));
+    assert.ok(result.completed.includes('2026-06-17'));
+    assert.ok(result.completed.includes('Fix docs'));
   });
 
   it('merges notes correctly', () => {
@@ -320,7 +321,7 @@ describe('moveToCompleted', () => {
     assert.equal(typeof result.backlog, 'string');
     assert.equal(typeof result.completed, 'string');
     assert.ok(result.backlog.includes('| T05 |'));
-    assert.ok(result.completed.includes('| T02 | done |'));
+    assert.ok(result.completed.includes('T02 | done'));
   });
 });
 
