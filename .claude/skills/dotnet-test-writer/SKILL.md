@@ -435,7 +435,7 @@ Assert.DoesNotContain("<internal exception message>", raw);
 
 | API | Endpoint | File |
 |-----|----------|------|
-| ItemsApi | GET /items | `ItemsApi.Tests/GetItemsTests.cs` (create if absent) |
+| ItemsApi | GET /items | `ItemsApi.Tests/GetItemsTests.cs` (exists — append new [Fact] before private records) |
 | ItemsApi | POST /items | `ItemsApi.Tests/PostItemsTests.cs` (exists — append before closing `}`) |
 | ItemsApi | Exception handler | `ItemsApi.Tests/GlobalExceptionHandlerTests.cs` |
 | ItemsApi | New endpoint | Create `ItemsApi.Tests/<Endpoint>Tests.cs` |
