@@ -838,7 +838,8 @@ function descriptionToSlug(description) {
 
 async function createAgentBranch(taskId, description) {
   const slug = descriptionToSlug(description);
-  const branchName = `nightly-agent/${taskId}-${slug}`;
+  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const branchName = `nightly-agent/${taskId}-${slug}-${timestamp}`;
   await runGit(['checkout', '-b', branchName]);
   return branchName;
 }
