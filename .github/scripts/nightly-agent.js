@@ -30,6 +30,8 @@ const OVERSIZE_MIN_CHARS = 10000;
 const GIT_USER_NAME = 'github-actions[bot]';
 const GIT_USER_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com';
 const TASK_MODES = new Set(['easy', 'medium', 'hard']);
+// Known gap: blocklist is intentionally narrow for v1. Expanding to cover *.csproj,
+// *.sln, Migrations/, tsconfig*.json, package-lock.json is tracked as T49/T55.
 const SENSITIVE_PATH_PREFIXES = ['.github/', '.husky/'];
 const SENSITIVE_PATH_EXACT = new Set(['package.json']);
 const REPO_CONTENT_BEGIN =

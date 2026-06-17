@@ -27,6 +27,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      # Note: PRs opened with GITHUB_TOKEN do not trigger CI workflows automatically.
+      # A maintainer must re-trigger CI (close/reopen or push an empty commit) before merging.
+      # This is a known GitHub limitation — same model as pr-review.js fix loop.
 
     steps:
       - name: Checkout
