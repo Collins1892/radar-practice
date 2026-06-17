@@ -48,8 +48,10 @@ Mirrors microservices direction without over-engineering.
 - `client/src/**/*.test.{ts,tsx}` — Vitest tests
 - `client/src/test/setup.ts` — Vitest setup
 - `client/e2e/` — Playwright e2e tests
-- `package.json` (repo root) — scripting-only Node package (currently the PR review script in `.github/scripts/`). Unrelated to the `client/` workspace — do not confuse the two or add client dependencies here; frontend packages belong in `client/package.json`.
-- `.github/scripts/` — repo automation scripts (e.g. `pr-review.js`)
+- `package.json` (repo root) — scripting-only Node package for repo automation scripts. Scripts: `npm run pr-review` (automated PR review), `npm run nightly-agent` (autonomous backlog agent), `npm test` (runs `pr-review.test.js` + `nightly-agent.test.js`). Unrelated to the `client/` workspace — do not confuse the two or add client dependencies here; frontend packages belong in `client/package.json`.
+- `.github/scripts/` — repo automation scripts: `pr-review.js` (automated PR review), `nightly-agent.js` (nightly autonomous agent), `pr-review.test.js`, `nightly-agent.test.js`
+- `docs/nightly-agent-backlog.md` — open tasks for the nightly agent (authoritative source; T-numbers, difficulty, stack, category, attempts, notes)
+- `docs/nightly-agent-completed.md` — completed tasks log (moved from backlog on merge)
 - `.github/workflows/` — GitHub Actions CI
 - `.claude/skills/` — repo-level agent skills
 - `.claude/commands/` — Claude Code slash commands (`/review`, `/standup`, `/observations`, `/tidy`)
@@ -218,6 +220,7 @@ changed library API.
 - Use descriptive commit messages when asked to commit
 - Follow the TypeScript conventions defined above — no any, explicit return types
 - Check `.claude/skills/` for relevant skills before starting a task — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`, `modernisation`
+- When working on backlog tasks, read `docs/nightly-agent-backlog.md` to understand current task status and update the row (status, attempts, notes) as part of the same commit as the code change
 - Check `.claude/commands/` for relevant slash commands — `/review`, `/standup`, `/observations`, `/tidy`
 - Place hand-authored components in `client/src/components/` — never in `client/src/components/ui/` (shadcn vendor directory)
 

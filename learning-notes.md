@@ -1,3 +1,80 @@
+## Week 5 Day 3 — Wednesday 17 June 2026
+
+### Summary
+
+Long day — two major builds shipped. PR #92 (autonomous fix loop) merged after
+morning hardening session. PR #94 (nightly autonomous agent) built, reviewed
+three times, and merged. First autonomous agent run completed successfully,
+picking T02 and raising PR #96. Total PRs merged today: #92, #94, #95, #96,
+#97. API spend significant (~$2.50+) due to same-day branch collision causing
+double planning calls.
+
+### What was built
+
+- **PR #92 merged** — autonomous fix loop hardened and shipped. Key fixes:
+  `fail()` throws `PrReviewFatalError` instead of `process.exit`, rethrow guard
+  added to `fetchWithRetry`/`runGit`/`runGitOutput`, `markPrDraft` replaced with
+  GraphQL `convertPullRequestToDraft` mutation, `runTestCommand` scrubs secrets
+  from subprocess env, `commitAndPushFixes` wrapped in try/catch for pre-commit
+  hook failures. 35 unit tests.
+- **PR #94** — nightly autonomous agent. Two-phase plan-then-act architecture:
+  planning call returns structured JSON plan, implementation calls execute per
+  file. Test retry loop up to 3 attempts with fix call between retries. Hard cap
+  of 10 API calls per run. Sensitive path guard (canonicalised). Feature branch
+  created per run (`nightly-agent/T{id}-{slug}-{run_id}`). Local dry-run mode.
+  80/80 tests (45 new). `workflow_dispatch` only — cron commented out pending
+  validation.
+- **PR #95** — branch name collision fix. `GITHUB_RUN_ID` used instead of date,
+  `Date.now().toString(36)` fallback locally.
+- **PR #96** — T02 shipped by the nightly agent autonomously. First task
+  completed: removed stale `(create if absent)` annotation from
+  `dotnet-test-writer/SKILL.md`.
+- **PR #97** — agent consistency fixes: trailing newline on file writes, PR
+  number as markdown link, column padding preserved in table writes.
+- **Two backlog files created**: `docs/nightly-agent-backlog.md` (55 tasks,
+  T01–T55) and `docs/nightly-agent-completed.md`. T02 completed, T56 completed.
+
+### Key decisions and learnings
+
+- **Raw API vs Agent SDK split** — nightly agent uses raw Anthropic API
+  (consistent with `pr-review.js`). Daily digest (Week 7) will use Agent SDK.
+  Deliberate two-layer architecture for the CTO story.
+- **`TASK_MODE` as repository variable** — difficulty filter changeable without
+  a commit. Defaults to `easy` in script if not set.
+- **Plan-then-act discipline** — agent never proceeds to implementation without
+  a valid JSON plan from the planning call. Mirrors Cursor plan mode.
+- **T43 is the unlock** — `extractFilePath` regex-scrapes finding descriptions,
+  causing Major findings to be demoted to advisory (can't extract path). Fixing
+  this (structured `filePath` in review JSON) enables reliable auto-fix. Marked
+  PRIORITY for Day 4.
+- **Same-day branch collision** — date-only timestamp caused two runs on the
+  same day to collide. Fixed with `GITHUB_RUN_ID`. Cost ~$2.50 in duplicate
+  API calls during validation.
+- **GitHub Actions PR creation permission** — must explicitly enable "Allow
+  GitHub Actions to create and approve pull requests" in repo Settings →
+  Actions → General → Workflow permissions.
+- **GITHUB_TOKEN PRs don't trigger CI** — agent PRs need manual CI re-trigger
+  before merge. Known GitHub limitation, documented in workflow file. Same
+  model as pr-review fix loop.
+- **First autonomous PR raised at 3am Perth time** — T02 completed, tests
+  passed, PR raised without human intervention. The build works.
+- **Review discipline: Cursor first, then Claude Code `/review`** —
+  consistently catching different issues. Neither alone is sufficient.
+- **Two-file backlog pattern** — `nightly-agent-backlog.md` (open tasks) and
+  `nightly-agent-completed.md` (done tasks). Agent moves rows between files on
+  merge. `phase-3-articulate.md` now references the backlog file as authoritative.
+
+### Carried to Day 4
+
+- **T43 PRIORITY** — structured `filePath` in review JSON. Implement manually,
+  not via agent. Unlocks reliable auto-fix for Major findings.
+- **Enable cron** — after 2–3 successful daylight validation runs. Today's run
+  counts as run 1 (T02 merged). Need 1–2 more before enabling `0 19 * * *`.
+- **T02 markdown formatting** — PR #96 tables have collapsed formatting (written
+  before consistency fixes). Next agent run will correct.
+- **T43 backlog entry** — needs moving to top of table or priority flagging
+  (done via Notes field).
+  
 ## Week 5 Day 2 — Tuesday 16 June 2026
 
 ### Summary

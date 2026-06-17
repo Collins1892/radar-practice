@@ -4,6 +4,7 @@ Tasks for the autonomous nightly agent. Ordered by ID — agent picks lowest ope
 
 | ID  | Status | Difficulty | Stack    | Category     | Attempts | PRNumber | Created    | Updated    | Description | Notes |
 |-----|--------|------------|----------|--------------|----------|----------|------------|------------|-------------|-------|
+<<<<<<< Updated upstream
 | T03 | open | easy | docs | code-quality | 0 |  | 2026-06-14 |  | component-builder/SKILL.md prose reference — update prose reference from IncidentForm.tsx to incidentPageCopy.ts (stale after PR #70) |  |
 | T05 | open | easy | backend | code-quality | 0 |  | 2026-06-14 |  | incidentDisplay.ts String(value) wrapper — remove redundant String(value) in formatReportedDate fallback; return value directly since it's already typed as string |  |
 | T25 | open | easy | docs | code-quality | 0 |  | 2026-06-15 |  | CLAUDE.md component inventory — add incidentPageCopy.ts to the hand-authored component list in CLAUDE.md |  |
@@ -45,7 +46,7 @@ Tasks for the autonomous nightly agent. Ordered by ID — agent picks lowest ope
 | T40 | open | easy | frontend | a11y | 0 |  | 2026-06-14 |  | Pagination Previous/Next aria-label — add aria-label stating target page number, SC 2.4.6 |  |
 | T41 | open | easy | frontend | a11y | 0 |  | 2026-06-14 |  | Modal aria-describedby positive test — renderModal({ description: '...' }), assert aria-describedby points at correct element |  |
 | T42 | open | easy | frontend | a11y | 0 |  | 2026-06-14 |  | Modal backdrop userEvent.click — try userEvent.setup() + await user.click(overlay); keep pointerDown only if click fails in jsdom |  |
-| T43 | open | hard | infra | pr-review | 0 |  | 2026-06-16 |  | Structured filePath in review JSON — emit target file path as structured field rather than regex-scraping finding description in extractFilePath |  |
+| T43 | open | hard | infra | pr-review | 0 |  | 2026-06-16 |  | Structured filePath in review JSON — emit target file path as structured field rather than regex-scraping finding description in extractFilePath | PRIORITY: implement manually Day 4 — unlocks reliable auto-fix for Major findings |
 | T44 | open | hard | infra | pr-review | 0 |  | 2026-06-16 |  | Patch-based fixes over whole-file rewrites — apply constrained diffs (git apply --check) instead of replacing entire file |  |
 | T45 | open | easy | infra | pr-review | 0 |  | 2026-06-16 |  | Scoped git add in commitAndPushFixes — replace git add -A with git add -- path for exactly the written paths |  |
 | T46 | open | medium | infra | pr-review | 0 |  | 2026-06-16 |  | SHA poll before re-review — replace fixed FIX_LOOP_WAIT_MS sleep with bounded poll on PR head SHA |  |
