@@ -98,10 +98,17 @@ function warn(message) {
   console.warn(`[pr-review] WARNING: ${message}`);
 }
 
+class PrReviewFatalError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'PrReviewFatalError';
+  }
+}
+
 function fail(message) {
   // eslint-disable-next-line no-console
   console.error(`[pr-review] ERROR: ${message}`);
-  process.exit(1);
+  throw new PrReviewFatalError(message);
 }
 
 function requireEnv(name) {
@@ -183,6 +190,10 @@ async function fetchWithRetry(url, options, label, allowedFailureStatuses) {
         setTimeout(resolve, waitMs);
       });
     } catch (error) {
+      if (error instanceof PrReviewFatalError) {
+        throw error;
+      }
+
       const message = error instanceof Error ? error.message : String(error);
 
       networkAttempt += 1;
@@ -806,7 +817,6 @@ async function runGitOutput(args) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     fail(`git ${args.join(' ')} failed: ${message}`);
-    return '';
   }
 }
 
