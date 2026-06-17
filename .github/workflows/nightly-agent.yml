@@ -1,0 +1,75 @@
+name: Nightly Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_mode:
+        description: 'Task difficulty to pick (easy/medium/hard)'
+        required: false
+        default: 'easy'
+      task_category:
+        description: 'Optional category filter (a11y, code-quality, docs, pr-review, infra)'
+        required: false
+        default: ''
+
+# cron: '0 19 * * *'  # 3am Perth (UTC+8) — enable after daylight validation
+# Update to '0 2 * * *' after 7 July (3am BST, UTC+1)
+
+concurrency:
+  group: nightly-agent
+  cancel-in-progress: true
+
+jobs:
+  nightly-agent:
+    name: Nightly Agent
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Validate secrets
+        run: |
+          if [[ -z "$ANTHROPIC_API_KEY" || ${#ANTHROPIC_API_KEY} -lt 20 ]]; then
+            echo "ANTHROPIC_API_KEY secret is not set or appears invalid"
+            exit 1
+          fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Run nightly agent
+        run: npm run nightly-agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTIONS: 'true'
+          TASK_MODE: ${{ inputs.task_mode || vars.TASK_MODE || 'easy' }}
+          TASK_CATEGORY: ${{ inputs.task_category || vars.TASK_CATEGORY || '' }}
