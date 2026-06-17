@@ -861,10 +861,33 @@ async function runTestCommand({ label, command, args, cwd }) {
   log(`Test step starting: ${label}`);
   const { ANTHROPIC_API_KEY: _ak, GITHUB_TOKEN: _gt, ...safeEnv } = process.env;
   try {
-    await execFileAsync(command, args, { cwd, env: safeEnv });
+    await execFileAsync(command, args, {
+      cwd,
+      env: safeEnv,
+      maxBuffer: 100 * 1024 * 1024,
+      timeout: 300000,
+    });
     log(`Test step finished: ${label} (passed)`);
     return { ok: true };
   } catch (error) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      (error.code === 'ENOBUFS' ||
+        ('killed' in error && error.killed === true))
+    ) {
+      const exitCode =
+        error && typeof error === 'object' && 'code' in error
+          ? error.code
+          : 'killed';
+      log(`Test step finished: ${label} (killed — buffer overflow or timeout)`);
+      return {
+        ok: false,
+        failedCommand: label,
+        output: 'Test process killed — buffer overflow or timeout',
+        exitCode: exitCode ?? 'killed',
+      };
+    }
     const exitCode =
       error && typeof error === 'object' && 'code' in error ? error.code : 1;
     const stdout =

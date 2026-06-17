@@ -116,7 +116,7 @@ describe('parseBacklog', () => {
     assert.equal(openTask.notes, '');
   });
 
-  it('returns all 55 tasks when given the real backlog file content (smoke test)', () => {
+  it('parses all rows from a multi-row backlog fixture', () => {
     const tasks = parseBacklog(REAL_BACKLOG_FIXTURE);
 
     assert.equal(tasks.length, 5);
