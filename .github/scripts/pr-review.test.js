@@ -408,6 +408,7 @@ describe('splitActionableFindings', () => {
 
     assert.equal(actionable.length, 0);
     assert.equal(advisory.length, 1);
+    assert.deepEqual(advisory[0], finding);
   });
 
   it('prefers structured filePath over path in description', () => {

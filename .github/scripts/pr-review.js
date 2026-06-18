@@ -389,13 +389,19 @@ function parseFindings(rawText) {
       fail(`Finding at index ${index} has an empty description`);
     }
 
+    let filePath = null;
+    if (typeof item.filePath === 'string' && item.filePath.trim() !== '') {
+      filePath = item.filePath.trim();
+    } else if (item.filePath !== undefined) {
+      warn(
+        `Finding at index ${index} has unexpected filePath type "${typeof item.filePath}" — coercing to null`,
+      );
+    }
+
     accepted.push({
       severity: item.severity,
       description: item.description,
-      filePath:
-        typeof item.filePath === 'string' && item.filePath.trim() !== ''
-          ? item.filePath.trim()
-          : null,
+      filePath,
     });
   }
 
