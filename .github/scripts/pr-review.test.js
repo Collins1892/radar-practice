@@ -96,6 +96,17 @@ describe('parseFindings', () => {
     assert.equal(result.findings.length, 1);
     assert.equal(result.findings[0].filePath, null);
   });
+
+  it('coerces whitespace-only filePath to null', () => {
+    const raw = JSON.stringify([
+      { severity: 'Minor', description: 'nit', filePath: '   ' },
+    ]);
+
+    const result = parseFindings(raw);
+
+    assert.equal(result.findings.length, 1);
+    assert.equal(result.findings[0].filePath, null);
+  });
 });
 
 const BOT_MARKER = '<!-- pr-review-bot -->';
@@ -397,6 +408,22 @@ describe('splitActionableFindings', () => {
 
     assert.equal(actionable.length, 0);
     assert.equal(advisory.length, 1);
+  });
+
+  it('prefers structured filePath over path in description', () => {
+    const finding = {
+      severity: 'Major',
+      description: 'issue in `client/src/bar.ts`',
+      filePath: 'client/src/foo.ts',
+    };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 1);
+    assert.equal(actionable[0].filePath, 'client/src/foo.ts');
+    assert.equal(advisory.length, 0);
   });
 });
 

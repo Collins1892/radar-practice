@@ -559,7 +559,10 @@ function splitActionableFindings(findings, changedFiles) {
       continue;
     }
 
-    log(`Extracted file path "${filePath}" from [${finding.severity}] finding`);
+    const source = finding.filePath ? 'structured' : 'extracted';
+    log(
+      `Using ${source} file path "${filePath}" from [${finding.severity}] finding`,
+    );
     actionable.push({ finding, filePath });
   }
 
