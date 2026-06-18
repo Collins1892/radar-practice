@@ -1,0 +1,69 @@
+<div class="audit-form">
+  <div class="page-header">
+    <h1>{{ vm.isEdit ? 'Edit Audit' : 'New Audit' }}</h1>
+  </div>
+
+  <div class="alert alert-danger" ng-if="vm.error">{{ vm.error }}</div>
+  <div class="alert alert-info" ng-if="vm.loading">Loading&hellip;</div>
+
+  <form name="auditForm" novalidate ng-submit="vm.save()" ng-if="!vm.loading || vm.isEdit === false">
+    <div class="form-group" ng-class="{ 'has-error': auditForm.title.$dirty && auditForm.title.$invalid }">
+      <label for="audit-title">Title</label>
+      <input type="text"
+             class="form-control"
+             id="audit-title"
+             name="title"
+             ng-model="vm.audit.Title"
+             required
+             maxlength="200" />
+    </div>
+
+    <div class="form-group">
+      <label for="audit-description">Description</label>
+      <textarea class="form-control"
+                id="audit-description"
+                name="description"
+                rows="4"
+                ng-model="vm.audit.Description"></textarea>
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error': auditForm.auditDate.$dirty && auditForm.auditDate.$invalid }">
+      <label for="audit-date">Audit Date</label>
+      <input type="date"
+             class="form-control"
+             id="audit-date"
+             name="auditDate"
+             ng-model="vm.audit.AuditDate"
+             required />
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error': auditForm.status.$dirty && auditForm.status.$invalid }">
+      <label for="audit-status">Status</label>
+      <select class="form-control"
+              id="audit-status"
+              name="status"
+              ng-model="vm.audit.Status"
+              ng-options="s for s in vm.statuses"
+              required></select>
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error': auditForm.createdBy.$dirty && auditForm.createdBy.$invalid }">
+      <label for="audit-created-by">Created By</label>
+      <input type="text"
+             class="form-control"
+             id="audit-created-by"
+             name="createdBy"
+             ng-model="vm.audit.CreatedBy"
+             required />
+    </div>
+
+    <div class="form-actions">
+      <button type="submit"
+              class="btn btn-primary"
+              ng-disabled="auditForm.$invalid || vm.loading">
+        {{ vm.isEdit ? 'Update' : 'Create' }}
+      </button>
+      <button type="button" class="btn btn-default" ng-click="vm.cancel()">Cancel</button>
+    </div>
+  </form>
+</div>

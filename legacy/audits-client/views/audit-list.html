@@ -1,0 +1,56 @@
+<div class="audits-list">
+  <div class="page-header">
+    <h1>Audit Register <small>Quality &amp; compliance</small></h1>
+  </div>
+
+  <div class="alert alert-danger" ng-if="vm.error">{{ vm.error }}</div>
+  <div class="alert alert-info" ng-if="vm.loading">Loading audits&hellip;</div>
+
+  <div ng-if="!vm.loading && vm.audits.length === 0" class="well text-muted">
+    No audits found. <a href="#/create">Create the first audit</a>.
+  </div>
+
+  <table class="table table-striped table-hover" ng-if="vm.audits.length > 0">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Audit Date</th>
+        <th>Status</th>
+        <th>Created By</th>
+        <th class="col-actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="audit in vm.pageItems()">
+        <td>{{ audit.Title }}</td>
+        <td>{{ audit.AuditDate | date:'dd MMM yyyy' }}</td>
+        <td>
+          <span class="label" ng-class="vm.statusClass(audit.Status)">
+            {{ audit.Status }}
+          </span>
+        </td>
+        <td>{{ audit.CreatedBy }}</td>
+        <td>
+          <a class="btn btn-xs btn-primary" href="#/edit/{{ audit.Id }}">Edit</a>
+          <button type="button" class="btn btn-xs btn-danger"
+                  ng-click="vm.remove(audit)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <nav ng-if="vm.audits.length > vm.pageSize" aria-label="Audit pagination">
+    <ul class="pagination">
+      <li ng-class="{ disabled: vm.currentPage === 1 }">
+        <a href="" ng-click="vm.goToPage(vm.currentPage - 1)">&laquo;</a>
+      </li>
+      <li ng-repeat="n in [].constructor(vm.totalPages()) track by $index"
+          ng-class="{ active: vm.currentPage === ($index + 1) }">
+        <a href="" ng-click="vm.goToPage($index + 1)">{{ $index + 1 }}</a>
+      </li>
+      <li ng-class="{ disabled: vm.currentPage === vm.totalPages() }">
+        <a href="" ng-click="vm.goToPage(vm.currentPage + 1)">&raquo;</a>
+      </li>
+    </ul>
+  </nav>
+</div>

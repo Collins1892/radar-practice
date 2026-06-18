@@ -1,0 +1,74 @@
+@brand-primary: #2c3e50;
+@brand-accent: #18bc9c;
+@status-completed: #5cb85c;
+@status-in-progress: #f0ad4e;
+@status-cancelled: #95a5a6;
+@border-radius-base: 4px;
+
+.audits-container {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+.audits-list {
+  .page-header {
+    border-bottom-color: lighten(@brand-primary, 50%);
+    margin-bottom: 24px;
+
+    h1 small {
+      color: lighten(@brand-primary, 25%);
+    }
+  }
+
+  .col-actions {
+    width: 140px;
+    white-space: nowrap;
+  }
+
+  .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    padding: 4px 8px;
+    border-radius: @border-radius-base;
+  }
+}
+
+.audit-form {
+  max-width: 640px;
+
+  .form-actions {
+    margin-top: 24px;
+
+    .btn + .btn {
+      margin-left: 8px;
+    }
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+// Status colour helpers — compiled to audits.css in build pipeline
+.status-completed {
+  color: @status-completed;
+}
+
+.status-in-progress {
+  color: @status-in-progress;
+}
+
+.status-cancelled {
+  color: @status-cancelled;
+}
+
+.pagination {
+  margin-top: 0;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
