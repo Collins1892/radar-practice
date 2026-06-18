@@ -3,12 +3,11 @@
 
   angular.module('auditsApp')
     .controller('AuditController', [
-      '$scope',
       '$routeParams',
       '$location',
       'AuditService',
       'AUDIT_STATUSES',
-      function ($scope, $routeParams, $location, AuditService, AUDIT_STATUSES) {
+      function ($routeParams, $location, AuditService, AUDIT_STATUSES) {
         var vm = this;
 
         vm.audits = [];
@@ -168,8 +167,6 @@
           }
         }
 
-        // Expose vm on $scope for legacy template bindings
-        $scope.vm = vm;
       }
     ]);
 })();

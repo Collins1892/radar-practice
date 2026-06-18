@@ -44,18 +44,6 @@
   min-height: 100px;
 }
 
-.status-completed {
-  color: #5cb85c;
-}
-
-.status-in-progress {
-  color: #f0ad4e;
-}
-
-.status-cancelled {
-  color: #95a5a6;
-}
-
 .pagination {
   margin-top: 0;
 }

@@ -10,13 +10,13 @@ namespace AuditsApi.Repositories
     /// </summary>
     public class AuditRepository
     {
-        private readonly List<Audit> _audits;
-        private int _nextId;
+        // Static store simulates persistence across requests in this legacy reference app.
+        private static readonly List<Audit> _audits = SeedAudits();
+        private static int _nextId = _audits.Max(a => a.Id) + 1;
+        private static readonly object _syncRoot = new object();
 
         public AuditRepository()
         {
-            _audits = SeedAudits();
-            _nextId = _audits.Max(a => a.Id) + 1;
         }
 
         public virtual IList<Audit> GetAll()
@@ -31,36 +31,45 @@ namespace AuditsApi.Repositories
 
         public virtual Audit Add(Audit audit)
         {
-            audit.Id = _nextId++;
-            _audits.Add(audit);
-            return audit;
+            lock (_syncRoot)
+            {
+                audit.Id = _nextId++;
+                _audits.Add(audit);
+                return audit;
+            }
         }
 
         public virtual bool Update(Audit audit)
         {
-            var existing = GetById(audit.Id);
-            if (existing == null)
+            lock (_syncRoot)
             {
-                return false;
-            }
+                var existing = GetById(audit.Id);
+                if (existing == null)
+                {
+                    return false;
+                }
 
-            existing.Title = audit.Title;
-            existing.Description = audit.Description;
-            existing.AuditDate = audit.AuditDate;
-            existing.Status = audit.Status;
-            existing.CreatedBy = audit.CreatedBy;
-            return true;
+                existing.Title = audit.Title;
+                existing.Description = audit.Description;
+                existing.AuditDate = audit.AuditDate;
+                existing.Status = audit.Status;
+                existing.CreatedBy = audit.CreatedBy;
+                return true;
+            }
         }
 
         public virtual bool Delete(int id)
         {
-            var existing = GetById(id);
-            if (existing == null)
+            lock (_syncRoot)
             {
-                return false;
-            }
+                var existing = GetById(id);
+                if (existing == null)
+                {
+                    return false;
+                }
 
-            return _audits.Remove(existing);
+                return _audits.Remove(existing);
+            }
         }
 
         private static List<Audit> SeedAudits()
