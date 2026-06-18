@@ -265,13 +265,14 @@ async function readSkillContent() {
 function buildReviewPrompt(skillContent, diff) {
   const jsonOpening = `You are a code reviewer. You must respond with ONLY a valid JSON array — no prose, no markdown, no headings, no explanation. Any response that is not a raw JSON array will be treated as an error.
 
-Format: [{"severity": "Blocker"|"Major"|"Minor", "description": "..."}]
+Format: [{"severity": "Blocker"|"Major"|"Minor", "description": "...", "filePath": "path/to/file.ts or null"}]
 
 The review skill and diff follow below.`;
 
   const jsonClosing = `Review the diff above using the code-reviewer skill. Return ONLY a JSON array of findings. Each item must have:
 - severity: "Blocker" | "Major" | "Minor"
 - description: string (include where/rule/issue/fix as appropriate)
+- filePath: string (repo-relative path to the affected file, e.g. "client/src/foo.ts") or null if not applicable
 
 No markdown fences, no prose outside the JSON array.
 
@@ -388,7 +389,14 @@ function parseFindings(rawText) {
       fail(`Finding at index ${index} has an empty description`);
     }
 
-    accepted.push(item);
+    accepted.push({
+      severity: item.severity,
+      description: item.description,
+      filePath:
+        typeof item.filePath === 'string' && item.filePath.trim() !== ''
+          ? item.filePath.trim()
+          : null,
+    });
   }
 
   if (skipped > 0) {
@@ -524,7 +532,8 @@ function splitActionableFindings(findings, changedFiles) {
       continue;
     }
 
-    const filePath = extractFilePath(finding.description);
+    const filePath =
+      finding.filePath ?? extractFilePath(finding.description);
     if (filePath === null) {
       warn(
         'Could not extract file path from finding — treating as advisory for this run',

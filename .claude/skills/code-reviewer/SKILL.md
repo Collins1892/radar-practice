@@ -234,6 +234,17 @@ There is no accessibility ESLint plugin in this repo yet — apply judgment and 
 <If more files were offered: Ready to review `<next>` when you are.>
 ```
 
+### Automated PR review (JSON output)
+
+When consumed by `.github/scripts/pr-review.js`, respond with ONLY a JSON array (no markdown):
+
+Format: [{"severity": "Blocker"|"Major"|"Minor", "description": "...", "filePath": "path/to/file.ts or null"}]
+
+Each item:
+- **severity:** `Blocker` | `Major` | `Minor`
+- **description:** string (where/rule/issue/fix as appropriate)
+- **filePath:** repo-relative path to the affected file (e.g. `client/src/foo.ts`), or `null` if not applicable
+
 ## Review flow (reference)
 
 ```mermaid
