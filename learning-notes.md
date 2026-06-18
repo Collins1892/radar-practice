@@ -1,3 +1,25 @@
+## Week 5 Day 4 — Thursday 18 June 2026
+
+### Summary
+
+Strong day — T43 shipped and legacy build complete. First unattended cron run reviewed (T03, PR #100): agent picked a docs task, ran in 4m 15s, raised a clean PR. Minor scope creep noted (backlog/completed file formatting touched alongside T03). T43 (structured `filePath` in review JSON) shipped as PR #101, 86/86 tests. Legacy .NET 4 / AngularJS 1.6 Audits module built and merged as PR #102, 18 files, two Cursor passes and a Claude Code `/review`.
+
+### What was built
+
+- **PR #100 merged** — T03 (docs): agent updated `component-builder/SKILL.md` prose reference from `IncidentForm.tsx` to `incidentPageCopy.ts`. Scope creep: also reformatted backlog/completed files. Merged after manual CI re-trigger.
+- **PR #101 merged** — T43: structured `filePath` field added to PR review findings JSON. `buildReviewPrompt` schema updated, `parseFindings` normalises to trimmed string or null, `splitActionableFindings` prefers `finding.filePath` over `extractFilePath` regex fallback. `code-reviewer/SKILL.md` updated with new JSON output subsection. 86/86 tests. Five PR Review passes before merge — each surfaced new minors.
+- **PR #102 merged** — Legacy Audits module. 18 files under `legacy/`: .NET 4 Web API (AuditsController, AuditRepository concrete with no interface, Audit model, Web.config, Global.asax.cs, NUnit 2.x + Moq tests), AngularJS 1.6 client (ngRoute, AuditService, AuditController $scope god-controller, Bootstrap 3 views, LESS styles, index.html, Jasmine 2.x specs), README.md. Intentional legacy smells retained for migration narrative.
+
+### Key decisions and learnings
+
+- **First unattended cron run** — ran at 4:59 AM Perth (cron set to 3 AM, ~1hr GitHub scheduler drift). Agent picked T03, completed in 4m 15s, raised PR #100 cleanly. Scope creep on backlog/completed files noted — agent did slightly more than the task.
+- **Cron timing drift** — `0 19 * * *` is correct for 3 AM Perth (UTC+8). GitHub scheduler drift of 30–60 min is expected under load. Not a bug in the expression.
+- **PAT vs GITHUB_TOKEN deferred** — CI doesn't trigger automatically on agent-raised PRs (GitHub limitation with GITHUB_TOKEN). Manual re-trigger required each time. Decision deferred to Week 5 close: keep manual gate (deliberate human control) or switch to PAT (removes friction).
+- **T43 the unlock** — Major findings no longer demoted to advisory due to failed regex extraction. Structured `filePath` from the model is cleaner and more reliable. Fix loop reliability improved from Day 5 onwards.
+- **PR Review loop cost** — five review passes on T43 consumed meaningful API credit ($1.44 left in console). The loop is doing its job but docs-only and small PRs shouldn't need multiple fix attempts. Skill tuning (less noisy on Minors) is the right fix, not auto-fixing Minors.
+- **Legacy build is reference code, not production** — two review passes (Cursor + Claude Code) caught real issues (in-memory store reset per request, wrong test assertion, missing compiled CSS). Credibility of the before-state matters for the migration story.
+- **Security gap identified** — no formal threat model for agentic workflows. Agent has `contents: write` and `pull-requests: write` permissions — never formally reviewed. No explicit security narrative despite JD asking for "understanding of safe AI usage." Added as Week 6 backlog task.
+
 ## Week 5 Day 3 — Wednesday 17 June 2026
 
 ### Summary
