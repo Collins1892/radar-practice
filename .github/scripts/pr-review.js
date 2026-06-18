@@ -392,6 +392,9 @@ function parseFindings(rawText) {
     let filePath = null;
     if (typeof item.filePath === 'string' && item.filePath.trim() !== '') {
       filePath = item.filePath.trim();
+      if (filePath === 'null') {
+        filePath = null;
+      }
     } else if (item.filePath !== undefined) {
       warn(
         `Finding at index ${index} has unexpected filePath type "${typeof item.filePath}" — coercing to null`,
