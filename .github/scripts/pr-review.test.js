@@ -383,6 +383,21 @@ describe('splitActionableFindings', () => {
     assert.equal(actionable[0].filePath, 'client/src/foo.ts');
     assert.equal(advisory.length, 0);
   });
+
+  it('demotes Blocker/Major when structured filePath is not in changedFiles', () => {
+    const finding = {
+      severity: 'Blocker',
+      description: 'missing null check',
+      filePath: 'client/src/not-in-diff.ts',
+    };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 0);
+    assert.equal(advisory.length, 1);
+  });
 });
 
 describe('groupActionableByFilePath', () => {
