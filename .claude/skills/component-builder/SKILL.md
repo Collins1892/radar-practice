@@ -211,7 +211,7 @@ Match patterns already used in this repo:
 | Form field (Radix) | [`SelectField.tsx`](../../../client/src/components/SelectField.tsx), [`DatePickerField.tsx`](../../../client/src/components/DatePickerField.tsx) | `aria-*` on trigger/button, not Radix root; `autoFocus` on Calendar |
 | Form utility | [`formFieldUtils.ts`](../../../client/src/components/formFieldUtils.ts) | `formFieldErrorId(htmlFor)` for consistent error ids |
 | Data display | [`DataTable.tsx`](../../../client/src/components/DataTable.tsx), [`Pagination.tsx`](../../../client/src/components/Pagination.tsx) | Generic `<T>`; `role="region"` + `aria-label`; `aria-sort`; `nav` + `aria-current` |
-| Feature form | [`IncidentForm.tsx`](../../../client/src/components/IncidentForm.tsx) | Pure `validateX()`; field order + focus management; discriminated props (`mode: 'create' \| 'edit'`) |
+| Feature form | [`incidentPageCopy.ts`](../../../client/src/components/incidentPageCopy.ts) | Pure `validateX()`; field order + focus management; discriminated props (`mode: 'create' \| 'edit'`) |
 | Screen | [`IncidentsView.tsx`](../../../client/src/components/IncidentsView.tsx) | State machine (initial load / refetch / error / empty / populated); overlay loading |
 | Detail screen | [`IncidentDetailView.tsx`](../../../client/src/components/IncidentDetailView.tsx) | `useParams` + `parseIncidentId`; progressive title; `<dl>` for read-only fields |
 | Route shell | [`IncidentCreateView.tsx`](../../../client/src/components/IncidentCreateView.tsx), [`IncidentEditView.tsx`](../../../client/src/components/IncidentEditView.tsx) | Thin wrapper; invalid-id guard with `ErrorState` |
@@ -254,7 +254,7 @@ export const LoadingState = ({
 - Loading/empty: `role="status"` + `aria-live="polite"`.
 - Errors: `role="alert"`.
 - Accept optional `className` via `cn()` when the primitive may need layout adjustment.
-- Export constants for user-visible copy only when reused across files (see `INCIDENT_CREATE_HEADING` in `IncidentForm.tsx`).
+- Export constants for user-visible copy only when reused across files (see `INCIDENT_CREATE_HEADING` in `incidentPageCopy.ts`).
 
 **Registry:** Add a preview entry in [`componentRegistry.tsx`](../../../client/src/componentRegistry.tsx) when the primitive is gallery-worthy.
 
@@ -359,7 +359,7 @@ type IncidentRow = Incident & Record<string, unknown>;
 7. **Page chrome**: `IncidentPageChrome` with exported heading constants.
 8. **User-safe errors**: `incidentUserMessage(err, 'loading' | 'creating' | 'updating')` from API layer — never expose stack traces.
 
-**Focus-first-error pattern** (from `IncidentForm.tsx`):
+**Focus-first-error pattern** (from `incidentPageCopy.ts`):
 
 ```typescript
 const shouldFocusFirstErrorRef = useRef(false);
