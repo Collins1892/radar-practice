@@ -223,6 +223,7 @@ changed library API.
 - When working on backlog tasks, read `docs/nightly-agent-backlog.md` to understand current task status and update the row (status, attempts, notes) as part of the same commit as the code change
 - Check `.claude/commands/` for relevant slash commands — `/review`, `/standup`, `/observations`, `/tidy`
 - Place hand-authored components in `client/src/components/` — never in `client/src/components/ui/` (shadcn vendor directory)
+- Always provide shell commands and code snippets in fenced code blocks
 
 ## What the agent should not do
 

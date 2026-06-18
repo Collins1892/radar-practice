@@ -72,6 +72,52 @@ describe('parseFindings', () => {
       ['Major', 'Minor'],
     );
   });
+
+  it('preserves a structured filePath when present', () => {
+    const raw = JSON.stringify([
+      {
+        severity: 'Major',
+        description: 'issue',
+        filePath: 'client/src/foo.ts',
+      },
+    ]);
+
+    const result = parseFindings(raw);
+
+    assert.equal(result.findings.length, 1);
+    assert.equal(result.findings[0].filePath, 'client/src/foo.ts');
+  });
+
+  it('sets filePath to null when absent', () => {
+    const raw = JSON.stringify([{ severity: 'Minor', description: 'nit' }]);
+
+    const result = parseFindings(raw);
+
+    assert.equal(result.findings.length, 1);
+    assert.equal(result.findings[0].filePath, null);
+  });
+
+  it('coerces whitespace-only filePath to null', () => {
+    const raw = JSON.stringify([
+      { severity: 'Minor', description: 'nit', filePath: '   ' },
+    ]);
+
+    const result = parseFindings(raw);
+
+    assert.equal(result.findings.length, 1);
+    assert.equal(result.findings[0].filePath, null);
+  });
+
+  it("coerces literal string 'null' filePath to null", () => {
+    const raw = JSON.stringify([
+      { severity: 'Minor', description: 'nit', filePath: 'null' },
+    ]);
+
+    const result = parseFindings(raw);
+
+    assert.equal(result.findings.length, 1);
+    assert.equal(result.findings[0].filePath, null);
+  });
 });
 
 const BOT_MARKER = '<!-- pr-review-bot -->';
@@ -342,6 +388,54 @@ describe('splitActionableFindings', () => {
     assert.equal(actionable.length, 1);
     assert.equal(actionable[0].filePath, 'client/package.json');
     assert.deepEqual(actionable[0].finding, finding);
+  });
+
+  it('uses a structured filePath directly without regex extraction', () => {
+    const finding = {
+      severity: 'Blocker',
+      description: 'missing null check',
+      filePath: 'client/src/foo.ts',
+    };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 1);
+    assert.equal(actionable[0].filePath, 'client/src/foo.ts');
+    assert.equal(advisory.length, 0);
+  });
+
+  it('demotes Blocker/Major when structured filePath is not in changedFiles', () => {
+    const finding = {
+      severity: 'Blocker',
+      description: 'missing null check',
+      filePath: 'client/src/not-in-diff.ts',
+    };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 0);
+    assert.equal(advisory.length, 1);
+    assert.deepEqual(advisory[0], finding);
+  });
+
+  it('prefers structured filePath over path in description', () => {
+    const finding = {
+      severity: 'Major',
+      description: 'issue in `client/src/bar.ts`',
+      filePath: 'client/src/foo.ts',
+    };
+    const { actionable, advisory } = splitActionableFindings(
+      [finding],
+      changedFiles,
+    );
+
+    assert.equal(actionable.length, 1);
+    assert.equal(actionable[0].filePath, 'client/src/foo.ts');
+    assert.equal(advisory.length, 0);
   });
 });
 
