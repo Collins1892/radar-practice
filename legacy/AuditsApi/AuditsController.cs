@@ -14,7 +14,7 @@ namespace AuditsApi
         private readonly IAuditRepository _repository;
 
         public AuditsController()
-            : this(new AuditRepository())
+            : this(new AuditRepository()) // Legacy anti-pattern: concrete instantiation. Modern stack uses constructor injection via builder.Services.AddScoped<IAuditRepository, EfAuditRepository>().
         {
         }
 

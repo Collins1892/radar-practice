@@ -6,6 +6,7 @@ using NUnit.Framework;
 
 namespace AuditsApi.Tests
 {
+    // Static backing store is shared across repository instances — test execution order can affect results (legacy constraint).
     [TestFixture]
     public class AuditRepositoryTests
     {
@@ -107,3 +108,4 @@ namespace AuditsApi.Tests
         }
     }
 }
+
