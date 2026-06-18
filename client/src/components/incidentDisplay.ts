@@ -6,7 +6,7 @@ export const INCIDENT_ALL_FILTER = 'all';
 
 export function formatReportedDate(value: string): string {
   const parsed = parseISO(value.slice(0, 10));
-  return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : String(value);
+  return isValid(parsed) ? format(parsed, 'dd MMM yyyy') : value;
 }
 
 export const INCIDENT_SEVERITIES: readonly IncidentSeverity[] = [
