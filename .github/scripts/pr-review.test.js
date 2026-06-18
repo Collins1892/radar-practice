@@ -107,6 +107,17 @@ describe('parseFindings', () => {
     assert.equal(result.findings.length, 1);
     assert.equal(result.findings[0].filePath, null);
   });
+
+  it("coerces literal string 'null' filePath to null", () => {
+    const raw = JSON.stringify([
+      { severity: 'Minor', description: 'nit', filePath: 'null' },
+    ]);
+
+    const result = parseFindings(raw);
+
+    assert.equal(result.findings.length, 1);
+    assert.equal(result.findings[0].filePath, null);
+  });
 });
 
 const BOT_MARKER = '<!-- pr-review-bot -->';
