@@ -65,6 +65,7 @@ radar-practice/
 │   ├── component-builder/
 │   └── modernisation/
 ├── .claude/commands/      # Claude Code slash commands (/review, /standup, /observations, /tidy)
+├── legacy/                # .NET 4 / AngularJS 1.6 Audits module — before-state for modernisation migration
 ├── docs/                  # Workflow friction log, agent backlog, and supporting documentation
 │   ├── nightly-agent-backlog.md   # Open tasks for the nightly agent
 │   └── nightly-agent-completed.md # Completed tasks log
@@ -120,7 +121,7 @@ These are practical lessons from building this project with Claude Code (termina
 - `/review` — structured code review against the `code-reviewer` skill.
 
 **Nightly autonomous agent**
-- A GitHub Actions workflow (`nightly-agent.yml`) runs on `workflow_dispatch` (cron pending daylight validation) and picks the lowest-priority open task from `docs/nightly-agent-backlog.md` matching `TASK_MODE` (default: `easy`).
+- A GitHub Actions workflow (`nightly-agent.yml`) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch`, and picks the lowest-priority open task from `docs/nightly-agent-backlog.md` matching `TASK_MODE` (default: `easy`).
 - Two-phase plan-then-act: a planning call returns a structured JSON plan; implementation calls execute per file. The agent never acts without a valid plan.
 - Runs the full 4-command test suite before committing — broken fixes never reach the branch. Up to 3 retry attempts with test-failure feedback to the model between attempts.
 - On success: moves the task row from backlog to `docs/nightly-agent-completed.md`, commits code + backlog update in one commit, raises a normal PR.
@@ -223,4 +224,4 @@ Pushes and pull requests targeting `main` trigger the [CI workflow](.github/work
 
 The [PR review workflow](.github/workflows/pr-review.yml) runs after CI passes on every PR — it reviews the diff against the `code-reviewer` skill, autonomously fixes Blockers and Majors (up to 3 attempts), and posts findings as a PR comment.
 
-The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on `workflow_dispatch` (cron pending daylight validation) — it picks a backlog task, implements it, runs the full test suite, and raises a PR.
+The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch` — it picks a backlog task, implements it, runs the full test suite, and raises a PR. First unattended overnight run completed successfully (T03, PR #100).
