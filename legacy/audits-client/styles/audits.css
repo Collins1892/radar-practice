@@ -1,0 +1,66 @@
+/* Compiled output of audits.less — do not edit directly. */
+
+.audits-container {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+.audits-list .page-header {
+  border-bottom-color: #a8b5c0;
+  margin-bottom: 24px;
+}
+
+.audits-list .page-header h1 small {
+  color: #6d8394;
+}
+
+.audits-list .col-actions {
+  width: 140px;
+  white-space: nowrap;
+}
+
+.audits-list .label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.audit-form {
+  max-width: 640px;
+}
+
+.audit-form .form-actions {
+  margin-top: 24px;
+}
+
+.audit-form .form-actions .btn + .btn {
+  margin-left: 8px;
+}
+
+.audit-form textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.status-completed {
+  color: #5cb85c;
+}
+
+.status-in-progress {
+  color: #f0ad4e;
+}
+
+.status-cancelled {
+  color: #95a5a6;
+}
+
+.pagination {
+  margin-top: 0;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}

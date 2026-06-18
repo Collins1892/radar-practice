@@ -27,7 +27,7 @@ namespace AuditsApi.Tests
             // Assert
             Assert.IsNotNull(audits);
             Assert.GreaterOrEqual(audits.Count, 4);
-            Assert.AreEqual("In Progress", audits.First().Status);
+            Assert.AreEqual("Scheduled", audits.First().Status);
         }
 
         [Test]
