@@ -21,12 +21,18 @@ namespace AuditsApi.Repositories
 
         public virtual IList<Audit> GetAll()
         {
-            return _audits.OrderByDescending(a => a.AuditDate).ToList();
+            lock (_syncRoot)
+            {
+                return _audits.OrderByDescending(a => a.AuditDate).ToList();
+            }
         }
 
         public virtual Audit GetById(int id)
         {
-            return _audits.FirstOrDefault(a => a.Id == id);
+            lock (_syncRoot)
+            {
+                return _audits.FirstOrDefault(a => a.Id == id);
+            }
         }
 
         public virtual Audit Add(Audit audit)

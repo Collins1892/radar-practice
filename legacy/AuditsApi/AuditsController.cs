@@ -11,14 +11,14 @@ namespace AuditsApi
     [RoutePrefix("api/audits")]
     public class AuditsController : ApiController
     {
-        private readonly AuditRepository _repository;
+        private readonly IAuditRepository _repository;
 
         public AuditsController()
             : this(new AuditRepository())
         {
         }
 
-        public AuditsController(AuditRepository repository)
+        public AuditsController(IAuditRepository repository)
         {
             _repository = repository;
         }
@@ -27,80 +27,120 @@ namespace AuditsApi
         [Route("")]
         public HttpResponseMessage GetAll()
         {
-            IList<Audit> audits = _repository.GetAll();
-            return Request.CreateResponse(HttpStatusCode.OK, audits);
+            try
+            {
+                IList<Audit> audits = _repository.GetAll();
+                return Request.CreateResponse(HttpStatusCode.OK, audits);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError,
+                    new { error = ex.Message });
+            }
         }
 
         [HttpGet]
         [Route("{id:int}")]
         public HttpResponseMessage GetById(int id)
         {
-            Audit audit = _repository.GetById(id);
-            if (audit == null)
+            try
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound,
-                    string.Format("Audit with id {0} was not found.", id));
-            }
+                Audit audit = _repository.GetById(id);
+                if (audit == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                        string.Format("Audit with id {0} was not found.", id));
+                }
 
-            return Request.CreateResponse(HttpStatusCode.OK, audit);
+                return Request.CreateResponse(HttpStatusCode.OK, audit);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError,
+                    new { error = ex.Message });
+            }
         }
 
         [HttpPost]
         [Route("")]
         public HttpResponseMessage Create([FromBody] Audit audit)
         {
-            string validationError = ValidateAudit(audit, isUpdate: false);
-            if (validationError != null)
+            try
             {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, validationError);
-            }
+                string validationError = ValidateAudit(audit, isUpdate: false);
+                if (validationError != null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, validationError);
+                }
 
-            Audit created = _repository.Add(audit);
-            return Request.CreateResponse(HttpStatusCode.Created, created);
+                Audit created = _repository.Add(audit);
+                return Request.CreateResponse(HttpStatusCode.Created, created);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError,
+                    new { error = ex.Message });
+            }
         }
 
         [HttpPut]
         [Route("{id:int}")]
         public HttpResponseMessage Update(int id, [FromBody] Audit audit)
         {
-            if (audit == null)
+            try
             {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Audit payload is required.");
-            }
+                if (audit == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Audit payload is required.");
+                }
 
-            if (id != audit.Id)
+                if (id != audit.Id)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                        "Route id does not match audit id.");
+                }
+
+                string validationError = ValidateAudit(audit, isUpdate: true);
+                if (validationError != null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, validationError);
+                }
+
+                if (_repository.GetById(id) == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                        string.Format("Audit with id {0} was not found.", id));
+                }
+
+                _repository.Update(audit);
+                return Request.CreateResponse(HttpStatusCode.OK, audit);
+            }
+            catch (Exception ex)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest,
-                    "Route id does not match audit id.");
+                return Request.CreateResponse(HttpStatusCode.InternalServerError,
+                    new { error = ex.Message });
             }
-
-            string validationError = ValidateAudit(audit, isUpdate: true);
-            if (validationError != null)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, validationError);
-            }
-
-            if (_repository.GetById(id) == null)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound,
-                    string.Format("Audit with id {0} was not found.", id));
-            }
-
-            _repository.Update(audit);
-            return Request.CreateResponse(HttpStatusCode.OK, audit);
         }
 
         [HttpDelete]
         [Route("{id:int}")]
         public HttpResponseMessage Delete(int id)
         {
-            if (!_repository.Delete(id))
+            try
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound,
-                    string.Format("Audit with id {0} was not found.", id));
-            }
+                if (!_repository.Delete(id))
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                        string.Format("Audit with id {0} was not found.", id));
+                }
 
-            return Request.CreateResponse(HttpStatusCode.NoContent);
+                return Request.CreateResponse(HttpStatusCode.NoContent);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError,
+                    new { error = ex.Message });
+            }
         }
 
         private static string ValidateAudit(Audit audit, bool isUpdate)
