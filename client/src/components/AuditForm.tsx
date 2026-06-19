@@ -256,7 +256,7 @@ export function AuditForm(props: AuditFormProps): JSX.Element {
           className="w-full max-w-lg space-y-4"
           onSubmit={(e) => void handleSubmit(e)}
           noValidate
-          aria-busy={submitting || undefined}
+          aria-busy={submitting}
         >
           <FormField
             label="Title"

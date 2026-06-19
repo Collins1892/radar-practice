@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
-import { fetchAudits } from '@/api/audits';
+import { createAudit, fetchAudits, getAudit, updateAudit } from '@/api/audits';
 import { createItem, fetchItems } from './api';
 import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
 import { ApiClientError } from './errors';
@@ -19,6 +19,9 @@ vi.mock('@/api/audits', async (importOriginal) => {
   return {
     ...actual,
     fetchAudits: vi.fn(),
+    createAudit: vi.fn(),
+    getAudit: vi.fn(),
+    updateAudit: vi.fn(),
   };
 });
 
@@ -36,6 +39,9 @@ describe('App', () => {
     vi.mocked(fetchItems).mockReset();
     vi.mocked(createItem).mockReset();
     vi.mocked(fetchAudits).mockReset();
+    vi.mocked(createAudit).mockReset();
+    vi.mocked(getAudit).mockReset();
+    vi.mocked(updateAudit).mockReset();
   });
 
   it('renders skip link targeting main content', (): void => {
