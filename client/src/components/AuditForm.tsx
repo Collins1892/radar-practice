@@ -270,7 +270,6 @@ export function AuditForm(props: AuditFormProps): JSX.Element {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              maxLength={200}
               disabled={submitting}
               className={inputClassNameWithError(Boolean(fieldErrors.title))}
             />

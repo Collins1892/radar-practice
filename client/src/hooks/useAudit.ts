@@ -28,6 +28,9 @@ export function useAudit(auditId: number | null): UseAuditResult {
     }
   }, [auditId]);
 
+  // Known: no stale-response guard — rapid auditId changes can
+  // cause earlier responses to overwrite later ones. Low impact for
+  // a single-user app; fix in Week 7 with an active flag or AbortController.
   useEffect(() => {
     if (auditId !== null) {
       void reload();

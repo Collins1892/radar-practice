@@ -59,6 +59,8 @@ export type AuditRequest = {
   createdBy: string;
 };
 
+// id is included for type completeness and required-field clarity at call sites;
+// the server authoritatively uses the route parameter, not the body value.
 export type PutAuditRequest = AuditRequest & {
   id: number;
 };
