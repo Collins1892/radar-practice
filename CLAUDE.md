@@ -264,7 +264,7 @@ changed library API.
 - Never commit or push changes without being explicitly asked to. Show changes only — the developer commits.
 - Never force push (`git push --force` or `--force-with-lease`) without explicit instruction
 - Never raise pull requests via `gh pr create`
-- Never approve or comment on pull requests via `gh pr review` without explicit instruction
+- Never approve or comment on pull requests via `gh pr review` unless explicitly instructed to do so in the current task
 - Never run destructive operations (delete files, drop tables) without confirmation
 - Never make large unsupervised refactors across multiple files without a clear goal
 - Never generate multiple tests in one prompt — ask for one at a time
