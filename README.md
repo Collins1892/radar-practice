@@ -92,8 +92,6 @@ radar-practice/
 
 | Layer | Stack |
 |-------|-------|
-| Layer | Stack |
-|-------|-------|
 | Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`) |
 | Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
 | Audits API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`audits.db`), soft delete via `RecordStatus` — migrated from `legacy/` (.NET 4 / AngularJS 1.6) |

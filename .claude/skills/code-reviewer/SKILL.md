@@ -106,7 +106,7 @@ AuditsApi/
                                 AddDbContext<AuditsDbContext> (SQLite "audits.db"),
                                 AddScoped<IAuditRepository, EfAuditRepository>, Database.Migrate()
   IAuditRepository.cs         — repository interface (in Repositories/)
-  AuditRequest.cs             — wire DTO (no RecordStatus)
+  AuditRequest.cs, PutAuditRequest.cs — wire DTOs (no RecordStatus)
   Audit.cs, Status.cs, RecordStatus.cs — models / enums (in Models/)
   AuditListQuery.cs, PagedAuditsResult.cs — list query / paged response
   Data/AuditsDbContext.cs     — EF Core DbContext (DbSet<Audit>, model config)
@@ -173,7 +173,7 @@ Applies under `ItemsApi/`, `ItemsApi.Tests/`, `IncidentsApi/`, `IncidentsApi.Tes
 - **Repository pattern** — HTTP layer depends on abstractions (e.g. `IItemsRepository`), not concrete repository classes; use built-in DI.
 - **EF Core persistence** — data access goes through `AppDbContext` and `EfItemsRepository`; endpoints and other callers depend on `IItemsRepository`, never on `AppDbContext` or the concrete repository directly. `EfItemsRepository` is registered **scoped**.
 - **Soft delete (`RecordStatus`)** — verify on any AuditsApi change or PR introducing similar patterns:
-  - `RecordStatus` (`Active`, `Deleted`) lives on the entity, not the wire DTO (`AuditRequest` has no `RecordStatus` property)
+  - `RecordStatus` (`Active`, `Deleted`) lives on the entity, not the wire DTOs (`AuditRequest` for POST, `PutAuditRequest` for PUT — neither has `RecordStatus`)
   - POST/PUT must not bind or accept `RecordStatus` from JSON; repository `Add` sets `Active`
   - `Update` must not assign `RecordStatus`; updates target active rows only
   - `GetAll` and `GetById` must unconditionally filter out `RecordStatus == Deleted`
