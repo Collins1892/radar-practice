@@ -1,3 +1,34 @@
+## Week 5 Day 5 — Friday 19 June 2026
+
+### Summary
+
+Modernisation headline closed — Audits module fully migrated from legacy .NET 4/AngularJS to .NET 8/React 19. Two PRs merged (#105 backend, #106 frontend) after extensive multi-round review across Cursor, Claude Code, and the automated bot loop. Second unattended cron run reviewed — T05 merged via PR #104, with a genuine agent-introduced bug caught and fixed in the same PR.
+
+### What was built
+
+- **PR #104** — T05 (nightly agent, unattended): `incidentDisplay.ts` redundant `String(value)` wrapper removed. Required a same-PR follow-up fix for corrupted PR links in the completed table.
+- **PR #105** — AuditsApi backend: .NET 8 / EF Core + SQLite, `IAuditRepository`/`EfAuditRepository`, mirroring IncidentsApi.
+- **PR #106** — Audits React client: full vertical slice mirroring Incidents. Deliberate deviation: introduced `useAudits`/`useAudit` hooks where Incidents has none — approved, logged for retrofit. 239 tests.
+- **Backlog grew by six** — T58–T60 from migration findings (Incidents hooks retrofit, async EF Core, config-driven CORS/connection strings); T61–T63 from review-loop deferrals and merge friction (aria-busy semantics, AuditEditView test coverage, missing PR-approval automation).
+
+### Key decisions and learnings
+
+- **Reference vs template** — legacy code informs *what* a feature does, never *how* the new code is structured. The most recent correctly-built equivalent module is always the structural template. First draft of the build prompt conflated the two; caught before the build started.
+- **Integration isn't implied by feature completeness** — a build prompt can spec every screen and still omit wiring it into the app shell. Routes and nav links need to be explicit requirements, not assumed.
+- **Reusable component reuse must be provable** — added a hard constraint mapping every UI need to an existing component, plus a self-check requiring justification for any new component file. Direct proof point for the reusable-component-library fix to the Core team's problem. Zero new files in `components/ui/`.
+- **Verification-before-action, twice** — Cursor caught a bot false positive on an import flagged as unused (it wasn't), and separately verified the actual `IncidentForm` pattern before declining to change `AuditForm` to match a bot suggestion that didn't match reality. Trust but verify, demonstrated by the tool itself, not just the human gate.
+- **Model-tier economics is a real constraint** — Opus 4.8 was the design choice for migration reasoning; console credit ($0.37 mid-build) made it impractical. Did the reasoning in-chat instead and front-loaded it into the build prompt. A trade-off a funded team wouldn't face — worth keeping in the AI-impact story. Open question, not fully resolved: the in-chat reasoning substitute is unverified against what Opus might have caught differently — a quality risk worth a second look, not just a cost trade-off.
+- **PR review loop — stopping rule crystallised** — both PRs saw many bot review rounds, increasingly re-surfacing already-deferred or already-confirmed findings. New rule: once two independent reviewers converge on Suggestion-tier-only findings, stop manual rounds and let the bot's automated loop gate the merge.
+- **Branch protection gap** — `gh pr merge` failed: no step in the pipeline submits a formal GitHub approving review, only a comment. Same shape as the PAT vs `GITHUB_TOKEN` gap — the workflow assumes a human merge gate not actually wired into GitHub's protection rules.
+- **Squash-merge `git branch -d` false alarm** — the warning ("merged to remote-tracking branch but not yet merged to HEAD") is expected after a squash merge; git's ancestry check can't see it, even though the merge succeeded. Confirmed via the actual `git pull` diff, not the warning text.
+- **Backlog selection logic verified correct** — cross-checked the "lowest open task matching difficulty" rule against all three genuine autonomous picks (T02, T03, T05). Held exactly. Initial suspicion of inconsistency was a miscount on my part — corrected after reading the completed file properly.
+
+### Carried to Week 5 close
+
+- **PAT vs `GITHUB_TOKEN`** — still undecided.
+- **Security threat model** — still a Week 6 backlog task.
+- **T58–T63** — six open backlog items from today, ready for nightly-agent pickup or manual work.
+
 ## Week 5 Day 4 — Thursday 18 June 2026
 
 ### Summary
