@@ -213,6 +213,10 @@ function formatPrNumberCell(prNumber, owner, repo) {
   if (!prNumber || prNumber.trim() === '') {
     return '';
   }
+  // Already a markdown link — return as-is to prevent nested wrapping
+  if (prNumber.trim().startsWith('[')) {
+    return prNumber.trim();
+  }
   if (!owner || !repo) {
     return prNumber;
   }
