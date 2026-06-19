@@ -76,7 +76,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `docs/workflow-friction.md` — running workflow friction log (feeds Week 6 AI impact narrative)
 - `private/seven-week-plan.md` — master plan, decisions log, daily structure (private file: agent-readable, not committed)
 - `private/phase-1-foundation.md` — Weeks 1–2 complete (private file: agent-readable, not committed)
-- `private/phase-2-build.md` — Weeks 3–5, Week 3 complete; Week 4 in progress (private file: agent-readable, not committed)
+- `private/phase-2-build.md` — Weeks 3–5, Weeks 3–4 complete; Week 5 in progress (private file: agent-readable, not committed)
 - `private/phase-3-articulate.md` — Weeks 6–7 (private file: agent-readable, not committed)
 - `private/original-plan.md` — original plan shared (private file: agent-readable, not committed)
 - `private/job-advert.md` — live job advert (June 2026), (private file: agent-readable, not committed)
@@ -160,6 +160,7 @@ changed library API.
 - Exhaustive useEffect dependencies required
 - No console.log in committed code
 - No debugger statements
+- Data-fetching state: AuditsApi consumers use centralized hooks (`useAudits`, `useAudit`) in `client/src/hooks/`; IncidentsApi consumers still use inline `useState`/`useEffect` (legacy pattern, scheduled for retrofit — see T58 in `docs/nightly-agent-backlog.md`). New modules should follow the hooks pattern.
 
 **C#:**
 - Repository pattern — controllers depend on interfaces, not concrete classes
@@ -170,8 +171,8 @@ changed library API.
 - **Soft delete (`RecordStatus`)** — established in AuditsApi; reuse this
   pattern when adding soft delete elsewhere:
   - `RecordStatus` enum (`Active`, `Deleted`) on the entity; stored as int
-  - Wire DTO (`AuditRequest`) excludes `RecordStatus` — not bindable from
-    POST/PUT JSON; repository `Add` always sets `Active`
+  - Wire DTOs (`AuditRequest` for POST, `PutAuditRequest` for PUT) exclude
+    `RecordStatus` — not bindable from POST/PUT JSON; repository `Add` always sets `Active`
   - `Update` never modifies `RecordStatus`; only updates rows where
     `RecordStatus == Active`
   - All read paths (`GetAll`, `GetById`) unconditionally exclude
@@ -263,7 +264,7 @@ changed library API.
 - Never commit or push changes without being explicitly asked to. Show changes only — the developer commits.
 - Never force push (`git push --force` or `--force-with-lease`) without explicit instruction
 - Never raise pull requests via `gh pr create`
-- Never post comments on pull requests via `gh pr review`
+- Never approve or comment on pull requests via `gh pr review` without explicit instruction
 - Never run destructive operations (delete files, drop tables) without confirmation
 - Never make large unsupervised refactors across multiple files without a clear goal
 - Never generate multiple tests in one prompt — ask for one at a time

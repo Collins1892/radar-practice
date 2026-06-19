@@ -7,7 +7,7 @@ A full-stack practice project built to explore **agentic AI development** — us
 
 This is not a production system. It is a deliberately small codebase that demonstrates how AI-assisted workflows behave in practice: what agents do well, where they stall, and why human review remains essential.
 
-The project covers two domains: an **items catalogue** (the initial safe practice domain) and an **incident reporting module** (healthcare-relevant, added in Week 3) — built as a standalone API and full React frontend using a shared reusable component library.
+The project covers three domains: an **items catalogue** (the initial safe practice domain), an **incident reporting module** (healthcare-relevant, added in Week 3), and a **clinical audits module** (added in Week 5 as a legacy-to-modern migration — see below) — each built as a standalone API and full React frontend using a shared reusable component library.
 
 ## What this project demonstrates
 
@@ -29,6 +29,12 @@ Every stage followed the same principle: the agent proposes and implements, the 
 
 The domain is a simple **items catalogue** — no patient data, no production dependencies. That keeps the focus on tooling and workflow rather than healthcare-specific complexity, while still reflecting habits that matter in regulated environments (prompt sanitisation, never pasting PII, reviewing every diff before commit).
 
+### Legacy modernisation, demonstrated
+
+The Audits module simulates a realistic legacy-to-modern migration: a believable .NET 4 / AngularJS 1.6 implementation (`legacy/`) migrated to .NET 8 / EF Core and a React 19 client reusing the existing shared component library. The legacy code is retained permanently as the before-state — both versions are preserved so the diff itself tells the migration story.
+
+The methodology mattered more than the mechanics: legacy code is a reference for *what* a feature does (fields, validation, behaviour), never *how* the new code should be structured. The structural template is always the most recent correctly-built equivalent module already in the repo — porting AngularJS's `$scope` god-controller pattern 1:1 onto React state would have reproduced the exact smell the migration exists to fix.
+
 ## Architecture
 
 Illustrative layout — not an exhaustive file inventory. See [CLAUDE.md](CLAUDE.md) for the full agent-oriented repo map.
@@ -39,14 +45,25 @@ radar-practice/
 ├── ItemsApi.Tests/        # xUnit integration tests (13 tests)
 ├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT /incidents, GET /incidents/{id}), EF Core + SQLite
 ├── IncidentsApi.Tests/    # xUnit integration tests (25 tests)
+├── AuditsApi/             # .NET 8 minimal API (GET/POST/PUT/DELETE /audits), EF Core + SQLite — migrated from legacy/
+├── AuditsApi.Tests/       # xUnit integration tests
 ├── client/                # React + TypeScript + Vite frontend
 │   ├── src/api/incidents.ts               # Typed fetch layer for IncidentsApi
+│   ├── src/api/audits.ts                  # Typed fetch layer for AuditsApi
 │   ├── src/components/IncidentsView.tsx   # Incident list with filters, sort, pagination
 │   ├── src/components/IncidentForm.tsx    # Shared create/edit form (mode prop)
 │   ├── src/components/IncidentCreateView.tsx # Thin wrapper — mode=create
 │   ├── src/components/IncidentDetailView.tsx # Read-only detail view
 │   ├── src/components/IncidentEditView.tsx   # Thin wrapper — mode=edit
 │   ├── src/components/IncidentPageChrome.tsx # Shared page chrome (h1 + back link)
+│   ├── src/components/AuditsView.tsx      # Audit list with filters, sort, pagination
+│   ├── src/components/AuditForm.tsx       # Shared create/edit form (mode prop)
+│   ├── src/components/AuditCreateView.tsx # Thin wrapper — mode=create
+│   ├── src/components/AuditDetailView.tsx # Read-only detail view
+│   ├── src/components/AuditEditView.tsx   # Thin wrapper — mode=edit
+│   ├── src/components/AuditPageChrome.tsx # Shared page chrome (h1 + back link)
+│   ├── src/hooks/useAudits.ts             # List fetch/state hook for AuditsView
+│   ├── src/hooks/useAudit.ts              # Single-record fetch hook for detail/edit
 │   ├── src/components/Modal.tsx           # Accessible dialog component (Radix Dialog)
 │   ├── src/components/InlineAlert.tsx     # Inline status alert, four variants
 │   ├── src/pageTitle.ts                   # Per-route document.title helper
@@ -75,14 +92,17 @@ radar-practice/
 
 | Layer | Stack |
 |-------|-------|
+| Layer | Stack |
+|-------|-------|
 | Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`) |
 | Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
-| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 25 IncidentsApi tests |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes include `/`, `/components`, `/incidents`, and incident create/detail/edit |
-| Frontend tests | Vitest (172 tests), `@testing-library/react`; Playwright e2e (smoke test, key journeys Week 5) |
-| CI | GitHub Actions — `dotnet test` (both APIs) and `npm test` (Vitest) on push/PR to `main` |
+| Audits API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`audits.db`), soft delete via `RecordStatus` — migrated from `legacy/` (.NET 4 / AngularJS 1.6) |
+| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 25 IncidentsApi + 52 AuditsApi tests |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes include `/`, `/components`, `/incidents`, `/audits`, and create/detail/edit for both modules |
+| Frontend tests | Vitest (239 tests), `@testing-library/react`; Playwright e2e (smoke test, key journeys Week 5) |
+| CI | GitHub Actions — `dotnet test` (all three APIs) and `npm test` (Vitest) on push/PR to `main` |
 
-> **Note:** Each API uses its own SQLite database (`app.db` for items, `incidents.db` for incidents). Both are local only and not committed.
+> **Note:** Each API uses its own SQLite database (`app.db` for items, `incidents.db` for incidents, `audits.db` for audits). All are local only and not committed.
 
 ## AI tooling observations
 
@@ -128,10 +148,15 @@ These are practical lessons from building this project with Claude Code (termina
 - On failure: discards code changes, increments the attempt counter, adds a failure note, raises a draft PR for human review.
 - Hard cap of 10 Anthropic API calls per run. Sensitive path guard rejects plan changes to `.github/`, `.husky/`, `package.json`.
 - `TASK_MODE` controlled via GitHub repository variable — change difficulty without a commit.
-- First autonomous task: T02 shipped via PR #96 (dotnet-test-writer skill doc fix).
+- Three genuine completions so far (T02, T03, T05), selection verified to follow the lowest-ID-matching-difficulty rule exactly across all three.
 
 **Two independent reviews catch different things**
 - Claude Code `/review` and Cursor review consistently flag different issues on the same diff. Running both for significant PRs is now a firm discipline — neither alone is complete.
+- On a large migration PR, the automated review loop itself shows diminishing returns — later rounds increasingly re-surface findings already deferred or already confirmed correct. The fix is a stopping rule: once two independent reviewers converge on suggestion-tier-only findings, the bot's next pass becomes the final gate, not another round of manual fixes.
+
+**Legacy migration — reference for *what*, never *how***
+- Legacy code being migrated should inform what a feature does (fields, validation, behaviour) — never how the new code is structured. The structural template is always the most recent correctly-built equivalent module already in the repo. Mapping legacy control flow onto new code 1:1 reproduces the legacy smell the migration exists to fix, even when the framework changes underneath it.
+- Reusable component reuse has to be provable, not assumed. A migration prompt needs a hard constraint mapping every UI need to an existing shared component, plus a self-check requiring the agent to justify any new component file it creates.
 
 **WCAG 2.2 AA — layered accessibility approach**
 - Accessibility was built in four layers: component primitives, screen composition, app shell, and interaction patterns.
@@ -176,11 +201,19 @@ dotnet run
 
 The Incidents API listens on `http://localhost:5134`.
 
+```bash
+cd AuditsApi
+dotnet run
+```
+
+The Audits API listens on `http://localhost:5135`.
+
 ### Run the tests
 
 ```bash
 dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj
 dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj
+dotnet test AuditsApi.Tests/AuditsApi.Tests.csproj
 ```
 
 From `client/`:
@@ -197,7 +230,7 @@ cd client
 npx playwright test
 ```
 
-Currently a smoke test only (app loads, title correct) — requires only the Vite dev server. Key user journeys (Week 5) will require ItemsApi (5133) and IncidentsApi (5134).
+Currently a smoke test only (app loads, title correct) — requires only the Vite dev server. Key user journeys (Week 5) will require ItemsApi (5133), IncidentsApi (5134), and AuditsApi (5135).
 
 ### Run the frontend
 
@@ -213,8 +246,9 @@ To call the APIs directly from the browser (without the Vite proxy), copy `clien
 
 - `VITE_API_URL=http://localhost:5133` — Items API base URL (defaults to empty string so `/items` uses the Vite proxy)
 - `VITE_INCIDENTS_API_URL=http://localhost:5134` — Incidents API base URL (defaults to `http://localhost:5134` if unset)
+- `VITE_AUDITS_API_URL=http://localhost:5135` — Audits API base URL (defaults to `http://localhost:5135` if unset)
 
-Both APIs allow CORS from `http://localhost:5173`. Incidents routes use direct CORS fetch — not proxied like `/items`.
+All three APIs allow CORS from `http://localhost:5173`. Incidents and Audits routes use direct CORS fetch — not proxied like `/items`.
 
 Copy root `.env.example` to `.env` and add your `ANTHROPIC_API_KEY` for local Claude Code and direct Anthropic API usage.
 
@@ -224,4 +258,4 @@ Pushes and pull requests targeting `main` trigger the [CI workflow](.github/work
 
 The [PR review workflow](.github/workflows/pr-review.yml) runs after CI passes on every PR — it reviews the diff against the `code-reviewer` skill, autonomously fixes Blockers and Majors (up to 3 attempts), and posts findings as a PR comment.
 
-The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch` — it picks a backlog task, implements it, runs the full test suite, and raises a PR. First unattended overnight run completed successfully (T03, PR #100).
+The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch` — it picks a backlog task, implements it, runs the full test suite, and raises a PR. Three completions so far (T02, T03, T05).
