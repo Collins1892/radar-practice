@@ -88,22 +88,15 @@ export function AuditDetailView(): JSX.Element {
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1>{audit.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Audit #{audit.id}
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link to="/audits">Back to audits</Link>
-          </Button>
+      <AuditPageChrome
+        heading={audit.title}
+        subtitle={`Audit #${audit.id}`}
+        actions={
           <Button asChild className="w-full sm:w-auto">
             <Link to={`/audits/${audit.id}/edit`}>{AUDIT_EDIT_HEADING}</Link>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <section className="mt-6 rounded-lg border border-border bg-card p-6">
         <dl className="space-y-4">

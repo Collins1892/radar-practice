@@ -159,7 +159,9 @@ export async function fetchAudits(
   if (params.page !== undefined) {
     searchParams.set('page', String(params.page));
   }
-  searchParams.set('pageSize', String(params.pageSize ?? 25));
+  if (params.pageSize !== undefined) {
+    searchParams.set('pageSize', String(params.pageSize));
+  }
 
   const query = searchParams.toString();
   const path = query ? `/audits?${query}` : '/audits';

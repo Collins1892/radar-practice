@@ -80,10 +80,7 @@ export function AuditsView(): JSX.Element {
     [],
   );
 
-  const showEmpty =
-    !isRefetching &&
-    tableData.length === 0 &&
-    (error === null || result === null);
+  const showEmpty = !isRefetching && tableData.length === 0 && error === null;
 
   return (
     <>

@@ -33,78 +33,48 @@ describe('fetchAudits', () => {
 });
 
 describe('parseAuditId', () => {
-  it('returns null for invalid inputs and the correct number for valid inputs', (): void => {
+  it('returns null when id is undefined', (): void => {
     // Arrange
-    const undefinedId = undefined;
+    const id = undefined;
 
     // Act
-    const undefinedResult = parseAuditId(undefinedId);
+    const result = parseAuditId(id);
 
     // Assert
-    expect(undefinedResult).toBe(null);
+    expect(result).toBe(null);
+  });
 
+  it.each([['abc'], ['0'], ['-1'], ['1.5'], ['01']] as const)(
+    'returns null for invalid id %s',
+    (id): void => {
+      // Act
+      const result = parseAuditId(id);
+
+      // Assert
+      expect(result).toBe(null);
+    },
+  );
+
+  it('returns 1 for id "1"', (): void => {
     // Arrange
-    const abcId = 'abc';
+    const id = '1';
 
     // Act
-    const abcResult = parseAuditId(abcId);
+    const result = parseAuditId(id);
 
     // Assert
-    expect(abcResult).toBe(null);
+    expect(result).toBe(1);
+  });
 
+  it('returns 42 for id "42"', (): void => {
     // Arrange
-    const zeroId = '0';
+    const id = '42';
 
     // Act
-    const zeroResult = parseAuditId(zeroId);
+    const result = parseAuditId(id);
 
     // Assert
-    expect(zeroResult).toBe(null);
-
-    // Arrange
-    const negativeId = '-1';
-
-    // Act
-    const negativeResult = parseAuditId(negativeId);
-
-    // Assert
-    expect(negativeResult).toBe(null);
-
-    // Arrange
-    const fractionalId = '1.5';
-
-    // Act
-    const fractionalResult = parseAuditId(fractionalId);
-
-    // Assert
-    expect(fractionalResult).toBe(null);
-
-    // Arrange
-    const leadingZeroId = '01';
-
-    // Act
-    const leadingZeroResult = parseAuditId(leadingZeroId);
-
-    // Assert
-    expect(leadingZeroResult).toBe(null);
-
-    // Arrange
-    const oneId = '1';
-
-    // Act
-    const oneResult = parseAuditId(oneId);
-
-    // Assert
-    expect(oneResult).toBe(1);
-
-    // Arrange
-    const fortyTwoId = '42';
-
-    // Act
-    const fortyTwoResult = parseAuditId(fortyTwoId);
-
-    // Assert
-    expect(fortyTwoResult).toBe(42);
+    expect(result).toBe(42);
   });
 });
 
@@ -112,46 +82,49 @@ describe('auditUserMessage', () => {
   const AUDITS_NETWORK_MESSAGE =
     'Cannot reach the server. Start AuditsApi with dotnet run in AuditsApi, then try again.';
 
-  it('returns the correct message for each error type', (): void => {
+  it('returns the server unreachable message for ApiClientError with network kind', (): void => {
     // Arrange
-    const networkError = new ApiClientError(
-      'Network request failed',
-      'network',
-    );
+    const error = new ApiClientError('Network request failed', 'network');
 
     // Act
-    const networkResult = auditUserMessage(networkError, 'loading');
+    const result = auditUserMessage(error, 'loading');
 
     // Assert
-    expect(networkResult).toBe(AUDITS_NETWORK_MESSAGE);
+    expect(result).toBe(AUDITS_NETWORK_MESSAGE);
+  });
 
+  it('returns error.message for ApiClientError with http kind', (): void => {
     // Arrange
-    const httpMessage = 'Audit not found.';
-    const httpError = new ApiClientError(httpMessage, 'http', 404);
+    const errorMessage = 'Audit not found.';
+    const error = new ApiClientError(errorMessage, 'http', 404);
 
     // Act
-    const httpResult = auditUserMessage(httpError, 'updating');
+    const result = auditUserMessage(error, 'updating');
 
     // Assert
-    expect(httpResult).toBe(httpMessage);
+    expect(result).toBe(errorMessage);
+  });
 
+  it('returns error.message for a generic Error', (): void => {
     // Arrange
-    const plainMessage = 'Something went wrong';
-    const plainError = new Error(plainMessage);
+    const errorMessage = 'Something went wrong';
+    const error = new Error(errorMessage);
 
     // Act
-    const plainResult = auditUserMessage(plainError, 'creating');
+    const result = auditUserMessage(error, 'creating');
 
     // Assert
-    expect(plainResult).toBe(plainMessage);
+    expect(result).toBe(errorMessage);
+  });
 
+  it('returns the loading fallback message when the error is an unknown value', (): void => {
     // Arrange
-    const unknownError = null;
+    const error = null;
 
     // Act
-    const unknownResult = auditUserMessage(unknownError, 'loading');
+    const result = auditUserMessage(error, 'loading');
 
     // Assert
-    expect(unknownResult).toBe('Something went wrong while loading the audit.');
+    expect(result).toBe('Something went wrong while loading the audit.');
   });
 });

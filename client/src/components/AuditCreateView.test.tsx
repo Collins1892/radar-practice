@@ -6,6 +6,7 @@ import { createAudit } from '@/api/audits';
 import type { Audit } from '@/api/audits';
 import { ApiClientError } from '@/errors';
 import { AUDIT_CREATE_HEADING } from '@/components/auditPageCopy';
+import { clickCalendarDay } from '@/test/calendarHelpers';
 import { AuditCreateView } from './AuditCreateView';
 
 const navigateMock = vi.hoisted(() => vi.fn());
@@ -17,52 +18,6 @@ vi.mock('react-router-dom', async (importOriginal) => {
     useNavigate: () => navigateMock,
   };
 });
-
-function clickCalendarDay(year: number, month: number, day: number): void {
-  if (!document.querySelector('[data-slot="calendar"]')) {
-    fireEvent.click(screen.getByLabelText(/^Audit date/));
-  }
-
-  const monthName = new Date(year, month, 1).toLocaleString(undefined, {
-    month: 'long',
-  });
-
-  for (let i = 0; i < 24; i++) {
-    const caption = document.querySelector(
-      '[data-slot="calendar"] .rdp-month_caption',
-    );
-    const captionText = caption?.textContent ?? '';
-    if (captionText.includes(monthName) && captionText.includes(String(year))) {
-      break;
-    }
-    const nextBtn = document.querySelector(
-      '[data-slot="calendar"] .rdp-button_next',
-    );
-    if (!(nextBtn instanceof HTMLButtonElement)) {
-      throw new Error('Calendar next month button not found');
-    }
-    fireEvent.click(nextBtn);
-  }
-
-  const buttons = document.querySelectorAll(
-    '[data-slot="calendar"] button[data-day]',
-  );
-  for (const btn of buttons) {
-    if (!(btn instanceof HTMLButtonElement)) continue;
-    if (btn.textContent?.trim() !== String(day)) continue;
-    if (
-      btn.hasAttribute('disabled') ||
-      btn.getAttribute('aria-disabled') === 'true'
-    ) {
-      continue;
-    }
-    if (btn.getAttribute('data-outside') === 'true') continue;
-    fireEvent.click(btn);
-    return;
-  }
-
-  throw new Error(`Could not select ${day}/${month + 1}/${year} in calendar`);
-}
 
 vi.mock('@/api/audits', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/audits')>();
@@ -93,7 +48,7 @@ describe('AuditCreateView', () => {
     fireEvent.change(screen.getByLabelText(/^Description/), {
       target: { value: 'Quarterly ward review' },
     });
-    clickCalendarDay(2026, 5, 4);
+    clickCalendarDay(/^Audit date/, 2026, 5, 4);
     fireEvent.change(screen.getByLabelText(/^Created by/), {
       target: { value: 'Quality team' },
     });
