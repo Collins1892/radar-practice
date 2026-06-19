@@ -214,7 +214,7 @@ function formatPrNumberCell(prNumber, owner, repo) {
     return '';
   }
   // Already a markdown link — return as-is to prevent nested wrapping
-  if (prNumber.trim().startsWith('[')) {
+  if (/^\[.+\]\(https?:\/\//.test(prNumber.trim())) {
     return prNumber.trim();
   }
   if (!owner || !repo) {
@@ -1660,6 +1660,7 @@ export {
   buildPlanPrompt,
   buildImplementPrompt,
   formatPrBody,
+  formatPrNumberCell,
   stripCodeFences,
 };
 

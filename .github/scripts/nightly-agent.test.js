@@ -4,6 +4,7 @@ import {
   buildImplementPrompt,
   buildPlanPrompt,
   formatPrBody,
+  formatPrNumberCell,
   moveToCompleted,
   parseBacklog,
   pickTask,
@@ -323,6 +324,34 @@ describe('moveToCompleted', () => {
     assert.ok(result.backlog.includes('| T05 |'));
     assert.ok(result.completed.includes('T02 | done'));
   });
+
+  it('when the completed table already contains rows with formatted PR links, calling moveToCompleted to add a new row does not corrupt the existing PR link cells', () => {
+    const owner = 'Collins1892';
+    const repo = 'radar-practice';
+    const existingLink =
+      '[#42](https://github.com/Collins1892/radar-practice/pull/42)';
+    const completedWithLink = `${SAMPLE_COMPLETED}
+| T99 | done   | easy       | docs     | code-quality | 1        | ${existingLink} | 2026-06-14 | 2026-06-15 | Closed task | prior note |`;
+
+    const result = moveToCompleted(
+      SAMPLE_BACKLOG,
+      completedWithLink,
+      'T02',
+      '2026-06-17',
+      'Completed by agent',
+      '100',
+      owner,
+      repo,
+    );
+
+    assert.ok(result.completed.includes(existingLink));
+    assert.equal(
+      (result.completed.match(
+        /\[#42\]\(https:\/\/github\.com\/Collins1892\/radar-practice\/pull\/42\)/g,
+      ) ?? []).length,
+      1,
+    );
+  });
 });
 
 describe('buildPlanPrompt', () => {
@@ -529,5 +558,50 @@ describe('stripCodeFences', () => {
   it('handles content with fences and leading/trailing whitespace', () => {
     const wrapped = '  ```js\nexport {};\n```  ';
     assert.equal(stripCodeFences(wrapped), 'export {};');
+  });
+});
+
+describe('formatPrNumberCell', () => {
+  const owner = 'Collins1892';
+  const repo = 'radar-practice';
+
+  it('empty string returns empty string', () => {
+    assert.equal(formatPrNumberCell('', owner, repo), '');
+  });
+
+  it('raw number formats to a markdown link with correct owner/repo/pull URL', () => {
+    assert.equal(
+      formatPrNumberCell('42', owner, repo),
+      '[#42](https://github.com/Collins1892/radar-practice/pull/42)',
+    );
+  });
+
+  it('number with `#` prefix strips the `#` and formats correctly', () => {
+    assert.equal(
+      formatPrNumberCell('#42', owner, repo),
+      '[#42](https://github.com/Collins1892/radar-practice/pull/42)',
+    );
+  });
+
+  it('already a well-formed markdown link is returned as-is (the new guard — prevents double-wrapping)', () => {
+    const link = '[#42](https://github.com/Collins1892/radar-practice/pull/42)';
+    assert.equal(formatPrNumberCell(link, owner, repo), link);
+  });
+
+  it('a `[...]` value without an `https://` URL does not match the guard and falls through to formatting', () => {
+    const input = '[#42]';
+    const result = formatPrNumberCell(input, owner, repo);
+
+    assert.notEqual(result, input);
+    assert.ok(
+      /^\[.+\]\(https:\/\/github\.com\/Collins1892\/radar-practice\/pull\/.+\)$/.test(
+        result,
+      ),
+    );
+  });
+
+  it('missing owner or repo returns the raw prNumber unchanged', () => {
+    assert.equal(formatPrNumberCell('42', '', repo), '42');
+    assert.equal(formatPrNumberCell('42', owner, ''), '42');
   });
 });
