@@ -113,7 +113,8 @@ public class PutAuditsTests : IClassFixture<TestWebApplicationFactory>
     {
         // Arrange
         const int id = 1;
-        var client = CreateClientWithRepo(Substitute.For<IAuditRepository>());
+        var repo = Substitute.For<IAuditRepository>();
+        var client = CreateClientWithRepo(repo);
 
         // Act
         var response = await client.PutAsync(
@@ -125,6 +126,7 @@ public class PutAuditsTests : IClassFixture<TestWebApplicationFactory>
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(body);
         Assert.Equal("Audit payload is required.", body.Error);
+        repo.DidNotReceive().Update(Arg.Any<Audit>());
     }
 
     [Fact]

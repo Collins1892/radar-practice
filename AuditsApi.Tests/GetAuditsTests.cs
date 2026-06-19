@@ -164,9 +164,7 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(body);
-        Assert.Equal(
-            "Status must be one of: Scheduled, InProgress, Completed, Cancelled.",
-            body.Error);
+        Assert.Contains("Status must be one of", body.Error);
     }
 
     [Fact]

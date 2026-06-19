@@ -22,8 +22,7 @@ public class EfAuditRepository : IAuditRepository
     public PagedAuditsResult GetAll(AuditListQuery query)
     {
         var audits = _db.Audits.AsNoTracking()
-            .Where(a => a.RecordStatus == RecordStatus.Active)
-            .AsQueryable();
+            .Where(a => a.RecordStatus == RecordStatus.Active);
 
         if (query.Status is not null)
             audits = audits.Where(a => a.Status == query.Status);
