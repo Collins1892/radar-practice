@@ -66,7 +66,7 @@ app.MapGet("/audits", (
         return Results.BadRequest(new { error = "Page size must be 100 or fewer." });
 
     var resolvedSortBy = string.IsNullOrWhiteSpace(sortBy) ? "auditDate" : sortBy;
-    if (!IsValidSortBy(resolvedSortBy))
+    if (!EfAuditRepository.SortableFields.Contains(resolvedSortBy))
         return Results.BadRequest(new { error = "Invalid sort field." });
 
     var resolvedDirection = string.IsNullOrWhiteSpace(sortDirection) ? "desc" : sortDirection;
@@ -177,16 +177,6 @@ static IResult? ValidateAuditRequest(AuditRequest? req, bool isUpdate)
         return Results.BadRequest(new { error = "CreatedBy is required." });
 
     return null;
-}
-
-static bool IsValidSortBy(string sortBy)
-{
-    return sortBy.ToLowerInvariant() is
-        "title" or
-        "description" or
-        "auditdate" or
-        "status" or
-        "createdby";
 }
 
 static bool TryParseSortDirection(string sortDirection, out bool sortDescending)

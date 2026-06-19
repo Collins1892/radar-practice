@@ -6,6 +6,15 @@ namespace AuditsApi.Repositories;
 
 public class EfAuditRepository : IAuditRepository
 {
+    public static readonly HashSet<string> SortableFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "title",
+        "description",
+        "auditdate",
+        "status",
+        "createdby",
+    };
+
     private readonly AuditsDbContext _db;
 
     public EfAuditRepository(AuditsDbContext db) => _db = db;
