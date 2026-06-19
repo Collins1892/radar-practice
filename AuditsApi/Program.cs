@@ -1,0 +1,208 @@
+using System.Text.Json.Serialization;
+using AuditsApi;
+using AuditsApi.Data;
+using AuditsApi.Models;
+using AuditsApi.Repositories;
+using Microsoft.EntityFrameworkCore;
+
+const string InvalidStatusMessage =
+    "Status must be one of: Scheduled, InProgress, Completed, Cancelled.";
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
+builder.Services.AddDbContext<AuditsDbContext>(options =>
+    options.UseSqlite("DataSource=audits.db"));
+
+builder.Services.AddScoped<IAuditRepository, EfAuditRepository>();
+
+var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<AuditsDbContext>().Database.Migrate();
+}
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred." });
+    });
+});
+
+app.UseCors();
+app.UseHttpsRedirection();
+
+app.MapGet("/audits", (
+    IAuditRepository repo,
+    Status? status,
+    string? sortBy,
+    string? sortDirection,
+    int page = 1,
+    int pageSize = 25) =>
+{
+    if (page < 1)
+        return Results.BadRequest(new { error = "Page must be at least 1." });
+
+    if (pageSize < 1)
+        return Results.BadRequest(new { error = "Page size must be at least 1." });
+
+    if (pageSize > 100)
+        return Results.BadRequest(new { error = "Page size must be 100 or fewer." });
+
+    var resolvedSortBy = string.IsNullOrWhiteSpace(sortBy) ? "auditDate" : sortBy;
+    if (!IsValidSortBy(resolvedSortBy))
+        return Results.BadRequest(new { error = "Invalid sort field." });
+
+    var resolvedDirection = string.IsNullOrWhiteSpace(sortDirection) ? "desc" : sortDirection;
+    if (!TryParseSortDirection(resolvedDirection, out var sortDescending))
+        return Results.BadRequest(new { error = "Sort direction must be asc or desc." });
+
+    if (status.HasValue && !Enum.IsDefined(status.Value))
+        return Results.BadRequest(new { error = InvalidStatusMessage });
+
+    var result = repo.GetAll(new AuditListQuery(
+        status,
+        resolvedSortBy,
+        sortDescending,
+        page,
+        pageSize));
+
+    return Results.Ok(result);
+});
+
+app.MapPost("/audits", (AuditRequest? req, IAuditRepository repo) =>
+{
+    var validation = ValidateAuditRequest(req, isUpdate: false);
+    if (validation is not null)
+        return validation;
+
+    var audit = new Audit
+    {
+        Title = req!.Title,
+        Description = req.Description,
+        AuditDate = req.AuditDate,
+        Status = req.Status!.Value,
+        CreatedBy = req.CreatedBy,
+    };
+
+    var created = repo.Add(audit);
+    return Results.Created($"/audits/{created.Id}", created);
+});
+
+app.MapGet("/audits/{id}", (int id, IAuditRepository repo) =>
+{
+    var audit = repo.GetById(id);
+    return audit is null
+        ? Results.NotFound(new { error = "Audit not found." })
+        : Results.Ok(audit);
+});
+
+app.MapPut("/audits/{id}", (int id, AuditRequest? req, IAuditRepository repo) =>
+{
+    if (req is null)
+        return Results.BadRequest(new { error = "Audit payload is required." });
+
+    if (id != req.Id)
+        return Results.BadRequest(new { error = "Route id does not match audit id." });
+
+    var validation = ValidateAuditRequest(req, isUpdate: true);
+    if (validation is not null)
+        return validation;
+
+    var audit = new Audit
+    {
+        Id = id,
+        Title = req.Title,
+        Description = req.Description,
+        AuditDate = req.AuditDate,
+        Status = req.Status!.Value,
+        CreatedBy = req.CreatedBy,
+    };
+
+    var updated = repo.Update(audit);
+    return updated is null
+        ? Results.NotFound(new { error = "Audit not found." })
+        : Results.Ok(updated);
+});
+
+app.MapDelete("/audits/{id}", (int id, IAuditRepository repo) =>
+{
+    return repo.SoftDelete(id)
+        ? Results.NoContent()
+        : Results.NotFound(new { error = "Audit not found." });
+});
+
+app.Run();
+
+static IResult? ValidateAuditRequest(AuditRequest? req, bool isUpdate)
+{
+    if (req is null)
+        return Results.BadRequest(new { error = "Audit payload is required." });
+
+    if (isUpdate && req.Id <= 0)
+        return Results.BadRequest(new { error = "A valid audit id is required." });
+
+    if (string.IsNullOrWhiteSpace(req.Title))
+        return Results.BadRequest(new { error = "Title is required." });
+
+    if (req.Title.Length > 200)
+        return Results.BadRequest(new { error = "Title must not exceed 200 characters." });
+
+    if (req.Status is null)
+        return Results.BadRequest(new { error = "Status is required." });
+
+    if (!Enum.IsDefined(req.Status.Value))
+        return Results.BadRequest(new { error = InvalidStatusMessage });
+
+    if (req.AuditDate == default)
+        return Results.BadRequest(new { error = "AuditDate is required." });
+
+    if (string.IsNullOrWhiteSpace(req.CreatedBy))
+        return Results.BadRequest(new { error = "CreatedBy is required." });
+
+    return null;
+}
+
+static bool IsValidSortBy(string sortBy)
+{
+    return sortBy.ToLowerInvariant() is
+        "title" or
+        "description" or
+        "auditdate" or
+        "status" or
+        "createdby";
+}
+
+static bool TryParseSortDirection(string sortDirection, out bool sortDescending)
+{
+    switch (sortDirection.ToLowerInvariant())
+    {
+        case "asc":
+            sortDescending = false;
+            return true;
+        case "desc":
+            sortDescending = true;
+            return true;
+        default:
+            sortDescending = false;
+            return false;
+    }
+}
+
+public partial class Program { }

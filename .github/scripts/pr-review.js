@@ -71,6 +71,18 @@ const POST_PUSH_TEST_COMMANDS = [
     cwd: repoRoot,
   },
   {
+    label:
+      'dotnet test AuditsApi.Tests/AuditsApi.Tests.csproj --verbosity normal',
+    command: 'dotnet',
+    args: [
+      'test',
+      'AuditsApi.Tests/AuditsApi.Tests.csproj',
+      '--verbosity',
+      'normal',
+    ],
+    cwd: repoRoot,
+  },
+  {
     label: 'npm test',
     command: 'npm',
     args: ['test'],
