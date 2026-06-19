@@ -11,6 +11,10 @@ import { createItem, fetchItems } from './api';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
 import { ComponentsView } from './components/ComponentsView';
+import { AuditCreateView } from './components/AuditCreateView';
+import { AuditDetailView } from './components/AuditDetailView';
+import { AuditEditView } from './components/AuditEditView';
+import { AuditsView } from './components/AuditsView';
 import { IncidentCreateView } from './components/IncidentCreateView';
 import { IncidentDetailView } from './components/IncidentDetailView';
 import { IncidentEditView } from './components/IncidentEditView';
@@ -209,6 +213,9 @@ function App(): JSX.Element {
           <NavLink to="/incidents" className={navLinkClass}>
             Incidents
           </NavLink>
+          <NavLink to="/audits" className={navLinkClass}>
+            Audits
+          </NavLink>
           <NavLink to="/components" className={navLinkClass}>
             Components
           </NavLink>
@@ -218,6 +225,10 @@ function App(): JSX.Element {
       <div id="main-content" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<ItemsView />} />
+          <Route path="/audits/create" element={<AuditCreateView />} />
+          <Route path="/audits/:id/edit" element={<AuditEditView />} />
+          <Route path="/audits/:id" element={<AuditDetailView />} />
+          <Route path="/audits" element={<AuditsView />} />
           <Route path="/incidents/create" element={<IncidentCreateView />} />
           <Route path="/incidents/:id/edit" element={<IncidentEditView />} />
           <Route path="/incidents/:id" element={<IncidentDetailView />} />

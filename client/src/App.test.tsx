@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
+import { createAudit, fetchAudits, getAudit, updateAudit } from '@/api/audits';
 import { createItem, fetchItems } from './api';
 import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
 import { ApiClientError } from './errors';
@@ -12,6 +13,17 @@ vi.mock('./api', () => ({
   fetchItems: vi.fn(),
   createItem: vi.fn(),
 }));
+
+vi.mock('@/api/audits', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/audits')>();
+  return {
+    ...actual,
+    fetchAudits: vi.fn(),
+    createAudit: vi.fn(),
+    getAudit: vi.fn(),
+    updateAudit: vi.fn(),
+  };
+});
 
 const renderApp = (initialEntries: string[] = ['/']): void => {
   render(
@@ -26,6 +38,10 @@ describe('App', () => {
     document.title = 'Radar Practice';
     vi.mocked(fetchItems).mockReset();
     vi.mocked(createItem).mockReset();
+    vi.mocked(fetchAudits).mockReset();
+    vi.mocked(createAudit).mockReset();
+    vi.mocked(getAudit).mockReset();
+    vi.mocked(updateAudit).mockReset();
   });
 
   it('renders skip link targeting main content', (): void => {
@@ -50,6 +66,40 @@ describe('App', () => {
 
     // Assert
     expect(document.title).toBe('Items | Radar Practice');
+  });
+
+  it('renders Audits NavLink in app navigation', (): void => {
+    // Arrange
+    vi.mocked(fetchItems).mockResolvedValue([]);
+
+    // Act
+    renderApp();
+
+    // Assert
+    const auditsLink = screen.getByRole('link', { name: 'Audits' });
+    expect(auditsLink).toHaveAttribute('href', '/audits');
+  });
+
+  it('renders Audits list view at /audits', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchAudits).mockResolvedValue({
+      items: [],
+      page: 1,
+      pageSize: 25,
+      totalCount: 0,
+      totalPages: 0,
+    });
+
+    // Act
+    renderApp(['/audits']);
+
+    // Assert
+    expect(
+      await screen.findByRole('heading', { name: 'Audits' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Clinical quality audits from the Audits API'),
+    ).toBeInTheDocument();
   });
 
   it('sets document title to Create incident | Radar Practice at /incidents/create', (): void => {

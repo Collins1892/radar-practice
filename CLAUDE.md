@@ -44,15 +44,20 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `legacy/AuditsApi/` — original .NET Framework API retained as the before-state reference for the AuditsApi modernisation migration; not stale or dead code
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
-- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, InlineAlert, Modal)
+- `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, AuditsView, AuditForm, AuditCreateView, AuditDetailView, AuditEditView, AuditPageChrome, InlineAlert, Modal)
 - `client/src/api.ts` — typed fetch layer for ItemsApi (fetchItems, createItem)
 - `client/src/api/incidents.ts` — typed fetch layer for IncidentsApi (fetchIncidents, createIncident, getIncident, updateIncident, shared helpers incidentUserMessage, parseIncidentId)
+- `client/src/api/audits.ts` — typed fetch layer for AuditsApi (fetchAudits, createAudit, getAudit, updateAudit, shared helpers auditUserMessage, parseAuditId)
 - `client/src/types.ts` — shared TypeScript types (e.g. `Item`, `CreateItemRequest`)
 - `client/src/errors.ts` — `ApiClientError` and `toUserMessage` error mapping
 - `client/src/guards.ts` — runtime type guards for API response parsing
 - `client/src/componentRegistry.tsx` — registry of all components for the components view (has file-level eslint-disable — see decisions log)
 - `client/src/components/formFieldUtils.ts` — shared form utility (formFieldErrorId)
 - `client/src/components/incidentDisplay.ts` — shared incident display helpers — badge variants, status label, reported-date formatter, severity/status/filter option lists
+- `client/src/components/auditDisplay.ts` — shared audit display helpers — badge variants, status label, audit-date formatter, status/filter option lists
+- `client/src/components/auditPageCopy.ts` — shared audit page headings, subtitles, and success messages
+- `client/src/hooks/useAudits.ts` — list hook for AuditsView (filters, sort, pagination, fetch state)
+- `client/src/hooks/useAudit.ts` — single-audit hook for detail/edit views (load by id, reload)
 - `client/src/pageTitle.ts` — per-route document.title helper (SITE_TITLE, formatPageTitle)
 - `client/src/lib/utils.ts` — shadcn `cn()` utility (vendor, ESLint-ignored)
 - `client/components.json` — shadcn configuration
@@ -101,7 +106,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 **Frontend:**
 - React 19.2.6 with TypeScript 6.0.2
 - Vite 8.0.12 for bundling
-- `react-router-dom` 7.16.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (items), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`
+- `react-router-dom` 7.16.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (items), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`
 - Tailwind CSS 4.3.0 via `@tailwindcss/vite` 4.3.0 plugin
 - shadcn/ui — Nova preset, Radix component library, `components.json` config
 - `radix-ui` 1.4.3 and `@radix-ui/react-slot` 1.2.4 (Radix primitives)

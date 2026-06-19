@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AUDIT_CREATE_HEADING,
+  AUDIT_DETAIL_HEADING,
+  AUDIT_EDIT_HEADING,
+} from '@/components/auditPageCopy';
+import {
   INCIDENT_CREATE_HEADING,
   INCIDENT_DETAIL_HEADING,
   INCIDENT_EDIT_HEADING,
@@ -27,6 +32,50 @@ describe('resolvePageTitle', () => {
 
     // Assert
     expect(result).toBe(formatPageTitle('Incidents'));
+  });
+
+  it('returns Audits title at /audits', (): void => {
+    // Arrange
+    const pathname = '/audits';
+
+    // Act
+    const result = resolvePageTitle(pathname);
+
+    // Assert
+    expect(result).toBe(formatPageTitle('Audits'));
+  });
+
+  it('returns create audit title at /audits/create', (): void => {
+    // Arrange
+    const pathname = '/audits/create';
+
+    // Act
+    const result = resolvePageTitle(pathname);
+
+    // Assert
+    expect(result).toBe(formatPageTitle(AUDIT_CREATE_HEADING));
+  });
+
+  it('returns edit audit title at /audits/:id/edit', (): void => {
+    // Arrange
+    const pathname = '/audits/42/edit';
+
+    // Act
+    const result = resolvePageTitle(pathname);
+
+    // Assert
+    expect(result).toBe(formatPageTitle(AUDIT_EDIT_HEADING));
+  });
+
+  it('returns audit detail title at /audits/:id', (): void => {
+    // Arrange
+    const pathname = '/audits/42';
+
+    // Act
+    const result = resolvePageTitle(pathname);
+
+    // Assert
+    expect(result).toBe(formatPageTitle(AUDIT_DETAIL_HEADING));
   });
 
   it('returns create incident title at /incidents/create', (): void => {

@@ -1,5 +1,10 @@
 import { matchPath } from 'react-router-dom';
 import {
+  AUDIT_CREATE_HEADING,
+  AUDIT_DETAIL_HEADING,
+  AUDIT_EDIT_HEADING,
+} from '@/components/auditPageCopy';
+import {
   INCIDENT_CREATE_HEADING,
   INCIDENT_DETAIL_HEADING,
   INCIDENT_EDIT_HEADING,
@@ -12,6 +17,18 @@ export function formatPageTitle(pageTitle: string): string {
 }
 
 export function resolvePageTitle(pathname: string): string {
+  if (matchPath({ path: '/audits/create', end: true }, pathname)) {
+    return formatPageTitle(AUDIT_CREATE_HEADING);
+  }
+  if (matchPath({ path: '/audits/:id/edit', end: true }, pathname)) {
+    return formatPageTitle(AUDIT_EDIT_HEADING);
+  }
+  if (matchPath({ path: '/audits/:id', end: true }, pathname)) {
+    return formatPageTitle(AUDIT_DETAIL_HEADING);
+  }
+  if (matchPath({ path: '/audits', end: true }, pathname)) {
+    return formatPageTitle('Audits');
+  }
   if (matchPath({ path: '/incidents/create', end: true }, pathname)) {
     return formatPageTitle(INCIDENT_CREATE_HEADING);
   }
