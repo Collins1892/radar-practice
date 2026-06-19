@@ -44,7 +44,6 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
             AuditDate = auditDate,
             Status = Status.Scheduled,
             CreatedBy = "audit.user",
-            RecordStatus = RecordStatus.Active,
         };
         var pagedResult = new PagedAuditsResult(
             new[] { audit },
@@ -54,6 +53,7 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
             TotalPages: 1);
 
         var repo = Substitute.For<IAuditRepository>();
+        repo.IsValidSortField(Arg.Any<string>()).Returns(true);
         repo.GetAll(Arg.Any<AuditListQuery>()).Returns(pagedResult);
         var client = CreateClientWithRepo(repo);
 
@@ -77,7 +77,6 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(auditDate, item.AuditDate.Date);
         Assert.Equal(Status.Scheduled, item.Status);
         Assert.Equal("audit.user", item.CreatedBy);
-        Assert.Equal(RecordStatus.Active, item.RecordStatus);
     }
 
     [Fact]
@@ -92,6 +91,7 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
             TotalPages: 0);
 
         var repo = Substitute.For<IAuditRepository>();
+        repo.IsValidSortField(Arg.Any<string>()).Returns(true);
         repo.GetAll(Arg.Any<AuditListQuery>()).Returns(pagedResult);
         var client = CreateClientWithRepo(repo);
 
@@ -115,21 +115,29 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
     public async Task Get_FilterByStatus_ReturnsOnlyMatchingAudits()
     {
         // Arrange
-        var client = CreateDefaultClient();
-        var scheduled = await CreateAuditAsync(
-            client,
-            "Scheduled audit",
-            "First",
-            new DateTime(2026, 1, 1),
-            Status.Scheduled,
-            "user.one");
-        await CreateAuditAsync(
-            client,
-            "Completed audit",
-            "Second",
-            new DateTime(2026, 2, 1),
-            Status.Completed,
-            "user.two");
+        var scheduled = new Audit
+        {
+            Id = 1,
+            Title = "Scheduled audit",
+            Description = "First",
+            AuditDate = new DateTime(2026, 1, 1),
+            Status = Status.Scheduled,
+            CreatedBy = "user.one",
+            RecordStatus = RecordStatus.Active,
+        };
+        var pagedResult = new PagedAuditsResult(
+            new[] { scheduled },
+            Page: 1,
+            PageSize: 100,
+            TotalCount: 1,
+            TotalPages: 1);
+
+        var repo = Substitute.For<IAuditRepository>();
+        repo.IsValidSortField(Arg.Any<string>()).Returns(true);
+        repo.GetAll(Arg.Is<AuditListQuery>(q =>
+                q.Status == Status.Scheduled && q.PageSize == 100))
+            .Returns(pagedResult);
+        var client = CreateClientWithRepo(repo);
 
         // Act
         var response = await client.GetAsync("/audits?status=Scheduled&pageSize=100");
@@ -140,6 +148,7 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
         Assert.NotNull(body);
         Assert.Contains(body.Items, i => i.Id == scheduled.Id);
         Assert.All(body.Items, i => Assert.Equal(Status.Scheduled, i.Status));
+        Assert.Single(body.Items);
     }
 
     [Fact]
@@ -539,6 +548,7 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
     {
         // Arrange
         var repo = Substitute.For<IAuditRepository>();
+        repo.IsValidSortField(Arg.Any<string>()).Returns(true);
         repo.GetAll(Arg.Any<AuditListQuery>())
             .Throws(new InvalidOperationException("Simulated failure"));
         var client = CreateClientWithRepo(repo);
@@ -597,8 +607,7 @@ public class GetAuditsTests : IClassFixture<TestWebApplicationFactory>
         string Description,
         DateTime AuditDate,
         Status Status,
-        string CreatedBy,
-        RecordStatus RecordStatus);
+        string CreatedBy);
 
     private record ErrorResponse(string Error);
 }

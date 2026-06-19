@@ -9,4 +9,5 @@ public interface IAuditRepository
     Audit Add(Audit audit);
     Audit? Update(Audit audit);
     bool SoftDelete(int id);
+    bool IsValidSortField(string sortField);
 }

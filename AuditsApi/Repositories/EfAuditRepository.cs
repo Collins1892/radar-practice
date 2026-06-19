@@ -6,7 +6,7 @@ namespace AuditsApi.Repositories;
 
 public class EfAuditRepository : IAuditRepository
 {
-    public static readonly HashSet<string> SortableFields = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> SortableFields = new(StringComparer.OrdinalIgnoreCase)
     {
         "title",
         "description",
@@ -30,9 +30,9 @@ public class EfAuditRepository : IAuditRepository
 
         var totalCount = audits.Count();
 
-        audits = ApplySort(audits, query.SortBy, query.SortDescending);
+        var sorted = ApplySort(audits, query.SortBy, query.SortDescending);
 
-        var items = audits
+        var items = sorted
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
             .ToList();
@@ -75,14 +75,18 @@ public class EfAuditRepository : IAuditRepository
 
     public bool SoftDelete(int id)
     {
-        var existing = _db.Audits.FirstOrDefault(a => a.Id == id);
-        if (existing is null || existing.RecordStatus == RecordStatus.Deleted)
+        var existing = _db.Audits.FirstOrDefault(
+            a => a.Id == id && a.RecordStatus == RecordStatus.Active);
+        if (existing is null)
             return false;
 
         existing.RecordStatus = RecordStatus.Deleted;
         _db.SaveChanges();
         return true;
     }
+
+    public bool IsValidSortField(string sortField) =>
+        SortableFields.Contains(sortField);
 
     private static IQueryable<Audit> ApplySort(
         IQueryable<Audit> query,

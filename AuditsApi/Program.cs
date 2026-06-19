@@ -45,8 +45,8 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-app.UseCors();
 app.UseHttpsRedirection();
+app.UseCors();
 
 app.MapGet("/audits", (
     IAuditRepository repo,
@@ -66,7 +66,7 @@ app.MapGet("/audits", (
         return Results.BadRequest(new { error = "Page size must be 100 or fewer." });
 
     var resolvedSortBy = string.IsNullOrWhiteSpace(sortBy) ? "auditDate" : sortBy;
-    if (!EfAuditRepository.SortableFields.Contains(resolvedSortBy))
+    if (!repo.IsValidSortField(resolvedSortBy))
         return Results.BadRequest(new { error = "Invalid sort field." });
 
     var resolvedDirection = string.IsNullOrWhiteSpace(sortDirection) ? "desc" : sortDirection;
@@ -83,7 +83,12 @@ app.MapGet("/audits", (
         page,
         pageSize));
 
-    return Results.Ok(result);
+    return Results.Ok(new PagedAuditsResponse(
+        result.Items.Select(a => a.ToResponse()).ToList(),
+        result.Page,
+        result.PageSize,
+        result.TotalCount,
+        result.TotalPages));
 });
 
 app.MapPost("/audits", (AuditRequest? req, IAuditRepository repo) =>
@@ -102,7 +107,7 @@ app.MapPost("/audits", (AuditRequest? req, IAuditRepository repo) =>
     };
 
     var created = repo.Add(audit);
-    return Results.Created($"/audits/{created.Id}", created);
+    return Results.Created($"/audits/{created.Id}", created.ToResponse());
 });
 
 app.MapGet("/audits/{id}", (int id, IAuditRepository repo) =>
@@ -110,7 +115,7 @@ app.MapGet("/audits/{id}", (int id, IAuditRepository repo) =>
     var audit = repo.GetById(id);
     return audit is null
         ? Results.NotFound(new { error = "Audit not found." })
-        : Results.Ok(audit);
+        : Results.Ok(audit.ToResponse());
 });
 
 app.MapPut("/audits/{id}", (int id, AuditRequest? req, IAuditRepository repo) =>
@@ -138,7 +143,7 @@ app.MapPut("/audits/{id}", (int id, AuditRequest? req, IAuditRepository repo) =>
     var updated = repo.Update(audit);
     return updated is null
         ? Results.NotFound(new { error = "Audit not found." })
-        : Results.Ok(updated);
+        : Results.Ok(updated.ToResponse());
 });
 
 app.MapDelete("/audits/{id}", (int id, IAuditRepository repo) =>

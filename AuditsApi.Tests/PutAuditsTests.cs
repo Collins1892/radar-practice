@@ -33,7 +33,7 @@ public class PutAuditsTests : IClassFixture<TestWebApplicationFactory>
     };
 
     [Fact]
-    public async Task Put_ValidUpdate_Returns200WithUpdatedFieldsAndUnchangedRecordStatus()
+    public async Task Put_ValidUpdate_Returns200WithUpdatedFields()
     {
         // Arrange
         var client = CreateDefaultClient();
@@ -77,7 +77,6 @@ public class PutAuditsTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(new DateTime(2026, 7, 1), body.AuditDate.Date);
         Assert.Equal(Status.InProgress, body.Status);
         Assert.Equal("updated.user", body.CreatedBy);
-        Assert.Equal(RecordStatus.Active, body.RecordStatus);
     }
 
     [Fact]
@@ -438,8 +437,7 @@ public class PutAuditsTests : IClassFixture<TestWebApplicationFactory>
         string Description,
         DateTime AuditDate,
         Status Status,
-        string CreatedBy,
-        RecordStatus RecordStatus);
+        string CreatedBy);
 
     private record ErrorResponse(string Error);
 }

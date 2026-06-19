@@ -129,8 +129,7 @@ public class DeleteAuditsTests : IClassFixture<TestWebApplicationFactory>
         string Description,
         DateTime AuditDate,
         Status Status,
-        string CreatedBy,
-        RecordStatus RecordStatus);
+        string CreatedBy);
 
     private record ErrorResponse(string Error);
 }

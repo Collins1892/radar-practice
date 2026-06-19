@@ -64,7 +64,6 @@ public class GetAuditByIdTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(auditDate, body.AuditDate.Date);
         Assert.Equal(Status.Scheduled, body.Status);
         Assert.Equal("audit.user", body.CreatedBy);
-        Assert.Equal(RecordStatus.Active, body.RecordStatus);
     }
 
     [Fact]
@@ -146,8 +145,7 @@ public class GetAuditByIdTests : IClassFixture<TestWebApplicationFactory>
         string Description,
         DateTime AuditDate,
         Status Status,
-        string CreatedBy,
-        RecordStatus RecordStatus);
+        string CreatedBy);
 
     private record ErrorResponse(string Error);
 }

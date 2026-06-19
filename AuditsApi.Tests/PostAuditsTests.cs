@@ -33,7 +33,7 @@ public class PostAuditsTests : IClassFixture<TestWebApplicationFactory>
     };
 
     [Fact]
-    public async Task Post_ValidAudit_Returns201WithLocationAndActiveRecordStatus()
+    public async Task Post_ValidAudit_Returns201WithLocationAndResponseBody()
     {
         // Arrange
         var client = CreateDefaultClient();
@@ -63,11 +63,10 @@ public class PostAuditsTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(auditDate, audit.AuditDate.Date);
         Assert.Equal(Status.Scheduled, audit.Status);
         Assert.Equal("audit.user", audit.CreatedBy);
-        Assert.Equal(RecordStatus.Active, audit.RecordStatus);
     }
 
     [Fact]
-    public async Task Post_RecordStatusInJsonBody_Ignored_CreatedAsActive()
+    public async Task Post_RecordStatusInJsonBody_Ignored_NotExposedInResponse()
     {
         // Arrange
         var client = CreateDefaultClient();
@@ -88,9 +87,11 @@ public class PostAuditsTests : IClassFixture<TestWebApplicationFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var raw = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("recordStatus", raw, StringComparison.OrdinalIgnoreCase);
         var audit = await response.Content.ReadFromJsonAsync<AuditResponse>(JsonOptions);
         Assert.NotNull(audit);
-        Assert.Equal(RecordStatus.Active, audit.RecordStatus);
+        Assert.True(audit.Id > 0);
     }
 
     [Fact]
@@ -305,8 +306,7 @@ public class PostAuditsTests : IClassFixture<TestWebApplicationFactory>
         string Description,
         DateTime AuditDate,
         Status Status,
-        string CreatedBy,
-        RecordStatus RecordStatus);
+        string CreatedBy);
 
     private record ErrorResponse(string Error);
 }
