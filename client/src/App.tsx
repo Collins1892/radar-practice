@@ -27,11 +27,6 @@ import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 import './App.css';
 
-const skipLinkClassName = cn(
-  'absolute left-[-9999px] top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-  'focus-visible:left-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-);
-
 function usePageTitle(): void {
   const { pathname } = useLocation();
 
@@ -199,7 +194,10 @@ function App(): JSX.Element {
 
   return (
     <main className="app relative">
-      <a href="#main-content" className={skipLinkClassName}>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:rounded focus:ring-2 focus:ring-ring"
+      >
         Skip to main content
       </a>
       <header>
