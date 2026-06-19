@@ -18,6 +18,10 @@ mirroring the kind of work done on a healthcare SaaS modernisation programme.
 project — separate API, separate IncidentsDbContext, separate incidents.db. 
 Mirrors microservices direction without over-engineering.
 
+**Clinical audits module** added as a standalone AuditsApi project — separate 
+API, separate AuditsDbContext, separate audits.db. Migrated from 
+`legacy/AuditsApi/`; soft delete via `RecordStatus` (legacy used hard delete).
+
 **Repo layout:**
 - `ItemsApi/` — .NET 8 minimal API
 - `ItemsApi/Data/AppDbContext.cs` — EF Core DbContext for ItemsApi (`DbSet<Item>` only)
@@ -31,6 +35,13 @@ Mirrors microservices direction without over-engineering.
 - `IncidentsApi/Migrations/` — EF Core migrations
 - `IncidentsApi.Tests/` — xUnit integration tests
 - `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
+- `AuditsApi/` — standalone .NET 8 minimal API for clinical quality audits
+- `AuditsApi/Data/AuditsDbContext.cs` — dedicated DbContext (audits.db)
+- `AuditsApi/Repositories/EfAuditRepository.cs` — EF Core repository implementation
+- `AuditsApi/Migrations/` — EF Core migrations
+- `AuditsApi.Tests/` — xUnit integration tests
+- `AuditsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
+- `legacy/AuditsApi/` — original .NET Framework API retained as the before-state reference for the AuditsApi modernisation migration; not stale or dead code
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
 - `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, InlineAlert, Modal)
@@ -72,15 +83,18 @@ Mirrors microservices direction without over-engineering.
 - C# with repository pattern and dependency injection
 - Entity Framework Core 8.0.27 with SQLite (`Microsoft.EntityFrameworkCore.Sqlite`)
 - `AppDbContext` — ItemsApi only. IncidentsApi uses its own IncidentsDbContext 
-  in `IncidentsApi/Data/`. Two separate SQLite databases: `app.db` (items), 
-  `incidents.db` (incidents). Severity and Status enums stored as int for 
-  correct sort order and query performance.
+  in `IncidentsApi/Data/`. AuditsApi uses its own AuditsDbContext in 
+  `AuditsApi/Data/`. Three separate SQLite databases: `app.db` (items), 
+  `incidents.db` (incidents), `audits.db` (audits). Dev ports: ItemsApi 5133, 
+  IncidentsApi 5134, AuditsApi 5135. IncidentsApi Severity/Status and 
+  AuditsApi Status/RecordStatus enums stored as int for correct sort order and 
+  query performance.
 - `EfItemsRepository` implements `IItemsRepository` — scoped lifetime, `AsNoTracking()` for reads
 - `Price` stored as TEXT via `HasConversion<string>()` for exact decimal precision
 - `Name` has `HasMaxLength(100)` in `OnModelCreating` — enforced at app layer, documented in schema
 - Database file: `app.db` (local only, never committed — `.gitignore` covers `*.db`, `*.db-shm`, `*.db-wal`)
 - xUnit 2.5.3 for integration tests using `TestWebApplicationFactory`
-- `TestWebApplicationFactory` — ItemsApi.Tests and IncidentsApi.Tests each swap their DbContext for a kept-open `DataSource=:memory:` SQLite connection; schema applied via `Database.Migrate()`
+- `TestWebApplicationFactory` — ItemsApi.Tests, IncidentsApi.Tests, and AuditsApi.Tests each swap their DbContext for a kept-open `DataSource=:memory:` SQLite connection; schema applied via `Database.Migrate()`
 - NSubstitute 5.1.0 for mocking
 - Microsoft.AspNetCore.Mvc.Testing 8.0.0
 
@@ -148,6 +162,17 @@ changed library API.
 - Global exception handler covers unhandled exceptions — do not add
   per-endpoint try/catch; the handler returns a consistent
   `{ error: "..." }` shape and never exposes stack traces to the client
+- **Soft delete (`RecordStatus`)** — established in AuditsApi; reuse this
+  pattern when adding soft delete elsewhere:
+  - `RecordStatus` enum (`Active`, `Deleted`) on the entity; stored as int
+  - Wire DTO (`AuditRequest`) excludes `RecordStatus` — not bindable from
+    POST/PUT JSON; repository `Add` always sets `Active`
+  - `Update` never modifies `RecordStatus`; only updates rows where
+    `RecordStatus == Active`
+  - All read paths (`GetAll`, `GetById`) unconditionally exclude
+    `RecordStatus == Deleted`
+  - DELETE maps to repository `SoftDelete` (sets `Deleted`; second delete
+    returns not found)
 
 **General:**
 - Small focused commits with descriptive messages
@@ -164,6 +189,7 @@ changed library API.
 - Use NSubstitute for mocking repository dependencies
 - Run ItemsApi tests with: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`
 - Run IncidentsApi tests with: `dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj`
+- Run AuditsApi tests with: `dotnet test AuditsApi.Tests/AuditsApi.Tests.csproj`
 
 **Frontend — Vitest:**
 - Vitest is the React test runner; run from `client/` with `npm test` (`vitest run`)

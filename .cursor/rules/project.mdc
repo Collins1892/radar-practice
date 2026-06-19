@@ -19,6 +19,12 @@ No patient data, no production dependencies.
 - `IncidentsApi/Migrations/` — EF Core migrations
 - `IncidentsApi.Tests/` — xUnit integration tests
 - `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
+- `AuditsApi/` — standalone .NET 8 minimal API for clinical quality audits
+- `AuditsApi/Data/AuditsDbContext.cs` — dedicated DbContext (`audits.db`); no shared context with ItemsApi
+- `AuditsApi/Repositories/EfAuditRepository.cs` — EF Core repository
+- `AuditsApi/Migrations/` — EF Core migrations
+- `AuditsApi.Tests/` — xUnit integration tests
+- `AuditsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `client/src/pageTitle.ts` — per-route document.title helper (SITE_TITLE, formatPageTitle)
 - `client/e2e/` — Playwright e2e tests
 - `private/seven-week-plan.md` — master plan, decisions log, daily structure (private file: agent-readable, not committed)
@@ -37,6 +43,7 @@ No patient data, no production dependencies.
 - `Name` has `HasMaxLength(100)` in `OnModelCreating`.
 - Database file `app.db` — local only, never committed.
 - IncidentsApi: `incidents.db` (local only). `Severity` and `Status` enums stored as int for correct sort order.
+- AuditsApi: `audits.db` (local only). Dev port 5135 (Items=5133, Incidents=5134). `Status` and `RecordStatus` enums stored as int. DELETE soft-deletes via `RecordStatus`.
 - xUnit 2.5.3 with `TestWebApplicationFactory`; NSubstitute 5.1.0; Microsoft.AspNetCore.Mvc.Testing 8.0.0.
 - Node.js 24 (LTS).
 
@@ -85,10 +92,11 @@ No patient data, no production dependencies.
 - Repository pattern — controllers depend on interfaces, not concrete classes.
 - Dependency injection via the built-in .NET DI container.
 - Global exception handler covers unhandled exceptions — do not add per-endpoint try/catch; it returns a consistent `{ error: "..." }` shape and never exposes stack traces.
+- **Soft delete (`RecordStatus`)** — AuditsApi pattern: `Active`/`Deleted` enum on entity; excluded from wire DTO; `Add` sets `Active`; `Update` never touches it; all reads exclude `Deleted`; DELETE calls `SoftDelete`.
 
 ## Testing approach
 
-- Backend: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`; `dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj`. Frontend: `npm test` in `client/`.
+- Backend: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`; `dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj`; `dotnet test AuditsApi.Tests/AuditsApi.Tests.csproj`. Frontend: `npm test` in `client/`.
 - Generate one test per prompt; integration tests preferred for endpoints.
 - Test behaviour, not implementation details; do not edit or remove existing tests without instruction.
 - Gotchas: Vitest requires `pool: 'threads'` on Windows; `TestWebApplicationFactory` gives each test class its own in-memory SQLite database.

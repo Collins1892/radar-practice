@@ -37,6 +37,9 @@ jobs:
       - name: Run Incidents API tests
         run: dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj --verbosity normal
 
+      - name: Run Audits API tests
+        run: dotnet test AuditsApi.Tests/AuditsApi.Tests.csproj --verbosity normal
+
       - name: Run client tests
         working-directory: client
         run: npm test
