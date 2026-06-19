@@ -25,10 +25,10 @@ export function AuditDetailView(): JSX.Element {
   const { audit, loading, error, reload } = useAudit(auditId);
 
   useEffect(() => {
-    if (audit !== null && audit.id === auditId) {
+    if (audit !== null) {
       document.title = formatPageTitle(audit.title);
     }
-  }, [audit, auditId]);
+  }, [audit]);
 
   if (auditId === null) {
     return (

@@ -6,7 +6,7 @@ import { createAudit } from '@/api/audits';
 import type { Audit } from '@/api/audits';
 import { ApiClientError } from '@/errors';
 import { AUDIT_CREATE_SUBMIT_LABEL } from '@/components/auditPageCopy';
-import { clickCalendarDay } from '@/test/calendarHelpers';
+import { fillValidAuditForm } from '@/test/auditFormTestUtils';
 import { AuditCreateView } from './AuditCreateView';
 
 const navigateMock = vi.hoisted(() => vi.fn());
@@ -40,19 +40,6 @@ describe('AuditCreateView', () => {
     vi.mocked(createAudit).mockReset();
     navigateMock.mockReset();
   });
-
-  async function fillValidAuditForm(): Promise<void> {
-    fireEvent.change(screen.getByLabelText(/^Title/), {
-      target: { value: 'Hand hygiene compliance' },
-    });
-    fireEvent.change(screen.getByLabelText(/^Description/), {
-      target: { value: 'Quarterly ward review' },
-    });
-    clickCalendarDay(/^Audit date/, 2026, 5, 4);
-    fireEvent.change(screen.getByLabelText(/^Created by/), {
-      target: { value: 'Quality team' },
-    });
-  }
 
   it('renders all form fields on the create form', (): void => {
     // Arrange — defaults via renderAuditCreateView

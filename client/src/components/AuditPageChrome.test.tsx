@@ -37,6 +37,9 @@ describe('AuditPageChrome', () => {
     renderAuditPageChrome();
 
     // Assert
-    expect(screen.queryByRole('paragraph')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: AUDIT_DETAIL_HEADING })
+        .nextElementSibling,
+    ).toBeNull();
   });
 });

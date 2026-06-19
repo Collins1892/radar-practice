@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAudit, getAudit, updateAudit, type Audit } from '@/api/audits';
 import { ApiClientError } from '@/errors';
 import { toast } from 'sonner';
-import { clickCalendarDay } from '@/test/calendarHelpers';
+import { fillValidAuditForm } from '@/test/auditFormTestUtils';
 import { AuditForm } from './AuditForm';
 import {
   AUDIT_CREATE_SUBMIT_LABEL,
@@ -67,19 +67,6 @@ describe('AuditForm', () => {
     vi.mocked(toast.success).mockReset();
     navigateMock.mockReset();
   });
-
-  async function fillValidAuditForm(): Promise<void> {
-    fireEvent.change(screen.getByLabelText(/^Title/), {
-      target: { value: 'Hand hygiene compliance' },
-    });
-    fireEvent.change(screen.getByLabelText(/^Description/), {
-      target: { value: 'Quarterly ward review' },
-    });
-    clickCalendarDay(/^Audit date/, 2026, 5, 4);
-    fireEvent.change(screen.getByLabelText(/^Created by/), {
-      target: { value: 'Quality team' },
-    });
-  }
 
   it('shows loading state while fetching the audit', (): void => {
     // Arrange
