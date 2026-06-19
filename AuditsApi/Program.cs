@@ -93,7 +93,7 @@ app.MapGet("/audits", (
 
 app.MapPost("/audits", (AuditRequest? req, IAuditRepository repo) =>
 {
-    var validation = ValidateAuditRequest(req, isUpdate: false);
+    var validation = ValidateAuditRequest(req);
     if (validation is not null)
         return validation;
 
@@ -118,7 +118,7 @@ app.MapGet("/audits/{id}", (int id, IAuditRepository repo) =>
         : Results.Ok(audit.ToResponse());
 });
 
-app.MapPut("/audits/{id}", (int id, AuditRequest? req, IAuditRepository repo) =>
+app.MapPut("/audits/{id}", (int id, PutAuditRequest? req, IAuditRepository repo) =>
 {
     if (req is null)
         return Results.BadRequest(new { error = "Audit payload is required." });
@@ -126,7 +126,7 @@ app.MapPut("/audits/{id}", (int id, AuditRequest? req, IAuditRepository repo) =>
     if (id != req.Id)
         return Results.BadRequest(new { error = "Route id does not match audit id." });
 
-    var validation = ValidateAuditRequest(req, isUpdate: true);
+    var validation = ValidatePutAuditRequest(req);
     if (validation is not null)
         return validation;
 
@@ -155,30 +155,47 @@ app.MapDelete("/audits/{id}", (int id, IAuditRepository repo) =>
 
 app.Run();
 
-static IResult? ValidateAuditRequest(AuditRequest? req, bool isUpdate)
+static IResult? ValidateAuditRequest(AuditRequest? req)
 {
     if (req is null)
         return Results.BadRequest(new { error = "Audit payload is required." });
 
-    if (isUpdate && req.Id <= 0)
+    return ValidateAuditFields(req.Title, req.Status, req.AuditDate, req.CreatedBy);
+}
+
+static IResult? ValidatePutAuditRequest(PutAuditRequest? req)
+{
+    if (req is null)
+        return Results.BadRequest(new { error = "Audit payload is required." });
+
+    if (req.Id <= 0)
         return Results.BadRequest(new { error = "A valid audit id is required." });
 
-    if (string.IsNullOrWhiteSpace(req.Title))
+    return ValidateAuditFields(req.Title, req.Status, req.AuditDate, req.CreatedBy);
+}
+
+static IResult? ValidateAuditFields(
+    string title,
+    Status? status,
+    DateTime auditDate,
+    string createdBy)
+{
+    if (string.IsNullOrWhiteSpace(title))
         return Results.BadRequest(new { error = "Title is required." });
 
-    if (req.Title.Length > 200)
+    if (title.Length > 200)
         return Results.BadRequest(new { error = "Title must not exceed 200 characters." });
 
-    if (req.Status is null)
+    if (status is null)
         return Results.BadRequest(new { error = "Status is required." });
 
-    if (!Enum.IsDefined(req.Status.Value))
+    if (!Enum.IsDefined(status.Value))
         return Results.BadRequest(new { error = InvalidStatusMessage });
 
-    if (req.AuditDate == default)
+    if (auditDate == default)
         return Results.BadRequest(new { error = "AuditDate is required." });
 
-    if (string.IsNullOrWhiteSpace(req.CreatedBy))
+    if (string.IsNullOrWhiteSpace(createdBy))
         return Results.BadRequest(new { error = "CreatedBy is required." });
 
     return null;

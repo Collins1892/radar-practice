@@ -1,6 +1,7 @@
 namespace AuditsApi;
 
-public record AuditRequest(
+public record PutAuditRequest(
+    int Id,
     string Title,
     string Description,
     DateTime AuditDate,

@@ -118,7 +118,7 @@ public class PutAuditsTests : IClassFixture<TestWebApplicationFactory>
         // Act
         var response = await client.PutAsync(
             $"/audits/{id}",
-            JsonContent.Create<AuditRequest?>(null));
+            JsonContent.Create<PutAuditRequest?>(null));
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
