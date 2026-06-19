@@ -1,5 +1,6 @@
 import { fireEvent, screen } from '@testing-library/react';
 
+// Forward-only: navigates via "next month" and cannot reach dates before the calendar's initial month.
 export function clickCalendarDay(
   dateFieldLabel: RegExp | string,
   year: number,

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { clickCalendarDay } from '@/test/calendarHelpers';
 import { AuditForm } from './AuditForm';
 import {
-  AUDIT_CREATE_HEADING,
+  AUDIT_CREATE_SUBMIT_LABEL,
   AUDIT_CREATE_SUCCESS_MESSAGE,
   AUDIT_EDIT_HEADING,
   AUDIT_EDIT_SUCCESS_MESSAGE,
@@ -235,7 +235,9 @@ describe('AuditForm', () => {
     renderAuditFormCreate();
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     expect(screen.getByLabelText(/^Title/)).toHaveFocus();
@@ -256,7 +258,9 @@ describe('AuditForm', () => {
     // Act
     renderAuditFormCreate();
     await fillValidAuditForm();
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     await waitFor(() => {
@@ -272,7 +276,9 @@ describe('AuditForm', () => {
     // Act
     renderAuditFormCreate();
     await fillValidAuditForm();
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     await waitFor(() => {

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAudit } from '@/api/audits';
 import type { Audit } from '@/api/audits';
 import { ApiClientError } from '@/errors';
-import { AUDIT_CREATE_HEADING } from '@/components/auditPageCopy';
+import { AUDIT_CREATE_SUBMIT_LABEL } from '@/components/auditPageCopy';
 import { clickCalendarDay } from '@/test/calendarHelpers';
 import { AuditCreateView } from './AuditCreateView';
 
@@ -67,7 +67,7 @@ describe('AuditCreateView', () => {
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Created by')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: AUDIT_CREATE_HEADING }),
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
     ).toBeInTheDocument();
   });
 
@@ -76,7 +76,9 @@ describe('AuditCreateView', () => {
     renderAuditCreateView();
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     expect(screen.getByText('Title is required.')).toBeInTheDocument();
@@ -93,7 +95,9 @@ describe('AuditCreateView', () => {
     fireEvent.change(screen.getByLabelText(/^Title/), {
       target: { value: longTitle },
     });
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     expect(
@@ -119,7 +123,9 @@ describe('AuditCreateView', () => {
 
     // Act
     await fillValidAuditForm();
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     await waitFor(() => {
@@ -148,7 +154,9 @@ describe('AuditCreateView', () => {
 
     // Act
     await fillValidAuditForm();
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     await waitFor(() => {
@@ -167,7 +175,9 @@ describe('AuditCreateView', () => {
 
     // Act
     await fillValidAuditForm();
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     const alert = await screen.findByRole('alert');
@@ -189,7 +199,9 @@ describe('AuditCreateView', () => {
 
     // Act
     await fillValidAuditForm();
-    fireEvent.click(screen.getByRole('button', { name: AUDIT_CREATE_HEADING }));
+    fireEvent.click(
+      screen.getByRole('button', { name: AUDIT_CREATE_SUBMIT_LABEL }),
+    );
 
     // Assert
     const alert = await screen.findByRole('alert');

@@ -71,20 +71,23 @@ export function useAudits(): UseAuditsResult {
     void reload();
   }, [reload]);
 
-  const setStatusFilter = (value: string): void => {
+  const setStatusFilter = useCallback((value: string): void => {
     setStatusFilterState(value);
     setPageState(1);
-  };
+  }, []);
 
-  const handleSort = (key: string, direction: SortDirection): void => {
-    setSortKey(key);
-    setSortDirection(direction);
-    setPageState(1);
-  };
+  const handleSort = useCallback(
+    (key: string, direction: SortDirection): void => {
+      setSortKey(key);
+      setSortDirection(direction);
+      setPageState(1);
+    },
+    [],
+  );
 
-  const setPage = (nextPage: number): void => {
+  const setPage = useCallback((nextPage: number): void => {
     setPageState(nextPage);
-  };
+  }, []);
 
   const hasActiveFilters = statusFilter !== AUDIT_ALL_FILTER;
   const tableData: AuditRow[] = result?.items ?? [];

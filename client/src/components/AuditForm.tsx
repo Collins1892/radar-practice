@@ -18,6 +18,7 @@ import { SelectField } from '@/components/SelectField';
 import { AUDIT_STATUSES, STATUS_FORM_OPTIONS } from '@/components/auditDisplay';
 import {
   AUDIT_CREATE_HEADING,
+  AUDIT_CREATE_SUBMIT_LABEL,
   AUDIT_CREATE_SUBTITLE,
   AUDIT_CREATE_SUCCESS_MESSAGE,
   AUDIT_EDIT_HEADING,
@@ -243,7 +244,7 @@ export function AuditForm(props: AuditFormProps): JSX.Element {
     );
   }
 
-  const submitLabel = isEdit ? 'Save changes' : AUDIT_CREATE_HEADING;
+  const submitLabel = isEdit ? 'Save changes' : AUDIT_CREATE_SUBMIT_LABEL;
   const submittingLabel = isEdit ? 'Saving…' : 'Creating…';
 
   return (

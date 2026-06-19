@@ -1,4 +1,5 @@
 export const AUDIT_CREATE_HEADING = 'Create audit';
+export const AUDIT_CREATE_SUBMIT_LABEL = 'Create audit';
 export const AUDIT_CREATE_SUBTITLE =
   'Add a new clinical quality audit to the Audits API';
 export const AUDIT_EDIT_HEADING = 'Edit audit';
