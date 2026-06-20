@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { test, expect } from '@playwright/test';
 import { createAudit, deleteAudit } from '../support/api';
 import type { AuditRequest } from '../support/api';
@@ -22,7 +22,7 @@ test.describe('audits: view and soft delete', () => {
     expect(audit.title).toBe(payload.title);
 
     const auditsPage = new AuditsPage(page);
-    const formattedAuditDate = format(new Date(auditDate), 'dd MMM yyyy');
+    const formattedAuditDate = format(parseISO(auditDate), 'dd MMM yyyy');
 
     // Act — list and detail
     await auditsPage.goto();

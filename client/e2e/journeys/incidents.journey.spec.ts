@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { test, expect } from '@playwright/test';
 import { createIncident } from '../support/api';
 import type { CreateIncidentRequest } from '../support/api';
@@ -45,7 +45,7 @@ test.describe('incidents: view and edit', () => {
     const incidentsPage = new IncidentsPage(page);
     const detailPage = new IncidentDetailPage(page);
     const formPage = new IncidentFormPage(page);
-    const formattedReportedDate = format(new Date(reportedDate), 'dd MMM yyyy');
+    const formattedReportedDate = format(parseISO(reportedDate), 'dd MMM yyyy');
 
     // Act — list and detail
     await incidentsPage.goto();
