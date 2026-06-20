@@ -27,11 +27,6 @@ import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 import './App.css';
 
-const skipLinkClassName = cn(
-  'absolute left-[-9999px] top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-  'focus-visible:left-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-);
-
 function usePageTitle(): void {
   const { pathname } = useLocation();
 
@@ -64,6 +59,11 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
     isActive && 'border-primary font-medium text-foreground',
   );
 }
+
+const skipLinkClassName = cn(
+  'sr-only top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
+  'focus-visible:not-sr-only focus-visible:absolute focus-visible:left-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+);
 
 function ItemsView(): JSX.Element {
   const [items, setItems] = useState<Item[]>([]);
