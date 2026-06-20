@@ -1,4 +1,4 @@
-﻿import { format } from 'date-fns';
+import { format } from 'date-fns';
 import { test, expect } from '@playwright/test';
 import { createIncident } from '../support/api';
 import type { CreateIncidentRequest } from '../support/api';

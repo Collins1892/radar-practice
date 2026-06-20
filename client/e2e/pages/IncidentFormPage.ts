@@ -1,4 +1,4 @@
-﻿import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 export class IncidentFormPage {
   readonly titleInput: Locator;
@@ -6,7 +6,7 @@ export class IncidentFormPage {
   readonly submitEditButton: Locator;
 
   constructor(private readonly page: Page) {
-    this.titleInput = page.locator('#incident-title');
+    this.titleInput = page.getByLabel('Title');
     this.submitCreateButton = page.getByRole('button', {
       name: 'Create incident',
     });

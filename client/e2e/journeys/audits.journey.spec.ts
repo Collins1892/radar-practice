@@ -1,4 +1,4 @@
-﻿import { format } from 'date-fns';
+import { format } from 'date-fns';
 import { test, expect } from '@playwright/test';
 import { createAudit, deleteAudit } from '../support/api';
 import type { AuditRequest } from '../support/api';
