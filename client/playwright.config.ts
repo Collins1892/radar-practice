@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const reuse = !process.env.CI;
 const apiTimeout = 120_000;
+const viteTimeout = 30_000;
 // CI workflow pre-restores and pre-builds Debug; skip MSBuild at probe time.
 const dotnetRunFastStart = process.env.CI ? '--no-restore --no-build ' : '';
 
@@ -41,8 +42,8 @@ export default defineConfig({
       command: 'npm run dev',
       url: 'http://localhost:5173',
       name: 'Vite',
-      timeout: apiTimeout,
-      reuseExistingServer: false,
+      timeout: viteTimeout,
+      reuseExistingServer: reuse,
       env: {
         VITE_API_URL: '',
         VITE_INCIDENTS_API_URL: 'http://localhost:5134',
