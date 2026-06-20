@@ -27,6 +27,7 @@ export class AuditsPage {
     await this.loadingState.waitFor({ state: 'hidden' });
   }
 
+  // href-by-id for stable identity when title text could collide (reused-DB robustness).
   auditLink(id: number): Locator {
     return this.page.locator(`a[href="/audits/${id}"]`);
   }

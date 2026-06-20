@@ -25,6 +25,7 @@ export class IncidentsPage {
     await this.loadingState.waitFor({ state: 'hidden' });
   }
 
+  // href-by-id for stable identity when title text could collide (reused-DB robustness).
   incidentLink(id: number): Locator {
     return this.page.locator(`a[href="/incidents/${id}"]`);
   }

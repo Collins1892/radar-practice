@@ -1,17 +1,5 @@
-const ITEMS_API = 'http://localhost:5133';
 const INCIDENTS_API = 'http://localhost:5134';
 const AUDITS_API = 'http://localhost:5135';
-
-export type Item = {
-  id: number;
-  name: string;
-  price: number;
-};
-
-export type CreateItemRequest = {
-  name: string;
-  price: number;
-};
 
 export type IncidentSeverity = 'Low' | 'Medium' | 'High' | 'Critical';
 
@@ -96,10 +84,6 @@ async function deleteResource(url: string): Promise<void> {
   if (!response.ok) {
     throw new Error(await parseErrorMessage(response));
   }
-}
-
-export async function createItem(data: CreateItemRequest): Promise<Item> {
-  return postJson<Item>(`${ITEMS_API}/items`, data);
 }
 
 export async function createIncident(
