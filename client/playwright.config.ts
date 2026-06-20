@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const reuse = !process.env.CI;
 const apiTimeout = 120_000;
+// CI workflow pre-restores and pre-builds Debug; skip MSBuild at probe time.
+const dotnetRunFastStart = process.env.CI ? '--no-restore --no-build ' : '';
 
 export default defineConfig({
   testDir: './e2e',
@@ -15,24 +17,21 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      command:
-        'dotnet run --project ../ItemsApi/ItemsApi.csproj --launch-profile http',
+      command: `dotnet run ${dotnetRunFastStart}--project ../ItemsApi/ItemsApi.csproj --launch-profile http`,
       url: 'http://localhost:5133/items',
       name: 'ItemsApi',
       timeout: apiTimeout,
       reuseExistingServer: reuse,
     },
     {
-      command:
-        'dotnet run --project ../IncidentsApi/IncidentsApi.csproj --launch-profile http',
+      command: `dotnet run ${dotnetRunFastStart}--project ../IncidentsApi/IncidentsApi.csproj --launch-profile http`,
       url: 'http://localhost:5134/incidents',
       name: 'IncidentsApi',
       timeout: apiTimeout,
       reuseExistingServer: reuse,
     },
     {
-      command:
-        'dotnet run --project ../AuditsApi/AuditsApi.csproj --launch-profile http',
+      command: `dotnet run ${dotnetRunFastStart}--project ../AuditsApi/AuditsApi.csproj --launch-profile http`,
       url: 'http://localhost:5135/audits',
       name: 'AuditsApi',
       timeout: apiTimeout,
