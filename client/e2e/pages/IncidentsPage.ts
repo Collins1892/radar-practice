@@ -25,9 +25,37 @@ export class IncidentsPage {
     await this.loadingState.waitFor({ state: 'hidden' });
   }
 
+  async filterByStatus(displayLabel: string): Promise<void> {
+    await this.page.getByLabel('Status', { exact: true }).click();
+    await this.page.getByRole('option', { name: displayLabel }).click();
+    await this.waitForListLoaded();
+  }
+
+  async filterBySeverity(severity: string): Promise<void> {
+    await this.page.getByLabel('Severity', { exact: true }).click();
+    await this.page.getByRole('option', { name: severity }).click();
+    await this.waitForListLoaded();
+  }
+
+  async sortByTitleDescending(): Promise<void> {
+    const titleSort = this.dataTable.getByRole('button', { name: /^Title/ });
+    await titleSort.click();
+    await this.waitForListLoaded();
+    await titleSort.click();
+    await this.waitForListLoaded();
+  }
+
   // href-by-id for stable identity when title text could collide (reused-DB robustness).
   incidentLink(id: number): Locator {
     return this.page.locator(`a[href="/incidents/${id}"]`);
+  }
+
+  listIncidentLink(id: number): Locator {
+    return this.dataTable.locator(`a[href="/incidents/${id}"]`);
+  }
+
+  async gotoIncident(id: number): Promise<void> {
+    await this.page.goto(`/incidents/${id}`);
   }
 
   async openIncident(id: number): Promise<void> {

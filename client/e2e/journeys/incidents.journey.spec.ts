@@ -31,7 +31,7 @@ test.describe('incidents: view and edit', () => {
     // Arrange
     const reportedDate = format(new Date(), 'yyyy-MM-dd');
     const payload: CreateIncidentRequest = {
-      title: `E2E spill ${Date.now()}`,
+      title: `${Date.now()} E2E spill`,
       description: 'Water on floor',
       location: 'Building 2, level 1',
       severity: 'Medium',
@@ -47,11 +47,14 @@ test.describe('incidents: view and edit', () => {
     const formPage = new IncidentFormPage(page);
     const formattedReportedDate = format(parseISO(reportedDate), 'dd MMM yyyy');
 
-    // Act — list and detail
+    // Act — list (filter + sort so seeded row is on page 1) and detail by id
     await incidentsPage.goto();
     await incidentsPage.waitForListLoaded();
-    await expect(incidentsPage.incidentLink(incident.id)).toBeVisible();
-    await incidentsPage.openIncident(incident.id);
+    await incidentsPage.filterByStatus('Open');
+    await incidentsPage.filterBySeverity('Medium');
+    await incidentsPage.sortByTitleDescending();
+    await expect(incidentsPage.listIncidentLink(incident.id)).toBeVisible();
+    await incidentsPage.gotoIncident(incident.id);
 
     // Assert — detail
     await expect(
@@ -75,12 +78,14 @@ test.describe('incidents: view and edit', () => {
     // Assert — updated on list
     await expect(page).toHaveURL('/incidents');
     await incidentsPage.waitForListLoaded();
+    await incidentsPage.filterByStatus('In Progress');
+    await incidentsPage.sortByTitleDescending();
     await expect(incidentsPage.dataTable).toBeVisible();
-    await expect(incidentsPage.incidentLink(incident.id)).toBeVisible();
+    await expect(incidentsPage.listIncidentLink(incident.id)).toBeVisible();
     await expect(
-      page
+      incidentsPage.dataTable
         .getByRole('row')
-        .filter({ has: incidentsPage.incidentLink(incident.id) })
+        .filter({ hasText: payload.title })
         .getByText('In Progress', { exact: true }),
     ).toBeVisible();
   });

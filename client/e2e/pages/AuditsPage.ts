@@ -27,9 +27,31 @@ export class AuditsPage {
     await this.loadingState.waitFor({ state: 'hidden' });
   }
 
+  async filterByStatus(displayLabel: string): Promise<void> {
+    await this.page.getByLabel('Status', { exact: true }).click();
+    await this.page.getByRole('option', { name: displayLabel }).click();
+    await this.waitForListLoaded();
+  }
+
+  async sortByTitleDescending(): Promise<void> {
+    const titleSort = this.dataTable.getByRole('button', { name: /^Title/ });
+    await titleSort.click();
+    await this.waitForListLoaded();
+    await titleSort.click();
+    await this.waitForListLoaded();
+  }
+
   // href-by-id for stable identity when title text could collide (reused-DB robustness).
   auditLink(id: number): Locator {
     return this.page.locator(`a[href="/audits/${id}"]`);
+  }
+
+  listAuditLink(id: number): Locator {
+    return this.dataTable.locator(`a[href="/audits/${id}"]`);
+  }
+
+  async gotoAudit(id: number): Promise<void> {
+    await this.page.goto(`/audits/${id}`);
   }
 
   async openAudit(id: number): Promise<void> {

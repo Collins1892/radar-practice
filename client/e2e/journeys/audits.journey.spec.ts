@@ -11,7 +11,7 @@ test.describe('audits: view and soft delete', () => {
     // Arrange
     const auditDate = format(new Date(), 'yyyy-MM-dd');
     const payload: AuditRequest = {
-      title: `E2E hand hygiene ${Date.now()}`,
+      title: `${Date.now()} E2E hand hygiene`,
       description: 'Quarterly ward review',
       auditDate,
       status: 'Scheduled',
@@ -24,11 +24,13 @@ test.describe('audits: view and soft delete', () => {
     const auditsPage = new AuditsPage(page);
     const formattedAuditDate = format(parseISO(auditDate), 'dd MMM yyyy');
 
-    // Act — list and detail
+    // Act — list (filter + sort so seeded row is on page 1) and detail by id
     await auditsPage.goto();
     await auditsPage.waitForListLoaded();
-    await expect(auditsPage.auditLink(audit.id)).toBeVisible();
-    await auditsPage.openAudit(audit.id);
+    await auditsPage.filterByStatus('Scheduled');
+    await auditsPage.sortByTitleDescending();
+    await expect(auditsPage.listAuditLink(audit.id)).toBeVisible();
+    await auditsPage.gotoAudit(audit.id);
 
     // Assert — detail
     await expect(

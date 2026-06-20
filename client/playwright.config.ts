@@ -42,7 +42,7 @@ export default defineConfig({
       url: 'http://localhost:5173',
       name: 'Vite',
       timeout: apiTimeout,
-      reuseExistingServer: reuse,
+      reuseExistingServer: false,
       env: {
         VITE_API_URL: '',
         VITE_INCIDENTS_API_URL: 'http://localhost:5134',
