@@ -1,13 +1,54 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
+
+const reuse = !process.env.CI;
+const apiTimeout = 120_000;
 
 export default defineConfig({
   testDir: './e2e',
+  reporter: [
+    ['html', { open: 'never' }],
+    ['junit', { outputFile: 'test-results/e2e-junit-results.xml' }],
+  ],
   use: {
     baseURL: 'http://localhost:5173',
   },
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  webServer: [
+    {
+      command:
+        'dotnet run --project ../ItemsApi/ItemsApi.csproj --launch-profile http',
+      url: 'http://localhost:5133/items',
+      name: 'ItemsApi',
+      timeout: apiTimeout,
+      reuseExistingServer: reuse,
+    },
+    {
+      command:
+        'dotnet run --project ../IncidentsApi/IncidentsApi.csproj --launch-profile http',
+      url: 'http://localhost:5134/incidents',
+      name: 'IncidentsApi',
+      timeout: apiTimeout,
+      reuseExistingServer: reuse,
+    },
+    {
+      command:
+        'dotnet run --project ../AuditsApi/AuditsApi.csproj --launch-profile http',
+      url: 'http://localhost:5135/audits',
+      name: 'AuditsApi',
+      timeout: apiTimeout,
+      reuseExistingServer: reuse,
+    },
+    {
+      command: 'npm run dev',
+      url: 'http://localhost:5173',
+      name: 'Vite',
+      timeout: apiTimeout,
+      reuseExistingServer: reuse,
+      env: {
+        VITE_API_URL: '',
+        VITE_INCIDENTS_API_URL: 'http://localhost:5134',
+        VITE_AUDITS_API_URL: 'http://localhost:5135',
+      },
+    },
+  ],
 });
