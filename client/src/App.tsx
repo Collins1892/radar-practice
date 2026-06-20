@@ -60,6 +60,11 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
   );
 }
 
+const skipLinkClassName = cn(
+  'sr-only top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
+  'focus-visible:not-sr-only focus-visible:absolute focus-visible:left-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+);
+
 function ItemsView(): JSX.Element {
   const [items, setItems] = useState<Item[]>([]);
   const [listLoading, setListLoading] = useState(true);
@@ -194,10 +199,7 @@ function App(): JSX.Element {
 
   return (
     <main className="app relative">
-      <a
-        href="#main-content"
-        className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:z-50 focus-visible:top-4 focus-visible:left-4 focus-visible:px-4 focus-visible:py-2 focus-visible:bg-background focus-visible:text-foreground focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring"
-      >
+      <a href="#main-content" className={skipLinkClassName}>
         Skip to main content
       </a>
       <header>
