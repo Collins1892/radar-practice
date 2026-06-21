@@ -49,7 +49,7 @@ test.describe('audits: view and soft delete', () => {
     await auditsPage.goto();
     await auditsPage.waitForListLoaded();
     await expect(page).toHaveURL('/audits');
-    await expect(auditsPage.auditLink(audit.id)).not.toBeVisible();
+    await expect(auditsPage.listAuditLink(audit.id)).not.toBeVisible();
 
     // Act — navigate to deleted audit detail
     await page.goto(`/audits/${audit.id}`);

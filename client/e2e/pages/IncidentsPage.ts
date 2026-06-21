@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export class IncidentsPage {
   readonly pageHeading: Locator;
@@ -38,10 +38,18 @@ export class IncidentsPage {
   }
 
   async sortByTitleDescending(): Promise<void> {
-    const titleSort = this.dataTable.getByRole('button', { name: /^Title/ });
-    await titleSort.click();
+    const titleHeader = this.dataTable.getByRole('columnheader', {
+      name: /^Title/,
+    });
+
+    await titleHeader.getByRole('button').click();
+    // Settle signal (not a test assertion): wait for sort UI state before second click.
+    await expect(titleHeader).toHaveAttribute('aria-sort', 'ascending');
     await this.waitForListLoaded();
-    await titleSort.click();
+
+    await titleHeader.getByRole('button').click();
+    // Settle signal (not a test assertion): confirm descending sort before list refetch settles.
+    await expect(titleHeader).toHaveAttribute('aria-sort', 'descending');
     await this.waitForListLoaded();
   }
 
