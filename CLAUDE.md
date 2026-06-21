@@ -68,7 +68,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `.github/scripts/` — repo automation scripts: `pr-review.js` (automated PR review), `nightly-agent.js` (nightly autonomous agent), `pr-review.test.js`, `nightly-agent.test.js`
 - `docs/nightly-agent-backlog.md` — open tasks for the nightly agent (authoritative source; T-numbers, difficulty, stack, category, attempts, notes)
 - `docs/nightly-agent-completed.md` — completed tasks log (moved from backlog on merge)
-- `.github/workflows/` — GitHub Actions CI
+- `.github/workflows/` — GitHub Actions: `ci.yml` (push/PR), `pr-review.yml`, `nightly-agent.yml`, `nightly-e2e.yml`
 - `.claude/skills/` — repo-level agent skills
 - `.claude/commands/` — Claude Code slash commands (`/review`, `/standup`, `/observations`, `/tidy`)
 - `.cursor/rules/` — Cursor agent conventions (mirrors CLAUDE.md)
@@ -76,8 +76,8 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `docs/workflow-friction.md` — running workflow friction log (feeds Week 6 AI impact narrative)
 - `private/seven-week-plan.md` — master plan, decisions log, daily structure (private file: agent-readable, not committed)
 - `private/phase-1-foundation.md` — Weeks 1–2 complete (private file: agent-readable, not committed)
-- `private/phase-2-build.md` — Weeks 3–5, Weeks 3–4 complete; Week 5 in progress (private file: agent-readable, not committed)
-- `private/phase-3-articulate.md` — Weeks 6–7 (private file: agent-readable, not committed)
+- `private/phase-2-build.md` — Weeks 3–5 complete (private file: agent-readable, not committed)
+- `private/phase-3-articulate.md` — Weeks 6–7, Week 6 active (private file: agent-readable, not committed)
 - `private/original-plan.md` — original plan shared (private file: agent-readable, not committed)
 - `private/job-advert.md` — live job advert (June 2026), (private file: agent-readable, not committed)
 
@@ -115,7 +115,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - ESLint 10.3.0 with typescript-eslint
 - Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
 - Vitest 4.1.7 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, @testing-library/user-event 14.6.1, and jsdom 29.1.1
-- `@playwright/test` 1.60.0 — e2e tests, Chromium only. Key user journeys deferred to Week 5.
+- `@playwright/test` 1.60.0 — e2e tests, Chromium only. 8 tests (3 smoke + items + components + 2 incidents + 1 audit journey); nightly suite via `nightly-e2e.yml`.
 - `date-fns` 4.4.0 — date formatting utilities
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar
 - `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level
@@ -221,19 +221,19 @@ changed library API.
 - When changing `errors.ts`, add or update tests in `client/src/errors.test.ts` using the same style as guards — one test per prompt, AAA, no RTL
 
 **End-to-end — Playwright 1.60.0:**
-- Installed with Chromium only. Smoke test: app loads, title correct (`client/e2e/app.spec.ts`)
-- Key user journeys deferred to Week 5
-- Nightly cron schedule deferred to Week 5 — e2e tests do not run on PR builds
-- Run from `client/` with `npx playwright test`; start ItemsApi and IncidentsApi first for journey tests
+- Installed with Chromium only. Eight tests: 3 smoke (`client/e2e/app.spec.ts`) plus items, components, 2 incidents, and 1 audit journey specs under `client/e2e/journeys/`
+- Nightly suite live via `.github/workflows/nightly-e2e.yml` — `workflow_dispatch` + 3 AM Perth cron; four-server `webServer` boot (ItemsApi, IncidentsApi, AuditsApi, Vite); explicit `dotnet restore`/`build` before CI-guarded `dotnet run --no-build`; `dorny/test-reporter` publishes JUnit results
+- E2e does not run on PR builds
+- Run from `client/` with `npx playwright test` — Playwright boots all three APIs plus Vite via `webServer` config
 
 **CI:**
 - .NET tests and Vitest run on every push and PR to main
-- Playwright e2e does not run on PR builds — nightly cron deferred to Week 5
+- Playwright e2e runs nightly only via `nightly-e2e.yml` — not on PR builds
 - PR cannot merge until all checks pass
 
 **Agent guidance:**
 - Generate one test at a time — stalling occurs with multiple test requests
-- Always verify tests pass after generation — run `dotnet test` for API changes, `npm test` in `client/` for frontend changes, `npx playwright test` in `client/` for e2e changes (start ItemsApi and IncidentsApi when the journey needs data)
+- Always verify tests pass after generation — run `dotnet test` for API changes, `npm test` in `client/` for frontend changes, `npx playwright test` in `client/` for e2e changes (Playwright `webServer` boots all three APIs plus Vite automatically)
 - Integration tests are preferred for API endpoints
 - Do not remove or edit existing tests without explicit instruction
 
@@ -242,7 +242,7 @@ changed library API.
 - Make small, focused changes — one task at a time
 - Use Plan mode for any non-trivial task — show the full plan before touching files
 - Include `use context7` upfront in prompts when working with specific library APIs
-- Run tests after every change and confirm they pass — `dotnet test` for API changes, `npm test` in `client/` for frontend changes, `npx playwright test` from `client/` for e2e changes (start ItemsApi and IncidentsApi first for journey tests)
+- Run tests after every change and confirm they pass — `dotnet test` for API changes, `npm test` in `client/` for frontend changes, `npx playwright test` from `client/` for e2e changes (Playwright `webServer` boots all three APIs plus Vite automatically)
 - Match existing code style and patterns — repository pattern, typed responses, explicit return types
 - Explain non-obvious architectural decisions unprompted
 - Use the repository pattern for all new data access
