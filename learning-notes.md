@@ -1,3 +1,65 @@
+## Week 5 Day 6–7 — Saturday 20 / Sunday 21 June 2026
+
+### Summary
+
+Weekend session: T14 skip-link PR reviewed and merged, the nightly Playwright e2e suite built end-to-end across three PRs (#109, #111), and Week 5 formally closed. The e2e build was the bulk of the time — four-server CI boot, .NET cold-start hardening, and a recurring fight with an automated reviewer that hallucinated GitHub Actions version numbers throughout. One genuine bug was caught by that same reviewer that four human-facing review passes had all missed. Week 5 close updated phase-2-build.md (duplication and day-ordering fixes included), logged six new backlog items (T64–T69), and set up a live experiment: T15/PR #110 left deliberately unmerged to observe whether the nightly agent re-picks it or advances on Monday's run.
+
+### T14 skip-link review (PR #108)
+
+Nightly agent restyled the skip-link instead of only swapping the `sr-only` clip mechanism — five unrequested changes (colour token, ring-offset, border-radius, outline, `cn()` extraction). Four reviewers (GitHub Actions bot, two Claude Code `/review` passes, manual diff) caught complementary, non-overlapping findings — reinforcing the **three/four-reviewer discipline**: no single reviewer is complete. Resolved via a minimal-diff revert rather than accepting the scope creep. Bot also hallucinated that `actions/checkout@v5` etc. "don't exist" — first instance of a pattern that recurred all weekend.
+
+### Nightly e2e suite — built in three PRs
+
+**Steps 1–2 (Saturday):** four-server `webServer` array (3 .NET APIs + Vite), page-object pattern, typed API seeding helpers. 8 tests across items, components, incidents (validation + view/edit), audits (view + soft-delete + 404). A+B hybrid test data — fresh ephemeral CI DBs, each spec seeds its own preconditions via API.
+
+**Step 3 — `nightly-e2e.yml` workflow (Sunday):** built via Cursor plan mode. Key design: separate workflow from the nightly agent, raises no PR, `contents: read` + `checks: write`, no secrets, `dorny/test-reporter` SHA-pinned, 7-day artifacts, same 3am-Perth cron with the 7-July UK-migration comment as `nightly-agent.yml`.
+
+**`.NET cold-start hardening`** — the real CI risk. Explicit `dotnet restore` → `dotnet build --no-restore --configuration Debug` → CI-guarded `dotnet run --no-restore --no-build` (`process.env.CI ? '--no-restore --no-build ' : ''` in `playwright.config.ts`), so servers skip MSBuild entirely inside the 120s health probe. Verified empirically: first manual dispatch ran in **1m 38s** (suite itself ~29s) — proof the hardening worked, since a probe-timeout would have shown a ~120s hang.
+
+### Annotated git tags — SHA verification gotcha
+
+Verifying the `dorny/test-reporter` pin surfaced a real git subtlety: `git/refs/tags/v3.0.0` returned one SHA, but that SHA was the **tag object**, not the commit — annotated tags wrap a separate object. Had to dereference it (`git/tags/{sha}` → `.object.sha`) to get the actual commit to pin. Cursor's original pin was correct; my first "this looks wrong" instinct was premature — the lesson is to dereference annotated tags fully before declaring a SHA mismatch, not just compare the first value returned.
+
+### Bot hallucination pattern — recurring, never once correct
+
+Across all three e2e PRs, the automated reviewer repeatedly flagged `actions/checkout@v5` / `setup-node@v5` / `setup-dotnet@v5` / `upload-artifact@v5` as "don't exist, use v4" — **verified false every single time** via direct `gh api repos/{action}/releases/latest`. Actual latest at time of checking: checkout v7, setup-node v6, setup-dotnet v5, upload-artifact v7. The bot's training cutoff treats v4 as current. Net effect: when we *did* bump `upload-artifact` v4→v5 to clear a real Node-20 deprecation warning, the bot immediately flagged the bump itself as broken — actively wrong, in the opposite direction of helpful. **Verify-don't-trust on any reviewer's version claims** is now a hard rule, proven repeatedly across two full days.
+
+### The bot's one genuine catch — a bug four reviewers missed
+
+In the same noisy pass, the bot found a real bug none of the human-facing reviews (two `/review` runs, Cursor's review skill, manual read) caught: the audits soft-delete test navigated to `/audits/{id}` for a 404 check, then an earlier `page.reload()` reloaded that **detail** URL instead of the list — so the "row removed from list" assertion ran on the wrong page and could pass vacuously regardless of whether the delete worked. Fixed by explicitly navigating back to `/audits` before the list assertion, plus a `toHaveURL` guard. **Takeaway:** the same tool that hallucinates on version-knowledge questions can out-perform humans on literal control-flow tracing through a test file — different failure/success modes, worth using both rather than trusting or dismissing wholesale.
+
+### Bot auto-commit regression
+
+The reviewer's auto-fix loop pushed a commit (`895f9e7`) directly to the branch that **reverted** a deliberate earlier fix (`reuseExistingServer: false` on the Vite webServer entry, needed so injected `VITE_*` env always applies locally) and **introduced** a missing-EOF-newline — ironically the exact class of issue its own review had flagged elsewhere. Caught via `git show` before merging; fixed in a consolidated pass alongside the genuine soft-delete bug and three cheap hygiene tidies (env-based API URLs in `support/api.ts`, explicit `--project=chromium`, dead page-object method removal).
+
+### PowerShell gotchas (recurring all weekend)
+
+- **`-AsByteStream` is PowerShell 7+ only** — Windows PowerShell 5.1 needs `-Encoding Byte`.
+- **`[System.IO.File]::ReadAllText`/`WriteAllText` use the *process* working directory, not PowerShell's `cwd`** — a relative path resolved silently to the wrong directory (`C:\Users\jamie\.github\...` instead of the repo). Must use absolute paths with these .NET methods specifically.
+- **Cursor's shell-writes keep prepending a UTF-8 BOM** to new files — third occurrence this programme. Logged as T68 (`.gitattributes` or pre-commit strip) rather than fixed ad hoc again.
+
+### `workflow_dispatch` only works from the default branch
+
+Tried to manually dispatch `nightly-e2e.yml` while it only existed on the feature branch — got a 404. **Scheduled and manually-dispatched workflows both require the workflow file to exist on the repo's default branch** (`main`); a feature-branch-only workflow can't be triggered at all, by either mechanism, until merged. This reframed the merge decision: review-then-merge wasn't just discipline, it was the *only* way to get a working CI verification of the workflow at all.
+
+### `expect` inside page objects — convention vs idiom
+
+Hardening `sortByTitleDescending` against a double-click race needed a deterministic settle on `aria-sort`. The bot flagged `expect()` inside a page-object helper as breaking the "page objects hold actions/locators, specs hold assertions" convention, and suggested a non-asserting `waitForFunction` instead. Judged the convention bend acceptable — `expect().toHaveAttribute()` with Playwright's auto-retry *is* the idiomatic way to wait for an attribute value; the bot's suggested fix would be technically convention-pure but worse Playwright. Documented as an intentional exception with an inline comment rather than chasing the "fix."
+
+### Week 5 close
+
+`phase-2-build.md`: marked Week 5 complete, Day 6/7 entries added, a pre-existing **duplicated Day 2 section** found and removed, **Day 1/Day 2 order found inverted** (Day 2 was sitting above Day 1) and corrected — which also surfaced that the swap had silently dropped the `## Week 5` section header entirely; restored. Stats block added matching the Weeks 3/4 close pattern. Six new backlog items logged (T64–T69): nightly-agent holiday-loop resilience, two deferred e2e journey types, the Audits delete-UI gap, the Cursor BOM tooling fix, and a project-wide GitHub Actions version-upgrade pass.
+
+### Holiday-loop experiment — set up, not yet resolved
+
+Question: if PRs go unmerged across multiple nights (e.g. a holiday), does the nightly agent re-pick the same task and duplicate-PR, or does it somehow know to skip? T14 (#108, merged) → T15 (#110, picked next night) looked like evidence of resilience, but on inspection it's evidence of the *opposite* edge case — the agent advanced because T14 was **merged**, updating the backlog on `main`. It doesn't yet show what happens when nothing is merged. Deliberately left T15/#110 open overnight Sunday→Monday as a live test: Monday picking T16 = resilient; re-picking T15 = loop confirmed. Logged as T64.
+
+### Ideas and observations
+
+- Two distinct AI-reviewer failure modes observed back-to-back on the same PRs: **confident wrongness on stable factual knowledge** (action versions — the model's training cutoff is simply behind reality) vs **correct literal tracing of control flow** (the soft-delete URL bug) that several attentive humans skimmed past. Worth keeping both review channels rather than trusting or dismissing either wholesale.
+- The git annotated-tag dereferencing issue is a good "frontier tooling subtlety" example — the kind of thing that looks like a reviewer being wrong but is actually a verification step being done correctly and finding a genuinely confusing API shape (two different SHAs both technically true depending on which endpoint you ask).
+- `workflow_dispatch`'s default-branch-only constraint is a useful interview point: it's not a discipline you *choose* (review before merge) so much as a hard technical gate that happens to align with good discipline — worth distinguishing the two when articulating the safety story.
+
 ## Week 5 Day 5 — Friday 19 June 2026
 
 ### Summary

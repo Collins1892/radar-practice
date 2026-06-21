@@ -42,9 +42,9 @@ Illustrative layout — not an exhaustive file inventory. See [CLAUDE.md](CLAUDE
 ```
 radar-practice/
 ├── ItemsApi/              # .NET 8 minimal API (GET/POST /items), EF Core + SQLite
-├── ItemsApi.Tests/        # xUnit integration tests (13 tests)
+├── ItemsApi.Tests/        # xUnit integration tests
 ├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT /incidents, GET /incidents/{id}), EF Core + SQLite
-├── IncidentsApi.Tests/    # xUnit integration tests (25 tests)
+├── IncidentsApi.Tests/    # xUnit integration tests
 ├── AuditsApi/             # .NET 8 minimal API (GET/POST/PUT/DELETE /audits), EF Core + SQLite — migrated from legacy/
 ├── AuditsApi.Tests/       # xUnit integration tests
 ├── client/                # React + TypeScript + Vite frontend
@@ -72,7 +72,7 @@ radar-practice/
 │   ├── src/guards.test.ts                 # Vitest unit tests
 │   ├── src/errors.test.ts                 # Vitest unit tests
 │   ├── src/test/setup.ts                  # Vitest setup
-│   └── e2e/app.spec.ts                    # Playwright smoke test
+│   └── e2e/                               # Playwright e2e (smoke + journey tests)
 ├── .claude/skills/        # Repo-level agent skills
 │   ├── dotnet-test-writer/
 │   ├── react-test-writer/
@@ -86,7 +86,7 @@ radar-practice/
 ├── docs/                  # Workflow friction log, agent backlog, and supporting documentation
 │   ├── nightly-agent-backlog.md   # Open tasks for the nightly agent
 │   └── nightly-agent-completed.md # Completed tasks log
-├── .github/workflows/     # GitHub Actions CI
+├── .github/workflows/     # GitHub Actions — ci.yml, pr-review.yml, nightly-agent.yml, nightly-e2e.yml
 └── learning-notes.md      # Daily observations from the build
 ```
 
@@ -95,10 +95,10 @@ radar-practice/
 | Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`) |
 | Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
 | Audits API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`audits.db`), soft delete via `RecordStatus` — migrated from `legacy/` (.NET 4 / AngularJS 1.6) |
-| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — 13 ItemsApi + 25 IncidentsApi + 52 AuditsApi tests |
+| Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — see CI badge above for live count |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes include `/`, `/components`, `/incidents`, `/audits`, and create/detail/edit for both modules |
-| Frontend tests | Vitest (239 tests), `@testing-library/react`; Playwright e2e (smoke test, key journeys Week 5) |
-| CI | GitHub Actions — `dotnet test` (all three APIs) and `npm test` (Vitest) on push/PR to `main` |
+| Frontend tests | Vitest + `@testing-library/react` (see CI badge above); Playwright e2e — 8 tests (3 smoke + items + components + 2 incidents + 1 audit journey) via `nightly-e2e.yml` |
+| CI | GitHub Actions — `dotnet test` (all three APIs) and `npm test` (Vitest) on push/PR to `main`; Playwright e2e nightly only (not on PR builds) |
 
 > **Note:** Each API uses its own SQLite database (`app.db` for items, `incidents.db` for incidents, `audits.db` for audits). All are local only and not committed.
 
@@ -228,7 +228,7 @@ cd client
 npx playwright test
 ```
 
-Currently a smoke test only (app loads, title correct) — requires only the Vite dev server. Key user journeys (Week 5) will require ItemsApi (5133), IncidentsApi (5134), and AuditsApi (5135).
+Eight Playwright tests: 3 smoke (`app.spec.ts`) plus items, components, 2 incidents, and 1 audit journey specs under `e2e/journeys/`. Playwright's `webServer` config boots all four servers automatically — ItemsApi (5133), IncidentsApi (5134), AuditsApi (5135), and Vite (5173). In CI, the [nightly e2e workflow](.github/workflows/nightly-e2e.yml) runs the same suite on a 3 AM Perth cron (`workflow_dispatch` + schedule), with explicit `dotnet restore`/`build` before `dotnet run --no-build` for cold-start hardening; `dorny/test-reporter` publishes JUnit results.
 
 ### Run the frontend
 
@@ -257,3 +257,5 @@ Pushes and pull requests targeting `main` trigger the [CI workflow](.github/work
 The [PR review workflow](.github/workflows/pr-review.yml) runs after CI passes on every PR — it reviews the diff against the `code-reviewer` skill, autonomously fixes Blockers and Majors (up to 3 attempts), and posts findings as a PR comment.
 
 The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch` — it picks a backlog task, implements it, runs the full test suite, and raises a PR. Three completions so far (T02, T03, T05).
+
+The [nightly e2e workflow](.github/workflows/nightly-e2e.yml) runs the 8-test Playwright suite on the same schedule (`workflow_dispatch` + cron). Boots three .NET APIs plus Vite via Playwright `webServer`; pre-restores and pre-builds API projects before `dotnet run --no-build`; publishes results via `dorny/test-reporter`. Does not run on PR builds.
