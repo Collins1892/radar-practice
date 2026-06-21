@@ -1,5 +1,5 @@
-const INCIDENTS_API = 'http://localhost:5134';
-const AUDITS_API = 'http://localhost:5135';
+const INCIDENTS_API = process.env.INCIDENTS_API_URL ?? 'http://localhost:5134';
+const AUDITS_API = process.env.AUDITS_API_URL ?? 'http://localhost:5135';
 
 export type IncidentSeverity = 'Low' | 'Medium' | 'High' | 'Critical';
 

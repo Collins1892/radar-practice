@@ -16,7 +16,7 @@
     "prepare": "node -e \"process.exit(process.env.CI ? 0 : 1)\" || (cd .. && husky client/.husky)",
     "preview": "vite preview",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test --project=chromium"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

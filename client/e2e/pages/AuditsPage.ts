@@ -53,8 +53,4 @@ export class AuditsPage {
   async gotoAudit(id: number): Promise<void> {
     await this.page.goto(`/audits/${id}`);
   }
-
-  async openAudit(id: number): Promise<void> {
-    await this.auditLink(id).click();
-  }
 }

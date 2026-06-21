@@ -44,10 +44,11 @@ test.describe('audits: view and soft delete', () => {
 
     // Act — soft delete via API
     await deleteAudit(audit.id);
-    await page.reload();
-    await auditsPage.waitForListLoaded();
 
     // Assert — removed from list
+    await auditsPage.goto();
+    await auditsPage.waitForListLoaded();
+    await expect(page).toHaveURL('/audits');
     await expect(auditsPage.auditLink(audit.id)).not.toBeVisible();
 
     // Act — navigate to deleted audit detail

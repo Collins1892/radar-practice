@@ -45,20 +45,11 @@ export class IncidentsPage {
     await this.waitForListLoaded();
   }
 
-  // href-by-id for stable identity when title text could collide (reused-DB robustness).
-  incidentLink(id: number): Locator {
-    return this.page.locator(`a[href="/incidents/${id}"]`);
-  }
-
   listIncidentLink(id: number): Locator {
     return this.dataTable.locator(`a[href="/incidents/${id}"]`);
   }
 
   async gotoIncident(id: number): Promise<void> {
     await this.page.goto(`/incidents/${id}`);
-  }
-
-  async openIncident(id: number): Promise<void> {
-    await this.incidentLink(id).click();
   }
 }
