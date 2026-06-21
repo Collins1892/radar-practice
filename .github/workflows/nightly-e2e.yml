@@ -1,0 +1,83 @@
+name: Nightly E2E
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 19 * * *'  # 3am Perth (UTC+8) — update to '0 2 * * *' after 7 July (3am BST, UTC+1)
+
+concurrency:
+  group: nightly-e2e
+  cancel-in-progress: true
+
+jobs:
+  nightly-e2e:
+    name: Nightly E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Restore API projects
+        run: |
+          dotnet restore ItemsApi/ItemsApi.csproj
+          dotnet restore IncidentsApi/IncidentsApi.csproj
+          dotnet restore AuditsApi/AuditsApi.csproj
+
+      - name: Build API projects
+        run: |
+          dotnet build ItemsApi/ItemsApi.csproj --no-restore --configuration Debug
+          dotnet build IncidentsApi/IncidentsApi.csproj --no-restore --configuration Debug
+          dotnet build AuditsApi/AuditsApi.csproj --no-restore --configuration Debug
+
+      - name: Install Playwright Chromium
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        working-directory: client
+        run: npm run e2e
+
+      - name: Publish test report
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+        if: always()
+        with:
+          name: Nightly E2E
+          path: client/test-results/e2e-junit-results.xml
+          reporter: java-junit
+          fail-on-empty: 'false'
+
+      - name: Upload Playwright artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-e2e-results
+          path: |
+            client/playwright-report/
+            client/test-results/e2e-junit-results.xml
+          retention-days: 7
