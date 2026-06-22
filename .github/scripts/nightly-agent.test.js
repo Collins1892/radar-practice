@@ -159,21 +159,6 @@ describe('extractTaskIdsFromPrTitle', () => {
     assert.deepEqual(ids, [10]);
     assert.ok(!ids.includes(1));
   });
-
-  it('normalises T01 backlog id with T1 in PR title via numeric comparison', () => {
-    const ids = extractTaskIdsFromPrTitle('feat(T1): registry fix (nightly agent)');
-    const attempted = new Set(ids);
-    const tasks = parseBacklog(MEDIUM_ONLY_BACKLOG);
-    const t01 = tasks.find((entry) => entry.id === 'T01');
-
-    assert.ok(t01);
-    assert.equal(attempted.has(1), true);
-    const picked = pickTask(tasks, 'medium', '', attempted);
-
-    assert.ok(picked);
-    assert.equal(picked.id, 'T04');
-    assert.notEqual(picked.id, 'T01');
-  });
 });
 
 describe('pickTask', () => {
@@ -241,6 +226,21 @@ describe('pickTask', () => {
     assert.ok(picked);
     assert.equal(picked.id, 'T16');
   });
+
+  it('normalises T01 backlog id with T1 in PR title via numeric comparison', () => {
+    const ids = extractTaskIdsFromPrTitle('feat(T1): registry fix (nightly agent)');
+    const attempted = new Set(ids);
+    const tasks = parseBacklog(MEDIUM_ONLY_BACKLOG);
+    const t01 = tasks.find((entry) => entry.id === 'T01');
+
+    assert.ok(t01);
+    assert.equal(attempted.has(1), true);
+    const picked = pickTask(tasks, 'medium', '', attempted);
+
+    assert.ok(picked);
+    assert.equal(picked.id, 'T04');
+    assert.notEqual(picked.id, 'T01');
+  });
 });
 
 describe('buildAttemptedTaskIdSet', () => {
@@ -253,6 +253,14 @@ describe('buildAttemptedTaskIdSet', () => {
 
     assert.equal(attempted.has(15), true);
     assert.equal(attempted.has(16), true);
+    assert.equal(attempted.size, 2);
+  });
+
+  it('extracts two unique IDs from a single title', () => {
+    const attempted = buildAttemptedTaskIdSet(['chore(T20): also fixes T21']);
+
+    assert.equal(attempted.has(20), true);
+    assert.equal(attempted.has(21), true);
     assert.equal(attempted.size, 2);
   });
 });
@@ -349,6 +357,56 @@ describe('fetchAttemptedTaskIds', () => {
     assert.equal(attempted.has(15), true);
     assert.equal(attempted.has(16), true);
     assert.equal(attempted.size, 2);
+  });
+
+  it('throws when stdout contains a null PR entry', async () => {
+    const runCommand = async () => ({ stdout: JSON.stringify([null]) });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned a PR with a missing or non-string title',
+        );
+        assert.notEqual(error.name, 'TypeError');
+        return true;
+      },
+    );
+  });
+
+  it('throws when stdout contains a PR entry with no title', async () => {
+    const runCommand = async () => ({ stdout: JSON.stringify([{}]) });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned a PR with a missing or non-string title',
+        );
+        assert.notEqual(error.name, 'TypeError');
+        return true;
+      },
+    );
+  });
+
+  it('throws when stdout contains a PR entry with null title', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([{ title: null }]),
+    });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned a PR with a missing or non-string title',
+        );
+        assert.notEqual(error.name, 'TypeError');
+        return true;
+      },
+    );
   });
 });
 

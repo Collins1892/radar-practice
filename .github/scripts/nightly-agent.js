@@ -969,6 +969,8 @@ async function runGitOutput(args) {
   }
 }
 
+const PR_LIST_LIMIT = 1000;
+
 async function fetchAttemptedTaskIds(
   owner,
   repo,
@@ -984,12 +986,17 @@ async function fetchAttemptedTaskIds(
         'list',
         '--repo',
         `${owner}/${repo}`,
+        // --state all is deliberate: any PR state marks a task attempted; retries are via
+        // a NEW task ID, so a closed failure PR intentionally parks the task until reissued.
+        // We do NOT use --state open.
         '--state',
         'all',
+        // --limit 1000: repo is not expected to exceed 1000 PRs; gh returns newest-first, so
+        // beyond that older titles would drop off and under-exclude.
         '--limit',
-        '1000',
+        String(PR_LIST_LIMIT),
         '--json',
-        'number,title,state',
+        'title',
       ],
       {
         cwd: repoRoot,
@@ -1016,6 +1023,21 @@ async function fetchAttemptedTaskIds(
     fail('gh pr list returned non-array JSON');
   }
 
+  if (prs.length === PR_LIST_LIMIT) {
+    warn(
+      `gh pr list returned ${PR_LIST_LIMIT} PRs (at --limit); older PR titles may be omitted from exclusion`,
+    );
+  }
+
+  for (const pr of prs) {
+    if (!pr || typeof pr !== 'object' || typeof pr.title !== 'string') {
+      fail('gh pr list returned a PR with a missing or non-string title');
+    }
+  }
+
+  // Matcher (extractTaskIdsFromPrTitle) blocks any \bT(\d+)\b anywhere in a title, uppercase
+  // only, matching the agent's feat(T{n}): convention; a human title naming a second ID will
+  // park that task too.
   return buildAttemptedTaskIdSet(prs.map((pr) => pr.title));
 }
 
