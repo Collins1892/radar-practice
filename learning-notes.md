@@ -14,7 +14,7 @@ set.
 ### First unattended overnight e2e run
 8/8 Playwright tests passed, 1m 39s. Cold-start hardening held in
 unattended CI. Node 20 deprecation warning on `upload-artifact@v5` —
-fixed in T69 (bumped to v7.0.1).
+fixed via the upload-artifact v7 bump (partial T69; remaining actions upgrade still open).
 
 ### Comprehension: nightly agent
 Ran locally in dry-run mode for the first time. Key mechanics understood:
