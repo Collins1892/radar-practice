@@ -146,7 +146,7 @@ These are practical lessons from building this project with Claude Code (termina
 - On failure: discards code changes, increments the attempt counter, adds a failure note, raises a draft PR for human review.
 - Hard cap of 10 Anthropic API calls per run. Sensitive path guard rejects plan changes to `.github/`, `.husky/`, `package.json`.
 - `TASK_MODE` controlled via GitHub repository variable — change difficulty without a commit.
-- Three genuine completions so far (T02, T03, T05), selection verified to follow the lowest-ID-matching-difficulty rule exactly across all three.
+- Selection verified to follow the lowest-ID-matching-difficulty rule. PR-history exclusion (added Week 6) prevents an unmerged task from being re-picked on the next run — the agent advances down the backlog and stops cleanly when every eligible task already has a PR. See `docs/nightly-agent-completed.md` for the completed-task log.
 
 **Two independent reviews catch different things**
 - Claude Code `/review` and Cursor review consistently flag different issues on the same diff. Running both for significant PRs is now a firm discipline — neither alone is complete.
@@ -256,6 +256,6 @@ Pushes and pull requests targeting `main` trigger the [CI workflow](.github/work
 
 The [PR review workflow](.github/workflows/pr-review.yml) runs after CI passes on every PR — it reviews the diff against the `code-reviewer` skill, autonomously fixes Blockers and Majors (up to 3 attempts), and posts findings as a PR comment.
 
-The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch` — it picks a backlog task, implements it, runs the full test suite, and raises a PR. Three completions so far (T02, T03, T05).
+The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch` — it picks a backlog task, implements it, runs the full test suite, and raises a PR. See `docs/nightly-agent-completed.md` for the completed-task log.
 
 The [nightly e2e workflow](.github/workflows/nightly-e2e.yml) runs the 8-test Playwright suite on the same schedule (`workflow_dispatch` + cron). Boots three .NET APIs plus Vite via Playwright `webServer`; pre-restores and pre-builds API projects before `dotnet run --no-build`; publishes results via `dorny/test-reporter`. Does not run on PR builds.

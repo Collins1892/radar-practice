@@ -1,3 +1,67 @@
+## Week 6 Day 1 — Monday 22 June 2026
+
+### Nightly agent — holiday-loop fix (PR #114)
+The agent re-picked T15 on consecutive runs because selection reads
+`nightly-agent-backlog.md` on `main`, but the completed-move only lands
+in the PR branch until merge. Fixed with durable PR-history exclusion:
+`gh pr list --state all`, anchored `\bT(\d+)\b` matching, numeric
+normalisation via `taskIdNumber`, fail-closed fetch. Retries via new
+task ID. Holiday case: exits cleanly when every eligible task has a PR.
+112 tests passing. Key principle: fail-closed over fail-open — a fetch
+failure aborts the run rather than falling back to an empty exclusion
+set.
+
+### First unattended overnight e2e run
+8/8 Playwright tests passed, 1m 39s. Cold-start hardening held in
+unattended CI. Node 20 deprecation warning on `upload-artifact@v5` —
+fixed via the upload-artifact v7 bump (partial T69; remaining actions upgrade still open).
+
+### Comprehension: nightly agent
+Ran locally in dry-run mode for the first time. Key mechanics understood:
+task selection reads backlog on `main`, skill auto-loads from task
+category via `skillPathForCategory`, PR-history exclusion only runs in
+GHA (`GITHUB_ACTIONS=true`), local runs always get an empty exclusion
+set by design. The test suite runs before any commit — implementation
+must be green before anything reaches the branch. 3 attempt limit then
+draft PR. Human merge gate is permanent — agent never merges its own
+work.
+
+### Comprehension: automated PR review
+Fix loop runs up to 3 attempts on Blockers and Majors only — Minors are
+always advisory. File path extraction is the critical step — if a path
+can't be identified the finding demotes to advisory rather than blocking
+the run. Tests must pass before any fix is committed. Draft status
+reserved for: tests failing after a fix, or attempts exhausted with
+unresolved Blockers/Majors. Single comment per PR — upserted not
+duplicated via `BOT_MARKER`.
+
+### Comprehension: database
+Repository pattern separates database logic from business logic.
+Interface (`IAuditRepository` etc.) enables DI and test mocking.
+SQLite chosen deliberately — single flat file, no infrastructure, fast
+to implement, keeps the project moving. Each API has its own `.db` file
+and migration history. EF Core code-first: model properties define the
+schema, migrations generated from model changes, applied automatically
+on startup via `Database.Migrate()`. Previously familiar with EF6 —
+key realisation: EF Core's `Database.Migrate()` on startup removes the
+manual script-running step entirely, the app manages its own schema.
+Soft delete flips `RecordStatus` rather than removing rows — important
+in a regulated healthcare context for audit trail and recoverability.
+Production swap is clean: `UseSqlite` → `UseSqlServer`/`UseNpgsql`,
+connection string updated, repository code unchanged.
+
+### Phase 3 plan locked
+phase-3-articulate.md and seven-week-plan.md updated with correct dates,
+full day-by-day structure for Weeks 6–7, all existing content preserved.
+Two decisions log entries added: PR-history exclusion design and e2e
+overnight confirmation.
+
+### Key gap identified
+Q&A-style comprehension sessions are the right approach for Phase 3 —
+the database clicked because it was pulled apart with questions, not read
+cold. The same approach is needed for every component. More comprehension
+work needed across the full stack before the demo is ready.
+
 ## Week 5 Day 6–7 — Saturday 20 / Sunday 21 June 2026
 
 ### Summary
