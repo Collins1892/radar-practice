@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  allTasksBlockedByPr,
+  buildAttemptedTaskIdSet,
   buildImplementPrompt,
   buildPlanPrompt,
   extractTaskIdsFromPrTitle,
+  fetchAttemptedTaskIds,
   formatPrBody,
   formatPrNumberCell,
   moveToCompleted,
@@ -229,13 +232,143 @@ describe('pickTask', () => {
   it('skips tasks with attempted numeric IDs from PR titles', () => {
     const tasks = parseBacklog(A11Y_EASY_BACKLOG);
     const attempted = new Set(
-      extractTaskIdsFromPrTitle('feat(T1): registry fix (nightly agent)'),
+      extractTaskIdsFromPrTitle(
+        'fix(T15): focus indicator (nightly agent)',
+      ),
     );
     const picked = pickTask(tasks, 'easy', '', attempted);
 
     assert.ok(picked);
-    assert.equal(picked.id, 'T15');
-    assert.notEqual(picked.id, 'T16');
+    assert.equal(picked.id, 'T16');
+  });
+});
+
+describe('buildAttemptedTaskIdSet', () => {
+  it('unions task IDs from multiple PR titles and multiple IDs in one title', () => {
+    const attempted = buildAttemptedTaskIdSet([
+      'feat(T15): focus indicator (nightly agent)',
+      'fix(T16): nav landmark (nightly agent)',
+      'docs: relates to T15 and T16 in backlog notes',
+    ]);
+
+    assert.equal(attempted.has(15), true);
+    assert.equal(attempted.has(16), true);
+    assert.equal(attempted.size, 2);
+  });
+});
+
+function assertNightlyAgentFatalError(error, expectedMessage) {
+  assert.ok(error instanceof Error);
+  assert.equal(error.name, 'NightlyAgentFatalError');
+  assert.equal(error.message, expectedMessage);
+}
+
+describe('fetchAttemptedTaskIds', () => {
+  const owner = 'Collins1892';
+  const repo = 'radar-practice';
+  const token = 'test-token';
+
+  it('throws NightlyAgentFatalError when the command runner rejects', async () => {
+    const runCommand = async () => {
+      throw new Error('ENOENT: gh not found');
+    };
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list failed: ENOENT: gh not found',
+        );
+        return true;
+      },
+    );
+  });
+
+  it('throws invalid-JSON fail() when stdout is malformed', async () => {
+    const runCommand = async () => ({ stdout: 'not json' });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned invalid JSON',
+        );
+        return true;
+      },
+    );
+  });
+
+  it('throws non-array fail() when stdout parses to an object', async () => {
+    const runCommand = async () => ({ stdout: '{}' });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned non-array JSON',
+        );
+        return true;
+      },
+    );
+  });
+
+  it('throws non-array fail() when stdout parses to null', async () => {
+    const runCommand = async () => ({ stdout: 'null' });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned non-array JSON',
+        );
+        return true;
+      },
+    );
+  });
+
+  it('returns attempted task IDs from PR titles on success', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([
+        { title: 'feat(T15): focus indicator (nightly agent)' },
+        { title: 'fix(T16): nav landmark (nightly agent)' },
+      ]),
+    });
+
+    const attempted = await fetchAttemptedTaskIds(
+      owner,
+      repo,
+      token,
+      runCommand,
+    );
+
+    assert.equal(attempted instanceof Set, true);
+    assert.equal(attempted.has(15), true);
+    assert.equal(attempted.has(16), true);
+    assert.equal(attempted.size, 2);
+  });
+});
+
+describe('allTasksBlockedByPr', () => {
+  it('returns true when every open task has an attempted numeric ID', () => {
+    const openForMode = [{ id: 'T15' }, { id: 'T16' }];
+    const attempted = new Set([15, 16]);
+
+    assert.equal(allTasksBlockedByPr(openForMode, attempted), true);
+  });
+
+  it('returns false when at least one open task is not blocked', () => {
+    const openForMode = [{ id: 'T15' }, { id: 'T16' }];
+    const attempted = new Set([15]);
+
+    assert.equal(allTasksBlockedByPr(openForMode, attempted), false);
+  });
+
+  it('returns false when openForMode is empty', () => {
+    assert.equal(allTasksBlockedByPr([], new Set([15])), false);
   });
 });
 

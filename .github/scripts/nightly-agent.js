@@ -363,6 +363,15 @@ function pickTask(tasks, mode, category, attemptedNumericIds = new Set()) {
   return filtered[0];
 }
 
+function allTasksBlockedByPr(openForMode, attemptedNumericIds) {
+  return (
+    openForMode.length > 0 &&
+    openForMode.every((entry) =>
+      attemptedNumericIds.has(taskIdNumber(entry.id)),
+    )
+  );
+}
+
 function rebuildBacklogTable(markdownContent, tasks) {
   const lines = markdownContent.split('\n');
   const tableStart = findTableStart(lines);
@@ -960,10 +969,15 @@ async function runGitOutput(args) {
   }
 }
 
-async function fetchAttemptedTaskIds(owner, repo, token) {
+async function fetchAttemptedTaskIds(
+  owner,
+  repo,
+  token,
+  runCommand = execFileAsync,
+) {
   let stdout;
   try {
-    ({ stdout } = await execFileAsync(
+    ({ stdout } = await runCommand(
       'gh',
       [
         'pr',
@@ -996,6 +1010,10 @@ async function fetchAttemptedTaskIds(owner, repo, token) {
     prs = JSON.parse(stdout);
   } catch {
     fail('gh pr list returned invalid JSON');
+  }
+
+  if (!Array.isArray(prs)) {
+    fail('gh pr list returned non-array JSON');
   }
 
   return buildAttemptedTaskIdSet(prs.map((pr) => pr.title));
@@ -1502,11 +1520,10 @@ async function main() {
   const task = pickTask(tasks, taskMode, taskCategory, attemptedNumericIds);
 
   if (task === null) {
-    const allBlockedByPr =
-      openForMode.length > 0 &&
-      openForMode.every((entry) =>
-        attemptedNumericIds.has(taskIdNumber(entry.id)),
-      );
+    const allBlockedByPr = allTasksBlockedByPr(
+      openForMode,
+      attemptedNumericIds,
+    );
 
     if (allBlockedByPr) {
       log(
@@ -1754,6 +1771,9 @@ export {
   parseBacklog,
   pickTask,
   extractTaskIdsFromPrTitle,
+  buildAttemptedTaskIdSet,
+  fetchAttemptedTaskIds,
+  allTasksBlockedByPr,
   updateBacklogRow,
   moveToCompleted,
   buildPlanPrompt,
