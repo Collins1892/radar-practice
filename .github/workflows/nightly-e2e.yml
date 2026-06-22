@@ -73,7 +73,7 @@ jobs:
           fail-on-empty: 'false'
 
       - name: Upload Playwright artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-e2e-results
