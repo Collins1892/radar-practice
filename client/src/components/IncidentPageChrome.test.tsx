@@ -39,4 +39,15 @@ describe('IncidentPageChrome', () => {
     // Assert
     expect(screen.queryByRole('paragraph')).not.toBeInTheDocument();
   });
+
+  it('renders subtitle when subtitle prop is provided', (): void => {
+    // Arrange
+    const subtitle = 'Test subtitle text';
+
+    // Act
+    renderIncidentPageChrome({ subtitle });
+
+    // Assert
+    expect(screen.getByText(subtitle)).toBeInTheDocument();
+  });
 });
