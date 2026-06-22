@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import {
   buildImplementPrompt,
   buildPlanPrompt,
+  extractTaskIdsFromPrTitle,
   formatPrBody,
   formatPrNumberCell,
   moveToCompleted,
@@ -33,6 +34,10 @@ const SAMPLE_COMPLETED = `# Nightly Agent Completed
 const MEDIUM_ONLY_BACKLOG = `${BACKLOG_TABLE_HEADER}
 | T01 | open   | medium     | frontend | code-quality | 0 | | 2026-06-14 | | Registry fix | |
 | T04 | open   | medium     | docs     | code-quality | 0 | | 2026-06-14 | | ESLint drift | |`;
+
+const A11Y_EASY_BACKLOG = `${BACKLOG_TABLE_HEADER}
+| T15 | open   | easy       | frontend | a11y         | 0 | | 2026-06-14 | | Focus indicator | |
+| T16 | open   | easy       | frontend | a11y         | 0 | | 2026-06-14 | | Nav landmark | |`;
 
 const SAMPLE_TASK = {
   id: 'T02',
@@ -124,6 +129,50 @@ describe('parseBacklog', () => {
   });
 });
 
+describe('extractTaskIdsFromPrTitle', () => {
+  it('extracts T1 without matching T15 or T16 in other titles', () => {
+    const ids = extractTaskIdsFromPrTitle(
+      'feat(T1): registry fix (nightly agent)',
+    );
+
+    assert.deepEqual(ids, [1]);
+    assert.ok(!ids.includes(15));
+    assert.ok(!ids.includes(16));
+  });
+
+  it('extracts exactly T15 from conventional commit title', () => {
+    const ids = extractTaskIdsFromPrTitle(
+      'fix(T15): focus indicator (nightly agent)',
+    );
+
+    assert.deepEqual(ids, [15]);
+    assert.ok(!ids.includes(1));
+    assert.ok(!ids.includes(16));
+  });
+
+  it('extracts T10 without matching T1', () => {
+    const ids = extractTaskIdsFromPrTitle('feat(T10): calendar helper');
+
+    assert.deepEqual(ids, [10]);
+    assert.ok(!ids.includes(1));
+  });
+
+  it('normalises T01 backlog id with T1 in PR title via numeric comparison', () => {
+    const ids = extractTaskIdsFromPrTitle('feat(T1): registry fix (nightly agent)');
+    const attempted = new Set(ids);
+    const tasks = parseBacklog(MEDIUM_ONLY_BACKLOG);
+    const t01 = tasks.find((entry) => entry.id === 'T01');
+
+    assert.ok(t01);
+    assert.equal(attempted.has(1), true);
+    const picked = pickTask(tasks, 'medium', '', attempted);
+
+    assert.ok(picked);
+    assert.equal(picked.id, 'T04');
+    assert.notEqual(picked.id, 'T01');
+  });
+});
+
 describe('pickTask', () => {
   it("returns the lowest-ID open easy task when mode is 'easy'", () => {
     const tasks = parseBacklog(SAMPLE_BACKLOG);
@@ -175,6 +224,18 @@ describe('pickTask', () => {
     const picked = pickTask([], 'easy', '');
 
     assert.equal(picked, null);
+  });
+
+  it('skips tasks with attempted numeric IDs from PR titles', () => {
+    const tasks = parseBacklog(A11Y_EASY_BACKLOG);
+    const attempted = new Set(
+      extractTaskIdsFromPrTitle('feat(T1): registry fix (nightly agent)'),
+    );
+    const picked = pickTask(tasks, 'easy', '', attempted);
+
+    assert.ok(picked);
+    assert.equal(picked.id, 'T15');
+    assert.notEqual(picked.id, 'T16');
   });
 });
 

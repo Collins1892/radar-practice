@@ -170,6 +170,22 @@ function taskIdNumber(taskId) {
   return Number.isNaN(numeric) ? Number.MAX_SAFE_INTEGER : numeric;
 }
 
+function extractTaskIdsFromPrTitle(title) {
+  return [...title.matchAll(/\bT(\d+)\b/g)].map((match) =>
+    Number.parseInt(match[1], 10),
+  );
+}
+
+function buildAttemptedTaskIdSet(prTitles) {
+  const attempted = new Set();
+  for (const title of prTitles) {
+    for (const id of extractTaskIdsFromPrTitle(title)) {
+      attempted.add(id);
+    }
+  }
+  return attempted;
+}
+
 function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -326,13 +342,20 @@ function parseBacklog(markdownContent) {
   return tasks;
 }
 
-function pickTask(tasks, mode, category) {
+function openTasksForMode(tasks, mode, category) {
   let filtered = tasks.filter(
     (task) => task.status === 'open' && task.difficulty === mode,
   );
   if (category && category.trim() !== '') {
     filtered = filtered.filter((task) => task.category === category.trim());
   }
+  return filtered;
+}
+
+function pickTask(tasks, mode, category, attemptedNumericIds = new Set()) {
+  const filtered = openTasksForMode(tasks, mode, category).filter(
+    (task) => !attemptedNumericIds.has(taskIdNumber(task.id)),
+  );
   if (filtered.length === 0) {
     return null;
   }
@@ -937,6 +960,47 @@ async function runGitOutput(args) {
   }
 }
 
+async function fetchAttemptedTaskIds(owner, repo, token) {
+  let stdout;
+  try {
+    ({ stdout } = await execFileAsync(
+      'gh',
+      [
+        'pr',
+        'list',
+        '--repo',
+        `${owner}/${repo}`,
+        '--state',
+        'all',
+        '--limit',
+        '1000',
+        '--json',
+        'number,title,state',
+      ],
+      {
+        cwd: repoRoot,
+        env: { ...process.env, GH_TOKEN: token },
+        encoding: 'utf8',
+      },
+    ));
+  } catch (error) {
+    if (error instanceof NightlyAgentFatalError) {
+      throw error;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    fail(`gh pr list failed: ${message}`);
+  }
+
+  let prs;
+  try {
+    prs = JSON.parse(stdout);
+  } catch {
+    fail('gh pr list returned invalid JSON');
+  }
+
+  return buildAttemptedTaskIdSet(prs.map((pr) => pr.title));
+}
+
 function descriptionToSlug(description) {
   const slug = description
     .toLowerCase()
@@ -1428,10 +1492,32 @@ async function main() {
 
   const backlogContent = await readRepoFile(BACKLOG_PATH);
   const tasks = parseBacklog(backlogContent);
-  const task = pickTask(tasks, taskMode, taskCategory);
+
+  // Fail-closed: fetchAttemptedTaskIds calls fail() on gh/JSON errors — never falls back to empty set.
+  const attemptedNumericIds = isGitHubActions
+    ? await fetchAttemptedTaskIds(owner, repo, token)
+    : new Set();
+
+  const openForMode = openTasksForMode(tasks, taskMode, taskCategory);
+  const task = pickTask(tasks, taskMode, taskCategory, attemptedNumericIds);
 
   if (task === null) {
-    log(`No open task found for mode "${taskMode}"${taskCategory ? ` and category "${taskCategory}"` : ''}`);
+    const allBlockedByPr =
+      openForMode.length > 0 &&
+      openForMode.every((entry) =>
+        attemptedNumericIds.has(taskIdNumber(entry.id)),
+      );
+
+    if (allBlockedByPr) {
+      log(
+        `No eligible task: ${openForMode.length} open tasks all have existing PRs — awaiting review/merge`,
+      );
+    } else {
+      log(
+        `No open task found for mode "${taskMode}"${taskCategory ? ` and category "${taskCategory}"` : ''}`,
+      );
+    }
+    // Deliberate no-PR exit: raises nothing when nothing is eligible (exhausted/holiday case).
     return;
   }
 
@@ -1667,6 +1753,7 @@ async function main() {
 export {
   parseBacklog,
   pickTask,
+  extractTaskIdsFromPrTitle,
   updateBacklogRow,
   moveToCompleted,
   buildPlanPrompt,
