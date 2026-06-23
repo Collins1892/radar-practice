@@ -1,3 +1,69 @@
+## Week 6 Day 2 — Tuesday 23 June 2026
+
+### PR housekeeping — T15 and T18
+Closed duplicate T15 PR (#113, keep #110). Fixed two minors on #110:
+token alignment (`--ring` → `--app-accent`) and `:focus` fallback for
+programmatic focus via skip link. Fixed minor on #117: `getByRole('paragraph')`
+unreliable across Testing Library versions — reverted to `getByText`. T70
+added: append-only strategy to eliminate recurring agent PR conflicts on
+backlog/completed tables.
+
+### Skills and slash commands alignment (PR #119)
+All six agent skills updated to reflect the shipped AuditsApi stack —
+dotnet-test-writer, playwright-test-writer, react-test-writer,
+component-builder, code-reviewer, wcag, modernisation. `/review` command
+updated to classify AuditsApi paths. Slash command phase dates fixed
+(PR #118).
+
+### Comprehension: legacy codebase
+AngularJS 1.6: routes in app.js, single controller with `vm` (ViewModel)
+pattern, separate template files, in-memory data via static list, no
+interface, no DI. .NET Framework 4.7.2: web.config for config, global.asax
+for bootstrap, Newtonsoft.Json assembly bindings.
+
+### Comprehension: .NET 8 Audits API
+`AuditsDbContext` bridges C# and SQLite — `DbSet<Audit>` maps to table,
+`OnModelCreating` configures schema (MaxLength, enum-as-int, soft-delete
+flag). `IAuditRepository` enables DI and mocking. `EfAuditRepository`
+filters `RecordStatus.Active` on every query — deleted records never surface.
+`IsValidSortField` allowlist prevents user-supplied strings reaching the DB.
+`TestWebApplicationFactory` boots the full API in-memory for integration
+tests — real HTTP requests, real SQLite, no mocks.
+
+### Comprehension: React npm scripts
+`dev` — Vite dev server, native ESM, instant startup. `build` — `tsc -b`
+type-checks first, then Vite bundles. `typecheck` — `--noEmit` only, two
+configs (browser vs Node). `lint` — ESLint with no-secrets plugin (security).
+`format`/`format:check` — local write vs CI read-only. `prepare` — Husky
+skipped in CI. `preview` — serves production bundle locally. `test` —
+`vitest run` (once, exits). `e2e` — Playwright Chromium only.
+
+### Comprehension: GitHub Actions
+`ci.yml` — push/PR to main, four test suites, fast unit/integration only.
+`pr-review.yml` — two jobs: test first, pr-review only if test passes and
+event is a real PR. Concurrency groups by PR number. `contents: write` +
+`pull-requests: write` permissions. `nightly-e2e.yml` — Chromium only,
+cron UTC+8 (update to UTC+1 after 7 July). `nightly-agent.yml` —
+`fetch-depth: 0` for full history, `GITHUB_ACTIONS=true` gate, TASK_MODE
+priority: input → repo var → hardcoded default.
+
+### Comprehension: skills and slash commands
+Seven skills: code-reviewer (Blocker/Major only for fix loop), component-builder,
+dotnet-test-writer, modernisation, playwright-test-writer, react-test-writer,
+wcag. Skills = reusable instructions loaded by the agent. Slash commands =
+interactive shortcuts in Claude Code: `/standup`, `/observations`, `/tidy`,
+`/review`. Skills enforce consistent AI output — before skills, Cursor plans
+were inconsistent and required multiple prompts.
+
+### Weekend reading list
+1. AuditsDbContext — EF Core DbContext, schema config, DI pattern
+2. TestWebApplicationFactory — integration testing, real API in memory
+3. .NET 8 vs legacy — interface, soft delete, sort allowlist, integration vs unit tests
+4. Seven skills — what each does, when to use it
+5. Slash commands — what each does, skill vs command distinction
+6. nightly-agent.yml — fetch-depth, GITHUB_ACTIONS gate, TASK_MODE priority
+7. Consistency problem — UI components + skills, before/after Cursor plans
+
 ## Week 6 Day 1 — Monday 22 June 2026
 
 ### Nightly agent — holiday-loop fix (PR #114)
