@@ -124,6 +124,7 @@ client/
       auditDisplay.ts           — audit badge variants, status labels, filter options
       auditPageCopy.ts          — audit headings, subtitles, success messages
       incidentDisplay.ts        — incident display helpers
+      incidentPageCopy.ts       — incident headings, copy constants (INCIDENT_CREATE_HEADING etc.)
       ItemsList.tsx             — presentational list (legacy CSS — migrate when touched)
       ComponentsView.tsx        — gallery shell
       ui/                       — shadcn vendor (ESLint-ignored; do not author here)
