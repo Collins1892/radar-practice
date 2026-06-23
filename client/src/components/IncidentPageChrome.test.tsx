@@ -39,4 +39,16 @@ describe('IncidentPageChrome', () => {
     // Assert
     expect(screen.queryByRole('paragraph')).not.toBeInTheDocument();
   });
+
+  it('renders subtitle when subtitle prop is provided', (): void => {
+    // Arrange
+    const subtitle = 'Test subtitle text';
+
+    // Act
+    renderIncidentPageChrome({ subtitle });
+
+    // Assert
+    // getByRole('paragraph') is unreliable across Testing Library/jsdom versions (ARIA 1.2 support inconsistent) — getByText is the robust choice here
+    expect(screen.getByText(subtitle)).toBeInTheDocument();
+  });
 });
