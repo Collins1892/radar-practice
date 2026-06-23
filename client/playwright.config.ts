@@ -18,21 +18,30 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      command: `dotnet run ${dotnetRunFastStart} --configuration Debug --project ../ItemsApi/ItemsApi.csproj --launch-profile http`.replace(/\s+/g, ' ').trim(),
+      command:
+        `dotnet run ${dotnetRunFastStart} --configuration Debug --project ../ItemsApi/ItemsApi.csproj --launch-profile http`
+          .replace(/\s+/g, ' ')
+          .trim(),
       url: 'http://localhost:5133/items',
       name: 'ItemsApi',
       timeout: apiTimeout,
       reuseExistingServer: reuse,
     },
     {
-      command: `dotnet run ${dotnetRunFastStart} --configuration Debug --project ../IncidentsApi/IncidentsApi.csproj --launch-profile http`.replace(/\s+/g, ' ').trim(),
+      command:
+        `dotnet run ${dotnetRunFastStart} --configuration Debug --project ../IncidentsApi/IncidentsApi.csproj --launch-profile http`
+          .replace(/\s+/g, ' ')
+          .trim(),
       url: 'http://localhost:5134/incidents',
       name: 'IncidentsApi',
       timeout: apiTimeout,
       reuseExistingServer: reuse,
     },
     {
-      command: `dotnet run ${dotnetRunFastStart} --configuration Debug --project ../AuditsApi/AuditsApi.csproj --launch-profile http`.replace(/\s+/g, ' ').trim(),
+      command:
+        `dotnet run ${dotnetRunFastStart} --configuration Debug --project ../AuditsApi/AuditsApi.csproj --launch-profile http`
+          .replace(/\s+/g, ' ')
+          .trim(),
       url: 'http://localhost:5135/audits',
       name: 'AuditsApi',
       timeout: apiTimeout,
