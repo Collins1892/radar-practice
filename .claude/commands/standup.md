@@ -6,9 +6,9 @@ Run the daily standup for this session.
 Step 1 — Establish the current date and week position:
 - Run: date
 - Compare the date to the programme phase ranges:
-  - Phase 1 (phase-1-foundation.md): May 18 – May 30
-  - Phase 2 (phase-2-build.md): Jun 2 – Jun 20
-  - Phase 3 (phase-3-articulate.md): Jun 23 – Jul 4
+  - Phase 1 (phase-1-foundation.md): May 19 – May 30
+  - Phase 2 (phase-2-build.md): Jun 1 – Jun 21
+  - Phase 3 (phase-3-articulate.md): Jun 22 – Jul 3
   - If the date falls in a gap between phases, ask the developer for
     Week X Day Y before continuing
 - Read the matching phase file from private/
