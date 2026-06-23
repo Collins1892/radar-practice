@@ -5,7 +5,7 @@ description: Build React TypeScript components for the client in this project �
 
 # Component Builder
 
-Guides building hand-authored React components for the `client/` TypeScript app. Covers every UI building block type in this repo — from a single `Badge` to a full feature screen like `IncidentsView`.
+Guides building hand-authored React components for the `client/` TypeScript app. Covers every UI building block type in this repo — from a single `Badge` to a full feature screen like `IncidentsView` or `AuditsView`.
 
 ## Core rules
 
@@ -92,6 +92,10 @@ client/
     index.css                   — OKLCH theme tokens (@theme inline)
     api.ts                      — Items API fetch layer
     api/incidents.ts            — Incidents API fetch layer + incidentUserMessage
+    api/audits.ts               — Audits API fetch layer + auditUserMessage, parseAuditId
+    hooks/
+      useAudits.ts              — list hook for AuditsView
+      useAudit.ts               — single-audit hook for detail/edit views
     errors.ts                   — ApiClientError, toUserMessage
     componentRegistry.tsx       — gallery entries for reusable primitives
     components/                 — hand-authored app components (build here)
@@ -105,12 +109,22 @@ client/
       DatePickerField.tsx       — form: Popover + Calendar
       DataTable.tsx             — data: generic sortable table
       Pagination.tsx            — data: page navigation
-      IncidentPageChrome.tsx    — shell: h1 + back link
+      IncidentPageChrome.tsx    — shell: h1 + back link (incidents)
       IncidentForm.tsx          — feature form: create/edit incident
       IncidentCreateView.tsx    — route shell: thin wrapper → IncidentForm
       IncidentEditView.tsx      — route shell: parse id → IncidentForm or error
       IncidentDetailView.tsx    — screen: fetch + display incident
       IncidentsView.tsx         — screen: list + filters + table + pagination
+      AuditPageChrome.tsx       — shell: h1 + back link (audits)
+      AuditForm.tsx             — feature form: create/edit audit
+      AuditCreateView.tsx       — route shell → AuditForm
+      AuditEditView.tsx         — route shell: parse id → AuditForm or error
+      AuditDetailView.tsx       — screen: fetch + display audit
+      AuditsView.tsx            — screen: list + filters + table + pagination (uses useAudits)
+      auditDisplay.ts           — audit badge variants, status labels, filter options
+      auditPageCopy.ts          — audit headings, subtitles, success messages
+      incidentDisplay.ts        — incident display helpers
+      incidentPageCopy.ts       — incident headings, copy constants (INCIDENT_CREATE_HEADING etc.)
       ItemsList.tsx             — presentational list (legacy CSS — migrate when touched)
       ComponentsView.tsx        — gallery shell
       ui/                       — shadcn vendor (ESLint-ignored; do not author here)
@@ -146,10 +160,10 @@ flowchart TD
 | **Primitive** | Reusable visual/status building block | `Badge`, `LoadingState`, `EmptyState`, `ErrorState` | `components/<Name>.tsx` |
 | **Form field** | Labelled input wrapper | `FormField`, `SelectField`, `DatePickerField` | `components/<Name>.tsx` + optional `formFieldUtils.ts` |
 | **Data display** | Tables, pagination, lists | `DataTable`, `Pagination`, `ItemsList` | `components/<Name>.tsx` |
-| **Feature form** | Multi-field form with validation + API submit | `IncidentForm` | `components/<Name>.tsx` |
-| **Screen / view** | Fetches data, composes primitives, owns page layout | `IncidentsView`, `IncidentDetailView` | `components/<Name>.tsx` |
-| **Route shell** | Thin wrapper: parse route params, delegate to form/screen | `IncidentCreateView`, `IncidentEditView` | `components/<Name>.tsx` |
-| **Page chrome** | Shared heading + actions for a feature area | `IncidentPageChrome` | `components/<Name>.tsx` |
+| **Feature form** | Multi-field form with validation + API submit | `IncidentForm`, `AuditForm` | `components/<Name>.tsx` |
+| **Screen / view** | Fetches data, composes primitives, owns page layout | `IncidentsView`, `IncidentDetailView`, `AuditsView`, `AuditDetailView` | `components/<Name>.tsx` |
+| **Route shell** | Thin wrapper: parse route params, delegate to form/screen | `IncidentCreateView`, `IncidentEditView`, `AuditCreateView`, `AuditEditView` | `components/<Name>.tsx` |
+| **Page chrome** | Shared heading + actions for a feature area | `IncidentPageChrome`, `AuditPageChrome` | `components/<Name>.tsx` |
 | **App shell** | Nav, routes, skip link, document title | `App.tsx` | `App.tsx`, `pageTitle.ts` |
 
 **Composition rule:** Screens compose primitives and data-display components. Route shells stay thin. Feature forms own validation and submit logic. Primitives stay presentational — no `fetch`, no `useNavigate`.
@@ -211,15 +225,17 @@ Match patterns already used in this repo:
 | Form field (Radix) | [`SelectField.tsx`](../../../client/src/components/SelectField.tsx), [`DatePickerField.tsx`](../../../client/src/components/DatePickerField.tsx) | `aria-*` on trigger/button, not Radix root; `autoFocus` on Calendar |
 | Form utility | [`formFieldUtils.ts`](../../../client/src/components/formFieldUtils.ts) | `formFieldErrorId(htmlFor)` for consistent error ids |
 | Data display | [`DataTable.tsx`](../../../client/src/components/DataTable.tsx), [`Pagination.tsx`](../../../client/src/components/Pagination.tsx) | Generic `<T>`; `role="region"` + `aria-label`; `aria-sort`; `nav` + `aria-current` |
-| Feature form | [`incidentPageCopy.ts`](../../../client/src/components/incidentPageCopy.ts) | Pure `validateX()`; field order + focus management; discriminated props (`mode: 'create' \| 'edit'`) |
+| Feature form | [`incidentPageCopy.ts`](../../../client/src/components/incidentPageCopy.ts), [`IncidentForm.tsx`](../../../client/src/components/IncidentForm.tsx) | Copy constants in `*PageCopy.ts`; `validateX()`, field order, and focus management in `*Form.tsx`; discriminated props (`mode: 'create' \| 'edit'`) |
+| Feature form (audits) | [`auditPageCopy.ts`](../../../client/src/components/auditPageCopy.ts), [`AuditForm.tsx`](../../../client/src/components/AuditForm.tsx) | Same patterns as incidents; `auditUserMessage` for errors |
 | Screen | [`IncidentsView.tsx`](../../../client/src/components/IncidentsView.tsx) | State machine (initial load / refetch / error / empty / populated); overlay loading |
-| Detail screen | [`IncidentDetailView.tsx`](../../../client/src/components/IncidentDetailView.tsx) | `useParams` + `parseIncidentId`; progressive title; `<dl>` for read-only fields |
-| Route shell | [`IncidentCreateView.tsx`](../../../client/src/components/IncidentCreateView.tsx), [`IncidentEditView.tsx`](../../../client/src/components/IncidentEditView.tsx) | Thin wrapper; invalid-id guard with `ErrorState` |
-| Page chrome | [`IncidentPageChrome.tsx`](../../../client/src/components/IncidentPageChrome.tsx) | `h1` + subtitle; `Button asChild` + `Link` |
+| Screen (audits) | [`AuditsView.tsx`](../../../client/src/components/AuditsView.tsx), [`hooks/useAudits.ts`](../../../client/src/hooks/useAudits.ts) | Centralised list hook; filters, sort, pagination |
+| Detail screen | [`IncidentDetailView.tsx`](../../../client/src/components/IncidentDetailView.tsx), [`AuditDetailView.tsx`](../../../client/src/components/AuditDetailView.tsx) | `useParams` + `parseIncidentId` / `parseAuditId`; progressive title; `<dl>` for read-only fields |
+| Route shell | [`IncidentCreateView.tsx`](../../../client/src/components/IncidentCreateView.tsx), [`IncidentEditView.tsx`](../../../client/src/components/IncidentEditView.tsx), [`AuditCreateView.tsx`](../../../client/src/components/AuditCreateView.tsx), [`AuditEditView.tsx`](../../../client/src/components/AuditEditView.tsx) | Thin wrapper; invalid-id guard with `ErrorState` |
+| Page chrome | [`IncidentPageChrome.tsx`](../../../client/src/components/IncidentPageChrome.tsx), [`AuditPageChrome.tsx`](../../../client/src/components/AuditPageChrome.tsx) | `h1` + subtitle; `Button asChild` + `Link` |
 | App shell | [`App.tsx`](../../../client/src/App.tsx) | Skip link; `aria-label="Views"` nav; `usePageTitle`; route ordering |
 | Page title | [`pageTitle.ts`](../../../client/src/pageTitle.ts) | `formatPageTitle(pageTitle)` → `"Page | Radar Practice"` |
 | Gallery registry | [`componentRegistry.tsx`](../../../client/src/componentRegistry.tsx) | `ComponentEntry` previews for reusable primitives |
-| API layer | [`api/incidents.ts`](../../../client/src/api/incidents.ts) | Typed fetch; `incidentUserMessage` for user-safe errors |
+| API layer | [`api/incidents.ts`](../../../client/src/api/incidents.ts), [`api/audits.ts`](../../../client/src/api/audits.ts) | Typed fetch; `incidentUserMessage` / `auditUserMessage` for user-safe errors |
 
 ## Build patterns by type
 
@@ -344,22 +360,22 @@ type IncidentRow = Incident & Record<string, unknown>;
 
 **Presentational list** — accept a `status` union and render loading/error/empty/ready (see `ItemsListStatus` in `ItemsList.tsx`). New lists should use Tailwind and shared primitives (`LoadingState`, `ErrorState`, `EmptyState`) instead of bespoke CSS.
 
-### 4. Feature forms (IncidentForm)
+### 4. Feature forms (IncidentForm, AuditForm)
 
 **When:** Multi-field create/edit flow with client validation and API submit.
 
 **Structure:**
 
-1. **Discriminated props** for mode variants: `{ mode: 'create' } | { mode: 'edit'; incidentId: number }`.
+1. **Discriminated props** for mode variants: `{ mode: 'create' } | { mode: 'edit'; incidentId: number }` (or `auditId` for audits).
 2. **Pure validation function** returning a field-error map: `validateIncidentForm(values): FieldErrors`.
 3. **Field order array** aligned with validation — used for focus-first-error.
 4. **Stable element ids** map for `document.getElementById` focus management.
 5. **Load state** (edit mode): separate `loadLoading` / `loadError` from submit state.
 6. **Submit handler**: validate → focus first error → API call → navigate or show `submitError`.
 7. **Page chrome**: `IncidentPageChrome` with exported heading constants.
-8. **User-safe errors**: `incidentUserMessage(err, 'loading' | 'creating' | 'updating')` from API layer — never expose stack traces.
+8. **User-safe errors**: `incidentUserMessage(err, 'loading' | 'creating' | 'updating')` or `auditUserMessage(err, ...)` from API layer — never expose stack traces.
 
-**Focus-first-error pattern** (from `incidentPageCopy.ts`):
+**Focus-first-error pattern** (from `IncidentForm.tsx` / `AuditForm.tsx`):
 
 ```typescript
 const shouldFocusFirstErrorRef = useRef(false);
@@ -387,9 +403,11 @@ useLayoutEffect(() => {
 - Preserve field values on submit failure; clear only on success.
 - Use `useNavigate()` for post-create redirect.
 
-### 5. Screens / views (IncidentsView, IncidentDetailView)
+### 5. Screens / views (IncidentsView, IncidentDetailView, AuditsView, AuditDetailView)
 
 **When:** A route renders a full page that fetches data and composes primitives.
+
+**Audits list screens** should use [`useAudits`](../../../client/src/hooks/useAudits.ts) for fetch/filter/sort/pagination state — do not duplicate that logic inline (IncidentsView still uses inline `useState`/`useEffect`; new modules follow the hooks pattern).
 
 **Screen layout:**
 
@@ -468,7 +486,9 @@ export function IncidentEditView(): JSX.Element {
 
 **Checklist:**
 
-1. Add `Route` in `App.tsx` — **specific routes before parametric ones** (`/incidents/create` before `/incidents/:id`).
+1. Add `Route` in `App.tsx` — **specific routes before parametric ones**:
+   - `/incidents/create` before `/incidents/:id`
+   - `/audits/create` before `/audits/:id`
 2. Add `NavLink` if the view is top-level navigation.
 3. Add a matchPath branch in resolvePageTitle (in App.tsx) if the page needs a specific document.title.
 4. Export heading constants from the feature form/screen if `App.tsx` needs them for titles.
@@ -483,6 +503,7 @@ Hand-authored components call typed modules — never inline `fetch` in primitiv
 |-----|--------|---------------|
 | Items | [`api.ts`](../../../client/src/api.ts) | `toUserMessage(err, 'load' \| 'create')` from [`errors.ts`](../../../client/src/errors.ts) |
 | Incidents | [`api/incidents.ts`](../../../client/src/api/incidents.ts) | `incidentUserMessage(err, 'loading' \| 'creating' \| 'updating')` |
+| Audits | [`api/audits.ts`](../../../client/src/api/audits.ts) | `auditUserMessage(err, 'loading' \| 'creating' \| 'updating')` |
 
 **Rules:**
 
@@ -589,7 +610,7 @@ flowchart TD
 |-------|-------------|
 | [wcag](../wcag/SKILL.md) | Dedicated WCAG 2.2 AA audit or accessibility build guide (report only) |
 | [react-test-writer](../react-test-writer/SKILL.md) | Vitest tests after building — one test per request |
-| [playwright-test-writer](../playwright-test-writer/SKILL.md) | Browser journey tests (Week 5) |
+| [playwright-test-writer](../playwright-test-writer/SKILL.md) | Browser journey tests |
 | [code-reviewer](../code-reviewer/SKILL.md) | Full-stack or frontend review of finished code (advisory only) |
 
 **Typical sequence:** **component-builder** → **react-test-writer** (tests) → **playwright-test-writer** (journeys) → **wcag** (audit) → **code-reviewer** (merge readiness).

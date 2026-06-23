@@ -61,12 +61,34 @@ client/
     errors.ts                 — ApiClientError, toUserMessage
     errors.test.ts            — unit tests (reference)
     api.ts                    — fetchItems, createItem (mock in App tests)
+    api/incidents.ts          — IncidentsApi fetch layer (mock in incident view tests)
+    api/audits.ts             — AuditsApi fetch layer (mock in audit view tests)
+    hooks/
+      useAudits.ts            — list hook for AuditsView (filters, sort, pagination)
+      useAudit.ts             — single-audit hook for detail/edit views
     App.tsx                   — items view + routing; form and list orchestration
-    App.test.tsx              — integration, form tests (reference); router — patterns in §5 (no reference test yet)
+    App.test.tsx              — integration, form tests (reference); router — patterns in §5
     types.ts                  — Item and shared types
     components/
       ItemsList.tsx           — loading / error / empty / ready states
       ItemsList.test.tsx      — component tests (reference)
+      IncidentsView.tsx       — incidents list screen
+      IncidentForm.tsx        — incident create/edit form
+      IncidentCreateView.test.tsx — incident form tests (reference)
+      AuditsView.tsx          — audits list screen
+      AuditForm.tsx           — audit create/edit form
+      AuditCreateView.tsx     — route shell → AuditForm
+      AuditDetailView.tsx     — audit detail screen
+      AuditEditView.tsx       — route shell → AuditForm edit mode
+      AuditPageChrome.tsx     — shared audit page heading
+      AuditsView.test.tsx     — audits list tests (reference)
+      AuditForm.test.tsx      — audit form tests (reference)
+      AuditCreateView.test.tsx
+      AuditDetailView.test.tsx
+      AuditEditView.test.tsx
+      auditDisplay.ts         — badge variants, status labels, filter options
+      auditPageCopy.ts        — audit headings, subtitles, success messages
+      incidentDisplay.ts      — incident display helpers
       FormField.tsx           — label + cloneElement aria injection
       SelectField.tsx         — Radix Select wrapper (aria on SelectTrigger)
       DatePickerField.tsx     — Popover + Calendar (autoFocus)
@@ -85,7 +107,11 @@ Match patterns already used in this repo:
 | Unit | [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts) |
 | Component | [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx) |
 | Integration, form | [`client/src/App.test.tsx`](../../../client/src/App.test.tsx) |
-| Router | patterns in §5 (no reference test yet) |
+| Incident form | [`client/src/components/IncidentCreateView.test.tsx`](../../../client/src/components/IncidentCreateView.test.tsx) |
+| Audits list | [`client/src/components/AuditsView.test.tsx`](../../../client/src/components/AuditsView.test.tsx) |
+| Audit form | [`client/src/components/AuditForm.test.tsx`](../../../client/src/components/AuditForm.test.tsx), [`client/src/components/AuditCreateView.test.tsx`](../../../client/src/components/AuditCreateView.test.tsx) |
+| Audit detail/edit | [`client/src/components/AuditDetailView.test.tsx`](../../../client/src/components/AuditDetailView.test.tsx), [`client/src/components/AuditEditView.test.tsx`](../../../client/src/components/AuditEditView.test.tsx) |
+| Router | patterns in §5 |
 
 ## Return types
 
@@ -152,13 +178,13 @@ describe('isRecord', () => {
 - Import only from `vitest` (and the module under test). Never import `@testing-library/react`.
 - Every `it` uses `(): void`.
 - One `it` per agent request. A single `it` may contain multiple AAA blocks when testing closely related cases in one scenario (see `guards.test.ts` primitives test) — still only add **one** new `it` per request.
-- Targets: `guards.ts`, `errors.ts`, `formFieldUtils.ts`, and future pure utility modules.
+- Targets: `guards.ts`, `errors.ts`, `formFieldUtils.ts`, `auditDisplay.ts`, `incidentDisplay.ts`, and future pure utility modules.
 
 **WCAG and UI state rules do not apply** to unit tests.
 
 ## 2. Component tests
 
-Presentational components rendered **in isolation** with props — no `vi.mock('./api')`.
+Presentational components rendered **in isolation** with props — no `vi.mock('./api')` unless testing a screen that imports `@/api/audits` or `@/api/incidents` at module level (mock that module in the test file).
 
 ### Boilerplate
 
@@ -269,13 +295,15 @@ describe('App', () => {
 
 ### Rules
 
-- `vi.mock('./api', ...)` at the **top of the file** (path relative to the test file).
+- `vi.mock('./api', ...)` at the **top of the file** (path relative to the test file). For audit or incident screens, mock `@/api/audits` or `@/api/incidents` instead.
 - `beforeEach`: `vi.mocked(...).mockReset()` for **every** mocked export from that module.
 - `renderApp()` wraps `App` in `MemoryRouter` — do **not** mock `ItemsList` or other presentational children.
 - Use `ApiClientError` from `./errors` for realistic HTTP/network/parse failures.
 - Use `mockResolvedValueOnce` chains when the UI fetches twice (e.g. empty list on mount, populated list after submit).
 - Async assertions: `await screen.findByRole(...)`, `findByText`, `findByLabelText` — never rely on sync `getBy*` immediately after mount or submit.
 - Assert side effects on mocks: `expect(createItem).toHaveBeenCalledWith({ name: 'Widget', price: 9.99 })`, `expect(fetchItems).toHaveBeenCalledTimes(2)`.
+
+**Audits / incidents screens:** mock `@/api/audits` or `@/api/incidents` at module top (`fetchAudits`, `getAudit`, etc.) — **not** the hooks. Hooks delegate to the API layer; see [`AuditsView.test.tsx`](../../../client/src/components/AuditsView.test.tsx) and [`AuditDetailView.test.tsx`](../../../client/src/components/AuditDetailView.test.tsx). Reset all mocked exports in `beforeEach`. Reserve `vi.mock('@/hooks/useAudits')` or `vi.mock('@/hooks/useAudit')` for dedicated hook unit tests only.
 
 ## 4. Form tests
 
@@ -348,9 +376,23 @@ render(
     <App />
   </MemoryRouter>,
 );
+
+// Audits list
+render(
+  <MemoryRouter initialEntries={['/audits']}>
+    <App />
+  </MemoryRouter>,
+);
+
+// Audit create
+render(
+  <MemoryRouter initialEntries={['/audits/create']}>
+    <App />
+  </MemoryRouter>,
+);
 ```
 
-- Set `initialEntries` to the route under test.
+- Set `initialEntries` to the route under test (`/`, `/incidents`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`, `/components`).
 - Assert route-specific UI (`NavLink` active state, `ComponentsView`, registry content).
 - Optional: `fireEvent.click` on a nav control, then assert the new view with `findBy*`.
 - Never wrap tests in `BrowserRouter`.
@@ -474,6 +516,8 @@ See `componentRegistry.tsx` (`DataTable<IncidentPreviewRow>`) for a working exam
 | `guards.ts` | `client/src/guards.test.ts` |
 | `errors.ts` | `client/src/errors.test.ts` |
 | `formFieldUtils.ts` | `client/src/components/formFieldUtils.test.ts` (create if absent) |
+| `auditDisplay.ts` / `incidentDisplay.ts` | co-located `*.test.ts` in same directory |
+| `hooks/useAudits.ts` / `hooks/useAudit.ts` | `client/src/hooks/useAudits.test.ts` / `useAudit.test.ts` (create if absent) |
 | `components/X.tsx` | `client/src/components/X.test.tsx` |
 | `App.tsx` flows (list, form, nav) | `client/src/App.test.tsx` |
 | New page-level shell | `client/src/<Name>.test.tsx` (create if needed) |

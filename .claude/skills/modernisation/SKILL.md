@@ -223,7 +223,7 @@ Match patterns already used for Incidents when building Audits (or any new migra
 | PUT and GET by id endpoints | `PUT /incidents/:id`, `GET /incidents/:id` in [IncidentsApi/Program.cs](../../../IncidentsApi/Program.cs) — detail and edit views depend on these |
 | Success toasts | `toast.success` via Sonner in [IncidentForm.tsx](../../../client/src/components/IncidentForm.tsx) → `AuditForm` |
 
-The **Audits** module is the planned vertical slice: CRUD with table and pagination, reusing the shared component library and repository pattern — same shape as Incidents, different domain.
+The **Audits** module is the **completed** reference vertical slice (Week 5): CRUD with table and pagination, reusing the shared component library and repository pattern — same shape as Incidents, different domain. Use the shipped [`AuditsApi/`](../../../AuditsApi/) and client audits module as the primary template for future legacy migrations.
 
 ## Agent guardrails
 
@@ -288,7 +288,7 @@ The **Audits** module is the planned vertical slice: CRUD with table and paginat
 4. **Map to modern layout** — name API project (`AuditsApi/`), entities, routes, components (Incidents parallel).
 5. **Implement backend** — `AuditsDbContext`, `EfAuditRepository`, `Program.cs` endpoints, EF migration.
 6. **Implement frontend** — `api/audits.ts`, `AuditsView`, `AuditForm`, route shells; wire [App.tsx](../../../client/src/App.tsx). Defer component detail to [component-builder](../component-builder/SKILL.md).
-7. **Wire and verify** — CORS, port, Vite proxy if needed (Incidents uses `http://localhost:5134` with CORS; Items uses Vite proxy to 5133). Also register AuditsApi.Tests in `.github/workflows/ci.yml` — add a new `dotnet test` step mirroring the existing IncidentsApi.Tests step. Use port 5135 in `launchSettings.json` (Items=5133, Incidents=5134, Audits=5135) — confirm no collision before running.
+7. **Wire and verify** — CORS, port, Vite proxy if needed (Incidents uses `http://localhost:5134` with CORS; Items uses Vite proxy to 5133; Audits uses `http://localhost:5135` with CORS). `AuditsApi.Tests` is already registered in [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml). Use port 5135 in `launchSettings.json` (Items=5133, Incidents=5134, Audits=5135) — confirm no collision before running.
 8. **Test** — run `dotnet test` and `npm test`; add tests via sibling skills when asked.
 9. **Summarise** — behaviour preserved vs intentionally changed; files touched; remind user the PR diff is the transformation record.
 10. **Offer follow-ups** — after summarising, prompt the user with next steps: test authoring via [dotnet-test-writer](../dotnet-test-writer/SKILL.md) and [react-test-writer](../react-test-writer/SKILL.md), accessibility audit via [wcag](../wcag/SKILL.md), and pre-PR advisory review via [code-reviewer](../code-reviewer/SKILL.md).

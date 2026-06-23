@@ -5,7 +5,7 @@ description: Full-stack code review for this repo. Use when the user asks to rev
 
 # Code Reviewer
 
-Guides **read-only** full-stack code reviews for this repository (Items API + React client). Advisory only — the reviewer explains findings and suggests fixes; it does not apply changes.
+Guides **read-only** full-stack code reviews for this repository (ItemsApi, IncidentsApi, AuditsApi + React client). Advisory only — the reviewer explains findings and suggests fixes; it does not apply changes.
 
 ## Core rules
 
@@ -127,7 +127,11 @@ client/
                                 ErrorState, FormField, SelectField, DatePickerField, DataTable,
                                 Pagination, ComponentsView, IncidentsView, IncidentForm,
                                 IncidentCreateView, IncidentDetailView, IncidentEditView,
-                                IncidentPageChrome)
+                                IncidentPageChrome, AuditsView, AuditForm, AuditCreateView,
+                                AuditDetailView, AuditEditView, AuditPageChrome)
+  src/hooks/                    — useAudits, useAudit (list/single-audit hooks)
+  src/api/incidents.ts          — IncidentsApi fetch layer
+  src/api/audits.ts             — AuditsApi fetch layer
   src/components/ui/            — shadcn/ui generated components (e.g. button.tsx); ESLint-ignored
   src/components/ItemsList.test.tsx
   src/pageTitle.ts              — per-route document.title helper (SITE_TITLE, formatPageTitle)
@@ -138,15 +142,17 @@ client/
   src/errors.test.ts              — Vitest unit tests for error mapping (toUserMessage, ApiClientError)
   src/guards.ts                   — runtime type guards
   src/guards.test.ts              — Vitest unit tests for runtime type guards
-  playwright.config.ts            — Playwright config (baseURL, Vite webServer only)
+  playwright.config.ts            — Playwright config (baseURL, four-server webServer: 3 APIs + Vite)
   e2e/                            — Playwright e2e tests
   e2e/app.spec.ts                 — smoke e2e (reference)
-  e2e/pages/                      — page objects (Week 5 journeys)
+  e2e/journeys/                   — items, incidents, audits, components journey specs
+  e2e/pages/                      — page objects
+  e2e/support/api.ts              — e2e API seed helpers (createAudit, deleteAudit, etc.)
 
 private/ (agent-readable, not committed)
   seven-week-plan.md            — master plan, decisions log, daily structure
   phase-1-foundation.md         — Weeks 1–2 complete
-  phase-2-build.md              — Weeks 3–5, Week 3 complete
+  phase-2-build.md              — Weeks 3–5 complete
   phase-3-articulate.md         — Weeks 6–7
 ```
 
@@ -171,7 +177,7 @@ Imports use the `@/` path alias (configured in `vite.config.ts` and `tsconfig.ap
 Applies under `ItemsApi/`, `ItemsApi.Tests/`, `IncidentsApi/`, `IncidentsApi.Tests/`, `AuditsApi/`, and `AuditsApi.Tests/`.
 
 - **Repository pattern** — HTTP layer depends on abstractions (e.g. `IItemsRepository`), not concrete repository classes; use built-in DI.
-- **EF Core persistence** — data access goes through `AppDbContext` and `EfItemsRepository`; endpoints and other callers depend on `IItemsRepository`, never on `AppDbContext` or the concrete repository directly. `EfItemsRepository` is registered **scoped**.
+- **EF Core persistence** — each API uses its own DbContext and repository (`AppDbContext` / `EfItemsRepository`, `IncidentsDbContext` / `EfIncidentRepository`, `AuditsDbContext` / `EfAuditRepository`). Endpoints depend on repository interfaces, never on DbContext or concrete repositories directly. Repositories are registered **scoped**.
 - **Soft delete (`RecordStatus`)** — verify on any AuditsApi change or PR introducing similar patterns:
   - `RecordStatus` (`Active`, `Deleted`) lives on the entity, not the wire DTOs (`AuditRequest` for POST, `PutAuditRequest` for PUT — neither has `RecordStatus`)
   - POST/PUT must not bind or accept `RecordStatus` from JSON; repository `Add` sets `Active`
@@ -179,10 +185,10 @@ Applies under `ItemsApi/`, `ItemsApi.Tests/`, `IncidentsApi/`, `IncidentsApi.Tes
   - `GetAll` and `GetById` must unconditionally filter out `RecordStatus == Deleted`
   - DELETE must call repository soft delete (set `Deleted`); already-deleted rows return not found
 - **Migrations** — schema changes require a new EF Core migration; review generated migrations for correctness; do not hand-edit migrations that are already applied or committed.
-- **Connection strings / secrets** — local SQLite (`app.db`) only; no production connection strings or credentials in source (ties into the universal "no production access" rule).
+- **Connection strings / secrets** — local SQLite only (`app.db`, `incidents.db`, `audits.db`); no production connection strings or credentials in source (ties into the universal "no production access" rule).
 - **Global exception handler** — do not add per-endpoint try/catch; the global handler covers unhandled exceptions and returns a consistent `{ error: "..." }` shape; failures map to appropriate status codes.
 - **No stack traces to the client** — global exception handler returns generic errors only; never leak stack traces or internal details (see `Program.cs` and related middleware).
-- **Tests for new endpoints** — new or changed endpoints should have integration tests under `ItemsApi.Tests/` covering happy path and failure cases.
+- **Tests for new endpoints** — new or changed endpoints should have integration tests under the matching `*.Tests/` project (`ItemsApi.Tests`, `IncidentsApi.Tests`, or `AuditsApi.Tests`) covering happy path and failure cases.
 - **Test structure** — `[Fact]` methods; **Arrange / Act / Assert** comment markers; naming `Verb_Scenario_ExpectedResult` (e.g. `Post_ValidItem_Returns201WithItem`).
 - **NSubstitute / test isolation** — tests use `TestWebApplicationFactory`, which gives each test class its own per-class in-memory SQLite database. Use `CreateClientWithRepo(mock)` to force specific `GetAll()` contents or simulate repository exceptions; `CreateDefaultClient()` now runs against a real, isolated, migrated DB and is fine for persistence/round-trip behaviour. Data persists across `[Fact]`s within a class (shared fixture) but not across classes, so still avoid asserting absolute counts/emptiness on a default client unless the test owns the state. See [.claude/skills/dotnet-test-writer/SKILL.md](../dotnet-test-writer/SKILL.md) (mocking section) for rationale.
 - **Repo test-generation convention** — new xUnit and Vitest tests are normally added one at a time per user request; if a diff adds many tests at once, note it as a process/convention observation where relevant.
@@ -205,9 +211,9 @@ Applies under `client/`. Aligns with `CLAUDE.md` and [`client/eslint.config.js`]
 - **Path alias** — imports from `src/` use the `@/` alias (e.g. `@/lib/utils`, `@/components/ui/button`).
 - **Component tests** — new presentational UI should have Vitest tests for loading, error, empty, and populated states. **App integration tests** (mock `api.ts`) cover full-page flows — reference [`client/src/App.test.tsx`](../../../client/src/App.test.tsx). Behaviour over implementation detail; flag missing coverage on high-risk UI changes.
 - **Unit tests** — pure modules (`guards.ts`, `errors.ts`); Arrange / Act / Assert, explicit `(): void`, no RTL, behaviour-focused cases — reference [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts)
-- **E2E tests (Playwright)** — under `client/e2e/`; one `test` per agent request; behaviour sentences for names; Arrange / Act / Assert; explicit `async ({ page }): Promise<void>`. Prefer `getByRole` / `getByLabel` over CSS selectors. Page objects hold locators and actions — specs hold `expect`. Journey tests require ItemsApi (5133) and/or IncidentsApi (5134) running locally; `webServer` starts Vite only — flag tests that assume APIs without documenting that dependency. Synthetic fixture data only (no PII). E2e does not run on PR CI yet (Week 5 nightly). Reference [playwright-test-writer/SKILL.md](../playwright-test-writer/SKILL.md) and [`client/e2e/app.spec.ts`](../../../client/e2e/app.spec.ts).
+- **E2E tests (Playwright)** — under `client/e2e/`; one `test` per agent request; behaviour sentences for names; Arrange / Act / Assert; explicit `async ({ page }): Promise<void>`. Prefer `getByRole` / `getByLabel` over CSS selectors. Page objects hold locators and actions — specs hold `expect`. Playwright `webServer` starts ItemsApi (5133), IncidentsApi (5134), AuditsApi (5135), and Vite — flag tests that assume APIs without documenting that dependency. Synthetic fixture data only (no PII). E2e does not run on PR CI; nightly suite via `nightly-e2e.yml`. Reference [playwright-test-writer/SKILL.md](../playwright-test-writer/SKILL.md) and [`client/e2e/app.spec.ts`](../../../client/e2e/app.spec.ts).
 
-**Positive references:** [`client/src/App.test.tsx`](../../../client/src/App.test.tsx), [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx), [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts), [`client/e2e/app.spec.ts`](../../../client/e2e/app.spec.ts).
+**Positive references:** [`client/src/App.test.tsx`](../../../client/src/App.test.tsx), [`client/src/components/ItemsList.test.tsx`](../../../client/src/components/ItemsList.test.tsx), [`client/src/components/AuditsView.test.tsx`](../../../client/src/components/AuditsView.test.tsx), [`client/src/guards.test.ts`](../../../client/src/guards.test.ts), [`client/src/errors.test.ts`](../../../client/src/errors.test.ts), [`client/e2e/app.spec.ts`](../../../client/e2e/app.spec.ts), [`client/e2e/journeys/audits.journey.spec.ts`](../../../client/e2e/journeys/audits.journey.spec.ts).
 
 **Note:** `guards.test.ts` / `errors.test.ts`-style unit test files use universal and TypeScript/Vitest conventions only — WCAG checks and component loading/error/empty/populated rules do not apply to pure function unit tests.
 
@@ -226,7 +232,7 @@ There is no accessibility ESLint plugin in this repo yet — apply judgment and 
 
 1. **Confirm scope** — one file path or one diff; if ambiguous, ask once.
 2. **Calibrate effort** — apply [Recommended effort level](#recommended-effort-level).
-3. **Classify path** — `ItemsApi*` → backend + universal; `client/` → frontend + universal; other paths → universal first, then any obvious stack-specific rules. Treat `client/src/components/ui/**` and `src/lib/utils.ts` as generated/ESLint-ignored — give them a lighter review (usage and registry divergence) than hand-written app code.
+3. **Classify path** — `ItemsApi*`, `IncidentsApi*`, or `AuditsApi*` → backend + universal; `client/` → frontend + universal; other paths → universal first, then any obvious stack-specific rules. Treat `client/src/components/ui/**` and `src/lib/utils.ts` as generated/ESLint-ignored — give them a lighter review (usage and registry divergence) than hand-written app code.
 4. **Skim `CLAUDE.md`** if it is not already in context for this session.
 5. **Read only what is in scope** — the provided file or diff; do not refactor or “fix” other files.
 6. **Context7** — optional; use when library or WCAG guidance is uncertain (max three calls per review).
@@ -284,7 +290,7 @@ flowchart TD
   noedit[No file edits]
 
   trigger --> scope --> classify
-  classify -->|ItemsApi| backend
+  classify -->|ItemsApi_IncidentsApi_AuditsApi| backend
   classify -->|client| frontend
   classify -->|other paths| universal
   backend --> universal

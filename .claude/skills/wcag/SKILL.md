@@ -88,7 +88,7 @@ Frontend-only versions aligned with [`CLAUDE.md`](../../../CLAUDE.md) and [`clie
 | date-fns | 4.4.0 | formatted date strings in UI |
 | Vite | 8.0.12 | SPA shell; no SSR |
 
-**Explicitly out of scope:** ItemsApi, IncidentsApi, .NET, database, server-rendered HTML.
+**Explicitly out of scope:** ItemsApi, IncidentsApi, AuditsApi, .NET, database, server-rendered HTML.
 
 There is no axe or eslint-a11y plugin in this repo — audits are manual/agent-driven. Defer automated a11y test generation to [react-test-writer](../react-test-writer/SKILL.md) or [playwright-test-writer](../playwright-test-writer/SKILL.md).
 
@@ -117,6 +117,12 @@ client/
       IncidentCreateView.tsx
       IncidentDetailView.tsx
       IncidentEditView.tsx
+      AuditsView.tsx          — audits list screen (filters, table, pagination)
+      AuditForm.tsx
+      AuditCreateView.tsx
+      AuditDetailView.tsx
+      AuditEditView.tsx
+      AuditPageChrome.tsx
       ItemsList.tsx
       ui/                     — shadcn vendor (ESLint-ignored; review usage only)
     componentRegistry.tsx     — component gallery previews
@@ -138,10 +144,12 @@ Match patterns already used in this repo:
 | EmptyState | [`client/src/components/EmptyState.tsx`](../../../client/src/components/EmptyState.tsx) | Same status/live pattern as LoadingState |
 | ErrorState | [`client/src/components/ErrorState.tsx`](../../../client/src/components/ErrorState.tsx) | `role="alert"` wrapper |
 | IncidentsView | [`client/src/components/IncidentsView.tsx`](../../../client/src/components/IncidentsView.tsx) | Screen composition: `h1`, filters, state machine, table, pagination |
+| AuditsView | [`client/src/components/AuditsView.tsx`](../../../client/src/components/AuditsView.tsx) | Same screen patterns as incidents; `aria-busy` on refetch overlay |
+| AuditForm | [`client/src/components/AuditForm.tsx`](../../../client/src/components/AuditForm.tsx) | Form labels, focus-first-error, `role="alert"` validation |
 | Theme tokens | [`client/src/index.css`](../../../client/src/index.css) | OKLCH `--foreground`, `--muted-foreground`, `--ring`, `--destructive` |
 | shadcn Button | [`client/src/components/ui/button.tsx`](../../../client/src/components/ui/button.tsx) | `focus-visible:ring-*`, `aria-invalid` styles |
 
-Vitest accessibility assertion patterns: [react-test-writer §6](../react-test-writer/SKILL.md). Reference tests: [`FormField.test.tsx`](../../../client/src/components/FormField.test.tsx), [`Badge.test.tsx`](../../../client/src/components/Badge.test.tsx), [`EmptyState.test.tsx`](../../../client/src/components/EmptyState.test.tsx).
+Vitest accessibility assertion patterns: [react-test-writer §6](../react-test-writer/SKILL.md). Reference tests: [`FormField.test.tsx`](../../../client/src/components/FormField.test.tsx), [`Badge.test.tsx`](../../../client/src/components/Badge.test.tsx), [`EmptyState.test.tsx`](../../../client/src/components/EmptyState.test.tsx), [`AuditsView.test.tsx`](../../../client/src/components/AuditsView.test.tsx), [`AuditForm.test.tsx`](../../../client/src/components/AuditForm.test.tsx).
 
 ### Known repo gaps (severity examples)
 
@@ -489,6 +497,6 @@ I have not made any code changes.
 | [code-reviewer](../code-reviewer/SKILL.md) | Full-stack review including TypeScript conventions, EF Core, and general frontend rules — not a dedicated WCAG pass |
 | [component-builder](../component-builder/SKILL.md) | Build hand-authored React UI building blocks — not a dedicated WCAG audit pass. |
 | [react-test-writer](../react-test-writer/SKILL.md) | Writing Vitest accessibility assertions after fixes are implemented |
-| [playwright-test-writer](../playwright-test-writer/SKILL.md) | Browser-level journey accessibility checks (Week 5) |
+| [playwright-test-writer](../playwright-test-writer/SKILL.md) | Browser-level journey accessibility checks |
 
 For a thorough accessibility review, use **this skill**. For merge-readiness across the whole stack, use **code-reviewer** first, then **wcag** on hand-authored UI files.
