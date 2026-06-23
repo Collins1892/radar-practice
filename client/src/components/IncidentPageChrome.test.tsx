@@ -48,6 +48,6 @@ describe('IncidentPageChrome', () => {
     renderIncidentPageChrome({ subtitle });
 
     // Assert
-    expect(screen.getByText(subtitle)).toBeInTheDocument();
+    expect(screen.getByRole('paragraph')).toHaveTextContent(subtitle);
   });
 });
