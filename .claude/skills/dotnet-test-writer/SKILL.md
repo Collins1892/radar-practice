@@ -443,7 +443,7 @@ repo.Add(Arg.Any<string>(), Arg.Any<decimal>())
     .Throws(new InvalidOperationException("Item limit reached."));
 ```
 
-### IncidentsApi
+### IncidentsApi mocking
 
 **Real-persistence tests are preferred for IncidentsApi over mocked tests wherever the goal is verifying data behaviour.** Apply this guidance:
 
@@ -495,7 +495,7 @@ using var content = new StringContent(json, Encoding.UTF8, "application/json");
 var response = await client.PostAsync("/incidents", content);
 ```
 
-### AuditsApi
+### AuditsApi mocking
 
 **Real-persistence tests are preferred for AuditsApi over mocked tests wherever the goal is verifying data behaviour** — same guidance as IncidentsApi, plus soft-delete flows:
 
@@ -665,7 +665,7 @@ When **appending** to an existing file, insert the new `[Fact]` method before th
 1. Identify the API (ItemsApi, IncidentsApi, or AuditsApi), the endpoint, and the scenario from the user's message.
 2. **Calibrate effort** — apply [Recommended effort level](#recommended-effort-level).
 3. Determine the target file (table above).
-4. For IncidentsApi or AuditsApi: decide whether to use `CreateDefaultClient()` (real persistence) or `CreateClientWithRepo(mock)` — see [Mocking with NSubstitute — IncidentsApi](#incidentsapi) or [AuditsApi](#auditsapi-2).
+4. For IncidentsApi or AuditsApi: decide whether to use `CreateDefaultClient()` (real persistence) or `CreateClientWithRepo(mock)` — see [IncidentsApi mocking](#incidentsapi-mocking) or [AuditsApi mocking](#auditsapi-mocking).
 5. Look up any uncertain API details via Context7 before writing.
 6. Write one test, following the naming convention and A/A/A structure.
 7. If the file exists, show only the new method with a clear note about where to insert it. If it's a new file, show the complete file.

@@ -1,6 +1,6 @@
 ---
 name: playwright-test-writer
-description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create an e2e test, Playwright spec, browser test, or user journey under client/e2e/. One test() per request. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Playwright webServer boots ItemsApi, IncidentsApi, AuditsApi, and Vite automatically. Run npx playwright test from client/ after adding or changing a test. Confirm the suite passes before declaring done. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, API seeding, or Radix e2e interactions.
+description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create an e2e test, Playwright spec, browser test, or user journey under client/e2e/. One test() per request. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Playwright webServer boots ItemsApi, IncidentsApi, AuditsApi, and Vite automatically. Run npm run e2e (or npx playwright test) from client/ after adding or changing a test. Confirm the suite passes before declaring done. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, API seeding, or Radix e2e interactions.
 ---
 
 # Playwright Test Writer
@@ -10,7 +10,7 @@ Guides writing Playwright end-to-end tests for the `client/` React TypeScript ap
 ## Core rules
 
 - **One test per request.** Write one `test(...)` at a time — not a batch. Offer the next test separately.
-- **Run tests and confirm pass.** After any change, run `npx playwright test` from `client/` and confirm the suite passes before declaring done.
+- **Run tests and confirm pass.** After any change, run `npm run e2e` from `client/` (or `npx playwright test`) and confirm the suite passes before declaring done.
 - **Start APIs when the journey needs data.** Playwright's `webServer` array starts ItemsApi (5133), IncidentsApi (5134), AuditsApi (5135), and Vite (5173) automatically — see [Run tests](#run-tests) and [Playwright gotchas](#playwright-gotchas). Manual `dotnet run` is only needed when debugging API startup outside Playwright.
 - **Use Context7** when you need to verify Playwright locator, `expect`, or `webServer` API details:
   1. `mcp__context7__resolve-library-id` with library name + question
@@ -44,9 +44,7 @@ When **think hard** applies, classify smoke vs journey before writing; do not re
 | TypeScript | 6.0.2 |
 | react-router-dom | 7.16.0 |
 
-Run tests with `npx playwright test` from the `client/` directory.
-
-There is no `test:e2e` npm script in `package.json` yet — use `npx playwright test` directly. A future repo change may add `"test:e2e": "playwright test"`.
+Run tests with `npm run e2e` from the `client/` directory. The `e2e` script in [`package.json`](../../../client/package.json) runs `playwright test --project=chromium`. `npx playwright test` is equivalent when iterating on a single file or `-g` filter.
 
 **Browser:** Chromium only. Install once per machine with `npx playwright install chromium` from `client/`. Do not add Firefox or WebKit `projects` without an explicit repo decision.
 
@@ -125,12 +123,15 @@ export default defineConfig({
 });
 ```
 
+The real config also sets per-server `timeout` values, HTML/JUnit `reporter` output, CI `--no-restore --no-build` on `dotnet run`, and `VITE_API_URL: ''` on the Vite entry — see [`client/playwright.config.ts`](../../../client/playwright.config.ts) and [`.github/workflows/nightly-e2e.yml`](../../../.github/workflows/nightly-e2e.yml).
+
 | Option | Meaning |
 |--------|---------|
 | `testDir: './e2e'` | Specs live under `client/e2e/` — separate from Vitest (`src/**/*.{test,spec}.{ts,tsx}`) |
 | `use.baseURL` | Specs use relative paths: `page.goto('/')`, `page.goto('/audits')` — not full URLs |
 | `webServer` | Playwright starts **four** processes: ItemsApi, IncidentsApi, AuditsApi, and Vite |
 | `reuseExistingServer: !process.env.CI` | Locally, reuses already-running servers on their ports; in CI always starts fresh |
+| `VITE_API_URL: ''` (Vite webServer env) | Forces Items fetch through the Vite `/items` proxy instead of a direct API URL |
 
 ### API wiring (journey tests)
 
@@ -206,7 +207,7 @@ Do **not** use the dotnet-test-writer `Verb_Scenario_Result` prefix.
 npx playwright install chromium
 
 # Full suite (ItemsApi, IncidentsApi, AuditsApi, and Vite started by webServer)
-npx playwright test
+npm run e2e
 ```
 
 Run a single file or test when iterating:
@@ -403,7 +404,7 @@ test.describe('items: add item', () => {
 | **reuseExistingServer** | Local dev may already have servers running; Playwright reuses them when not in CI |
 | **CI / PR** | No Playwright in [ci.yml](../../../.github/workflows/ci.yml); nightly e2e in [nightly-e2e.yml](../../../.github/workflows/nightly-e2e.yml) |
 | **Chromium only** | `npx playwright install chromium`; no WebKit/Firefox |
-| **Vitest vs Playwright** | `npm test` runs Vitest only — e2e is `npx playwright test` |
+| **Vitest vs Playwright** | `npm test` runs Vitest only — e2e is `npm run e2e` |
 | **Items without API** | List shows error with `Try again` button — not a passing journey test |
 | **Incidents without API** | Error alert with IncidentsApi start message |
 | **Audits without API** | Error alert with AuditsApi start message |
@@ -447,5 +448,5 @@ Keep these aligned when Playwright usage grows — not required for the skill fi
 
 | File | Update |
 |------|--------|
-| [client/package.json](../../../client/package.json) | Optional `"test:e2e": "playwright test"` script |
+| [client/package.json](../../../client/package.json) | `"e2e": "playwright test --project=chromium"` — keep aligned with Playwright `projects` |
 | [client/README.md](../../../client/README.md) | Optional e2e section with API prerequisites |

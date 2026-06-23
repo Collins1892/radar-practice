@@ -87,7 +87,7 @@ client/
       AuditDetailView.test.tsx
       AuditEditView.test.tsx
       auditDisplay.ts         — badge variants, status labels, filter options
-      auditPageCopy.ts        — headings, validation, focus-first-error helpers
+      auditPageCopy.ts        — audit headings, subtitles, success messages
       incidentDisplay.ts      — incident display helpers
       FormField.tsx           — label + cloneElement aria injection
       SelectField.tsx         — Radix Select wrapper (aria on SelectTrigger)
