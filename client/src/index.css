@@ -196,7 +196,8 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-#main-content:focus-visible {
-  outline: 2px solid var(--ring);
+#main-content:focus-visible,
+#main-content:focus {
+  outline: 2px solid var(--app-accent);
   outline-offset: 2px;
 }
