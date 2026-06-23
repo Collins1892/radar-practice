@@ -48,6 +48,7 @@ describe('IncidentPageChrome', () => {
     renderIncidentPageChrome({ subtitle });
 
     // Assert
-    expect(screen.getByRole('paragraph')).toHaveTextContent(subtitle);
+    // getByRole('paragraph') is unreliable across Testing Library/jsdom versions (ARIA 1.2 support inconsistent) — getByText is the robust choice here
+    expect(screen.getByText(subtitle)).toBeInTheDocument();
   });
 });
