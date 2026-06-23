@@ -196,6 +196,8 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+/* Dual selector: belt-and-braces for programmatic focus via skip link —
+  some browsers don't fire :focus-visible on scripted HTMLElement.focus() */
 #main-content:focus-visible,
 #main-content:focus {
   outline: 2px solid var(--app-accent);
