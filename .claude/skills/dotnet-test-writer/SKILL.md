@@ -189,7 +189,7 @@ public class <FeatureName>Tests : IClassFixture<TestWebApplicationFactory>
 }
 ```
 
-Only include the private records the class actually uses.
+Only include the private records the class actually uses. Trim imports to what the class uses — only include `using NSubstitute.ExceptionExtensions` when the class has `.Throws(...)` tests.
 
 ### IncidentsApi
 
@@ -263,7 +263,7 @@ public class <FeatureName>Tests : IClassFixture<TestWebApplicationFactory>
 
 Only include the private records the class actually uses. `PagedIncidentsResponse` is only needed in GET /incidents tests; `IncidentResponse` is used by POST, GET by id, and PUT tests.
 
-Trim imports to what the class uses — `System.Text`, `System.Text.Json`, and `System.Text.Json.Serialization` are only needed for raw-JSON `StringContent` (invalid-enum) tests and `JsonOptions`.
+Trim imports to what the class uses — `System.Text`, `System.Text.Json`, and `System.Text.Json.Serialization` are only needed for raw-JSON `StringContent` (invalid-enum) tests and `JsonOptions`; only include `using NSubstitute.ExceptionExtensions` when the class has `.Throws(...)` tests.
 
 ### AuditsApi
 
@@ -336,6 +336,8 @@ public class <FeatureName>Tests : IClassFixture<TestWebApplicationFactory>
 ```
 
 Only include the private records the class actually uses. `PagedAuditsResponse` is only needed in GET /audits tests; `AuditResponse` is used by POST, GET by id, and PUT tests. **Never** add `RecordStatus` to wire response records — it is not exposed in JSON.
+
+Trim imports to what the class uses — `System.Text`, `System.Text.Json`, and `System.Text.Json.Serialization` are only needed for raw-JSON `StringContent` (invalid-enum) tests and `JsonOptions`; only include `using NSubstitute.ExceptionExtensions` when the class has `.Throws(...)` tests.
 
 ## Naming convention
 
@@ -423,7 +425,7 @@ public async Task Get_NoItems_ReturnsEmptyArray()
 
 `IClassFixture` gives the whole test class a single shared `TestWebApplicationFactory` instance. The real repository is `EfItemsRepository` (registered **scoped**), backed by an in-memory SQLite database that the factory creates per test class — a `SqliteConnection("DataSource=:memory:")` opened in the fixture constructor, kept open for the fixture's lifetime, migrated on host creation, and disposed at the end. Each test class therefore gets its own isolated database; data does **not** leak across classes. Data added within a class *does* persist across that class's `[Fact]`s (shared fixture), so a test that asserts the repo is empty or contains exactly N items via `CreateDefaultClient()` can be fragile within the class unless it owns the state.
 
-`CreateClientWithRepo(repo)` overrides the EF repository with a fresh mock for that one client, so the test owns its data completely and runs correctly regardless of execution order.
+`CreateClientWithRepo(repo)` overrides the EF repository with a fresh mock for that one client, so the test owns its data completely and runs correctly regardless of execution order. `ConfigureServices(s => s.AddSingleton(repo))` registers the mock as a **singleton override** for that `WebApplicationFactory` client build — it replaces the scoped EF repository for that test client only.
 
 `CreateDefaultClient()` runs against the real, isolated, migrated in-memory database — it is the right choice for persistence and round-trip behaviour (for example, posting an item and reading it back), as well as for validation errors (400) that never reach the repository.
 

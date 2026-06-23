@@ -303,7 +303,7 @@ describe('App', () => {
 - Async assertions: `await screen.findByRole(...)`, `findByText`, `findByLabelText` — never rely on sync `getBy*` immediately after mount or submit.
 - Assert side effects on mocks: `expect(createItem).toHaveBeenCalledWith({ name: 'Widget', price: 9.99 })`, `expect(fetchItems).toHaveBeenCalledTimes(2)`.
 
-**Audits / incidents screens:** mock `@/api/audits` or `@/api/incidents` at module top; reset all mocked exports in `beforeEach`. List screens using `useAudits` need mocked `fetchAudits` returning a paged shape — see [`AuditsView.test.tsx`](../../../client/src/components/AuditsView.test.tsx).
+**Audits / incidents screens:** mock `@/api/audits` or `@/api/incidents` at module top (`fetchAudits`, `getAudit`, etc.) — **not** the hooks. Hooks delegate to the API layer; see [`AuditsView.test.tsx`](../../../client/src/components/AuditsView.test.tsx) and [`AuditDetailView.test.tsx`](../../../client/src/components/AuditDetailView.test.tsx). Reset all mocked exports in `beforeEach`. Reserve `vi.mock('@/hooks/useAudits')` or `vi.mock('@/hooks/useAudit')` for dedicated hook unit tests only.
 
 ## 4. Form tests
 

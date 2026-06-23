@@ -485,7 +485,9 @@ export function IncidentEditView(): JSX.Element {
 
 **Checklist:**
 
-1. Add `Route` in `App.tsx` — **specific routes before parametric ones** (`/incidents/create` before `/incidents/:id`; `/audits/create` before `/audits/:id`).
+1. Add `Route` in `App.tsx` — **specific routes before parametric ones**:
+   - `/incidents/create` before `/incidents/:id`
+   - `/audits/create` before `/audits/:id`
 2. Add `NavLink` if the view is top-level navigation.
 3. Add a matchPath branch in resolvePageTitle (in App.tsx) if the page needs a specific document.title.
 4. Export heading constants from the feature form/screen if `App.tsx` needs them for titles.

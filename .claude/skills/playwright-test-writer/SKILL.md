@@ -108,13 +108,14 @@ export default defineConfig({
   use: { baseURL: 'http://localhost:5173' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
-    { command: 'dotnet run ... ItemsApi', url: 'http://localhost:5133/items', name: 'ItemsApi' },
-    { command: 'dotnet run ... IncidentsApi', url: 'http://localhost:5134/incidents', name: 'IncidentsApi' },
-    { command: 'dotnet run ... AuditsApi', url: 'http://localhost:5135/audits', name: 'AuditsApi' },
+    { command: 'dotnet run ... ItemsApi', url: 'http://localhost:5133/items', name: 'ItemsApi', reuseExistingServer: !process.env.CI },
+    { command: 'dotnet run ... IncidentsApi', url: 'http://localhost:5134/incidents', name: 'IncidentsApi', reuseExistingServer: !process.env.CI },
+    { command: 'dotnet run ... AuditsApi', url: 'http://localhost:5135/audits', name: 'AuditsApi', reuseExistingServer: !process.env.CI },
     {
       command: 'npm run dev',
       url: 'http://localhost:5173',
       name: 'Vite',
+      reuseExistingServer: !process.env.CI,
       env: {
         VITE_INCIDENTS_API_URL: 'http://localhost:5134',
         VITE_AUDITS_API_URL: 'http://localhost:5135',
