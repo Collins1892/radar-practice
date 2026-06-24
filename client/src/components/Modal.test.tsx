@@ -85,8 +85,9 @@ describe('Modal', () => {
 
   it('closes on backdrop click', async (): Promise<void> => {
     // Arrange
+    const user = userEvent.setup();
     renderModal();
-    fireEvent.click(screen.getByRole('button', { name: 'Open modal' }));
+    await user.click(screen.getByRole('button', { name: 'Open modal' }));
     await screen.findByText('Test title');
 
     // Act
@@ -97,7 +98,8 @@ describe('Modal', () => {
     if (overlay === null) {
       throw new Error('Expected dialog overlay to be present');
     }
-    fireEvent.pointerDown(overlay);
+    // Radix Dialog 1.1.17+ defers outside dismiss until click (deferPointerDownOutside).
+    await user.click(overlay);
 
     // Assert
     expect(screen.queryByText('Test title')).not.toBeInTheDocument();

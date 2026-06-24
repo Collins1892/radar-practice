@@ -756,10 +756,11 @@ Two gaps identified in the Week 4 Day 3 eval and PR #76 reviews:
 **Backdrop dismiss.** Radix Dialog overlay has no ARIA role and is portaled
 to the document body — a `data-radix-dialog-overlay` attribute does not exist
 in this Radix version. Located structurally: `document.querySelector('div[data-state="open"]:not([role="dialog"])')`. Radix dismisses on
-`pointerDown` at the document level, not `click` — a plain click event would
-not trigger dismissal in jsdom. The DOM inspection approach (writing a temp
-test to log all div attributes) was the right way to discover the correct
-selector before writing the real test.
+`userEvent.click(overlay)` for backdrop dismiss — Radix Dialog 1.1.17+ defers
+outside dismiss until a full click (`deferPointerDownOutside`), so
+`fireEvent.pointerDown` alone no longer closes the dialog in tests. The DOM
+inspection approach (writing a temp test to log all div attributes) was the
+right way to discover the correct selector before writing the real test.
 
 **aria-describedby suppression.** When no `description` prop is passed,
 `aria-describedby` should not appear on the dialog element. Radix would
