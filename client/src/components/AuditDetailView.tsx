@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Dialog as DialogPrimitive } from 'radix-ui';
 import { toast } from 'sonner';
 import { auditUserMessage, deleteAudit, parseAuditId } from '@/api/audits';
 import { AuditPageChrome } from '@/components/AuditPageChrome';
@@ -9,7 +8,7 @@ import { Badge } from '@/components/Badge';
 import { ErrorState } from '@/components/ErrorState';
 import { InlineAlert } from '@/components/InlineAlert';
 import { LoadingState } from '@/components/LoadingState';
-import { Modal } from '@/components/Modal';
+import { Modal, ModalClose } from '@/components/Modal';
 import {
   formatAuditDate,
   formatAuditStatusLabel,
@@ -149,11 +148,11 @@ export function AuditDetailView(): JSX.Element {
                 />
               ) : null}
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <DialogPrimitive.Close asChild>
+                <ModalClose asChild>
                   <Button type="button" variant="outline" disabled={deleting}>
                     Cancel
                   </Button>
-                </DialogPrimitive.Close>
+                </ModalClose>
                 <Button
                   type="button"
                   variant="destructive"
