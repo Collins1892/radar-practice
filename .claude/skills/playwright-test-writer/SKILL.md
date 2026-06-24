@@ -60,7 +60,7 @@ client/
     journeys/
       items.journey.spec.ts   — items journeys
       incidents.journey.spec.ts — incidents journeys
-      audits.journey.spec.ts  — audits journeys (API seed + soft-delete)
+      audits.journey.spec.ts  — audits journeys (API seed + UI soft-delete)
       components.journey.spec.ts — components gallery
     pages/                    — page object classes
       ItemsPage.ts
@@ -70,7 +70,7 @@ client/
       AuditsPage.ts
       ComponentsPage.ts
     support/
-      api.ts                  — createAudit, deleteAudit, createIncident helpers for e2e seeding
+      api.ts                  — createAudit, createIncident helpers for e2e seeding
   src/
     App.tsx                   — routes and nav (Items, Incidents, Audits, Components)
     api.ts                    — items fetch (relative /items via Vite proxy)
@@ -343,7 +343,7 @@ Journey specs live under `client/e2e/journeys/`. This section defines the catalo
 | View incident | `/incidents/:id` | IncidentsApi | List → row link → detail fields |
 | Edit incident | `/incidents/:id/edit` | IncidentsApi | Detail → edit → save → updated UI |
 | Audits list + detail | `/audits`, `/audits/:id` | AuditsApi | Seed via `createAudit` in [`e2e/support/api.ts`](../../../client/e2e/support/api.ts) → list → detail |
-| Audits soft delete | `/audits` | AuditsApi | Seed → list/detail → `deleteAudit` → row hidden from list |
+| Audits soft delete | `/audits` | AuditsApi | Seed → list/detail → Delete audit button → confirm modal → row hidden from list |
 
 Routes from [`client/src/App.tsx`](../../../client/src/App.tsx): `/`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`.
 
@@ -391,7 +391,7 @@ test.describe('items: add item', () => {
 - One domain per spec file: `journeys/items.journey.spec.ts`, `journeys/incidents.journey.spec.ts`, `journeys/audits.journey.spec.ts`.
 - `test.describe('domain: scenario', () => { ... })` — one `test` per agent request inside the describe.
 - Use `test.beforeEach` only when every test in that describe needs the same navigation — do not add shared setup for unrelated tests.
-- Prefer **UI-driven setup** for items/incidents; for audits soft-delete journeys, **API seeding** via [`e2e/support/api.ts`](../../../client/e2e/support/api.ts) (`createAudit`, `deleteAudit`) is established — follow [`audits.journey.spec.ts`](../../../client/e2e/journeys/audits.journey.spec.ts).
+- Prefer **UI-driven setup** for items/incidents; for audits soft-delete journeys, **API seeding** via [`e2e/support/api.ts`](../../../client/e2e/support/api.ts) (`createAudit` only) is established — delete via UI (Delete audit → Confirm delete) — follow [`audits.journey.spec.ts`](../../../client/e2e/journeys/audits.journey.spec.ts).
 - Use `await expect(locator).toBeVisible()` / `toHaveText` — prefer role and label queries over CSS selectors.
 - After API errors, assert `role="alert"` and preserved field values (see Vitest incident form tests).
 

@@ -147,7 +147,7 @@ client/
   e2e/app.spec.ts                 — smoke e2e (reference)
   e2e/journeys/                   — items, incidents, audits, components journey specs
   e2e/pages/                      — page objects
-  e2e/support/api.ts              — e2e API seed helpers (createAudit, deleteAudit, etc.)
+  e2e/support/api.ts              — e2e API seed helpers (createAudit, createIncident, etc.)
 
 private/ (agent-readable, not committed)
   seven-week-plan.md            — master plan, decisions log, daily structure
