@@ -68,9 +68,9 @@ Versions aligned with [`CLAUDE.md`](../../../CLAUDE.md):
 |------|----------|
 | Backend | .NET 8.0, EF Core 8.0.27, SQLite, minimal API, repository pattern |
 | Backend tests | xUnit 2.5.3, NSubstitute 5.1.0, `TestWebApplicationFactory` |
-| Frontend | React 19.2.6, TypeScript 6.0.2, Vite 8.0.12, react-router-dom 7.16.0 |
-| Frontend UI | Tailwind CSS 4.3.0, shadcn/ui (Nova), shared components in `client/src/components/` |
-| Frontend tests | Vitest 4.1.7 — run `npm test` from `client/` |
+| Frontend | React 19.2.7, TypeScript 6.0.3, Vite 8.1.0, react-router-dom 7.18.0 |
+| Frontend UI | Tailwind CSS 4.3.1, shadcn/ui (Nova), shared components in `client/src/components/` |
+| Frontend tests | Vitest 4.1.9 — run `npm test` from `client/` |
 
 ## Project layout
 

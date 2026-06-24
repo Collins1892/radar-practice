@@ -1,6 +1,6 @@
 ---
 name: react-test-writer
-description: Write Vitest tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create a Vitest test in client/. One it() per request. Uses Vitest 4.1.7, @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1, React 19.2.6, react-router-dom 7.16.0, and Arrange/Act/Assert comments. Run npm test from client/ after adding or changing a test. Confirm the suite passes before declaring done. Calibrate effort: think hard for a11y, router, async integration, or Radix/portal tests.
+description: Write Vitest tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create a Vitest test in client/. One it() per request. Uses Vitest 4.1.9, @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, jsdom 29.1.1, React 19.2.7, react-router-dom 7.18.0, and Arrange/Act/Assert comments. Run npm test from client/ after adding or changing a test. Confirm the suite passes before declaring done. Calibrate effort: think hard for a11y, router, async integration, or Radix/portal tests.
 ---
 
 # React Test Writer
@@ -35,15 +35,15 @@ When **think hard** applies, prefer [§6 Accessibility tests](#6-accessibility-t
 
 | Library | Version |
 |---------|---------|
-| Vitest | 4.1.7 |
+| Vitest | 4.1.9 |
 | @testing-library/react | 16.3.2 |
 | @testing-library/jest-dom | 6.9.1 |
 | jsdom | 29.1.1 |
-| React | 19.2.6 |
-| TypeScript | 6.0.2 |
-| react-router-dom | 7.16.0 |
+| React | 19.2.7 |
+| TypeScript | 6.0.3 |
+| react-router-dom | 7.18.0 |
 | react-day-picker | 10.0.1 |
-| Vite | 8.0.12 |
+| Vite | 8.1.0 |
 
 Run tests with `npm test` (`vitest run`) from the `client/` directory.
 

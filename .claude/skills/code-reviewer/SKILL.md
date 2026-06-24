@@ -65,8 +65,8 @@ Keep these aligned with [CLAUDE.md](../../../CLAUDE.md), `package.json`, and `.c
 | Area | Versions |
 |------|----------|
 | Backend | .NET 8.0, xUnit 2.5.3, NSubstitute 5.1.0, Microsoft.AspNetCore.Mvc.Testing 8.0.0, Microsoft.EntityFrameworkCore.Sqlite 8.0.27, Microsoft.EntityFrameworkCore.Design 8.0.27 (ItemsApi only), Microsoft.Data.Sqlite 8.0.27 |
-| Frontend | React 19.2.6, TypeScript 6.0.2, Vite 8.0.12, ESLint 10.3.0, Tailwind CSS 4.3.0, shadcn/ui (Nova), radix-ui 1.4.3, @radix-ui/react-slot 1.2.4, class-variance-authority 0.7.1, clsx 2.1.1, tailwind-merge 3.6.0, lucide-react 1.17.0, react-router-dom 7.16.0, date-fns 4.4.0, react-day-picker 10.0.1 |
-| Frontend tests | Vitest 4.1.7 with @testing-library/react; Playwright 1.60.0 (Chromium only, `client/e2e/`) |
+| Frontend | React 19.2.7, TypeScript 6.0.3, Vite 8.1.0, ESLint 10.5.0, Tailwind CSS 4.3.1, shadcn/ui (Nova), radix-ui 1.6.0, @radix-ui/react-slot 1.3.0, class-variance-authority 0.7.1, clsx 2.1.1, tailwind-merge 3.6.0, lucide-react 1.21.0, react-router-dom 7.18.0, date-fns 4.4.0, react-day-picker 10.0.1 |
+| Frontend tests | Vitest 4.1.9 with @testing-library/react; Playwright 1.61.1 (Chromium only, `client/e2e/`) |
 
 ## Project layout
 

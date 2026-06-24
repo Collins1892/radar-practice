@@ -76,17 +76,17 @@ Frontend-only versions aligned with [`CLAUDE.md`](../../../CLAUDE.md) and [`clie
 
 | Library | Version | A11y relevance |
 |---------|---------|----------------|
-| React | 19.2.6 | composition, `cloneElement` aria injection |
-| TypeScript | 6.0.2 | typed props for labels/ids |
-| Tailwind CSS | 4.3.0 | OKLCH tokens, `focus-visible:ring-*`, `motion-reduce:` |
+| React | 19.2.7 | composition, `cloneElement` aria injection |
+| TypeScript | 6.0.3 | typed props for labels/ids |
+| Tailwind CSS | 4.3.1 | OKLCH tokens, `focus-visible:ring-*`, `motion-reduce:` |
 | shadcn/ui (Nova) | — | styled Radix wrappers |
-| radix-ui | 1.4.3 | WAI-ARIA primitives |
-| @radix-ui/react-slot | 1.2.4 | `asChild` composition |
-| lucide-react | 1.17.0 | decorative icons → `aria-hidden` |
-| react-router-dom | 7.16.0 | client-side routing, focus on navigation |
+| radix-ui | 1.6.0 | WAI-ARIA primitives |
+| @radix-ui/react-slot | 1.3.0 | `asChild` composition |
+| lucide-react | 1.21.0 | decorative icons → `aria-hidden` |
+| react-router-dom | 7.18.0 | client-side routing, focus on navigation |
 | react-day-picker | 10.0.1 | `autoFocus` (not `initialFocus`) |
 | date-fns | 4.4.0 | formatted date strings in UI |
-| Vite | 8.0.12 | SPA shell; no SSR |
+| Vite | 8.1.0 | SPA shell; no SSR |
 
 **Explicitly out of scope:** ItemsApi, IncidentsApi, AuditsApi, .NET, database, server-rendered HTML.
 
