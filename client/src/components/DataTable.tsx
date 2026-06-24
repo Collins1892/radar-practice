@@ -119,7 +119,7 @@ export const DataTable = <T extends Record<string, unknown>>({
                     // SC 1.4.11 requires 3:1 for focus indicators.
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground rounded"
+                      className="inline-flex min-h-[24px] items-center gap-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground rounded"
                       onClick={() => handleSort(column)}
                     >
                       <span>{column.header}</span>
