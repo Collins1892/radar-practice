@@ -247,13 +247,20 @@ export const componentRegistry: ComponentEntry[] = [
   {
     name: 'LoadingState',
     description:
-      'Accessible loading spinner with block (centred) or overlay (absolute backdrop) variants; role="status" and aria-live="polite".',
+      'Centred block loading indicator for full-page or section-level waits; role="status" and aria-live="polite".',
     preview: (
-      <div className="relative w-full py-6">
-        <LoadingState message="Fetching latest items..." />
-        <div className="relative mt-6 min-h-24 rounded-lg border border-dashed border-border">
-          <LoadingState variant="overlay" message="Updating incidents…" />
-        </div>
+      <div className="w-full rounded-lg border border-dashed border-border p-6">
+        <LoadingState message="Loading..." />
+      </div>
+    ),
+  },
+  {
+    name: 'LoadingState (Overlay)',
+    description:
+      'Absolute backdrop overlay for in-place refetch states over existing content; role="status" and aria-live="polite".',
+    preview: (
+      <div className="relative w-full min-h-24 rounded-lg border border-dashed border-border p-6">
+        <LoadingState variant="overlay" message="Saving changes..." />
       </div>
     ),
   },
