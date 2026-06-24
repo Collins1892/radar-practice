@@ -45,6 +45,7 @@ describe('Pagination', () => {
 
     // Assert
     expect(screen.getByText('...')).toBeInTheDocument();
+    expect(screen.getByLabelText('More pages')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Page 1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Page 2' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Page 3' })).toBeInTheDocument();

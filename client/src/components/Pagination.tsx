@@ -81,7 +81,7 @@ export function Pagination({
             return (
               <span
                 key={`ellipsis-${index}`}
-                aria-hidden="true"
+                aria-label="More pages"
                 className="inline-flex h-9 min-w-9 items-center justify-center text-sm text-muted-foreground"
               >
                 ...
