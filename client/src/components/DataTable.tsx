@@ -115,9 +115,11 @@ export const DataTable = <T extends Record<string, unknown>>({
                   className="px-4 py-3 font-semibold text-foreground"
                 >
                   {column.sortable ? (
+                    // ring-foreground (not ring-ring): --ring is ~2.5:1 against thead bg-muted/30;
+                    // SC 1.4.11 requires 3:1 for focus indicators.
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                      className="inline-flex items-center gap-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground rounded"
                       onClick={() => handleSort(column)}
                     >
                       <span>{column.header}</span>
