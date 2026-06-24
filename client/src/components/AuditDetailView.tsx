@@ -157,6 +157,7 @@ export function AuditDetailView(): JSX.Element {
                   type="button"
                   variant="destructive"
                   disabled={deleting}
+                  aria-busy={deleting}
                   onClick={() => void handleDeleteConfirm(audit.id)}
                 >
                   {deleting ? 'Deleting…' : 'Confirm delete'}
