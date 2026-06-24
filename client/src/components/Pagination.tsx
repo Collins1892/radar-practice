@@ -44,9 +44,10 @@ const getPageTokens = (
   ];
 };
 
+// ring-foreground (not ring-ring): meets SC 1.4.11 3:1 on bg-background / bg-muted.
 const getArrowButtonClassName = (disabled: boolean): string =>
   cn(
-    'h-9 rounded-md border px-3 text-sm font-medium',
+    'h-9 rounded-md border px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground',
     disabled
       ? 'border-input bg-muted text-muted-foreground cursor-not-allowed'
       : 'border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
