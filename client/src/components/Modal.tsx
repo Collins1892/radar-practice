@@ -11,6 +11,8 @@ type ModalProps = {
   description?: string;
   children: React.ReactNode;
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export const Modal = ({
@@ -19,9 +21,11 @@ export const Modal = ({
   description,
   children,
   className,
+  open,
+  onOpenChange,
 }: ModalProps): React.ReactElement => {
   return (
-    <DialogPrimitive.Root>
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 motion-reduce:animate-none" />

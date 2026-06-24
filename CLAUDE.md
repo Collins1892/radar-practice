@@ -47,7 +47,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, AuditsView, AuditForm, AuditCreateView, AuditDetailView, AuditEditView, AuditPageChrome, InlineAlert, Modal)
 - `client/src/api.ts` — typed fetch layer for ItemsApi (fetchItems, createItem)
 - `client/src/api/incidents.ts` — typed fetch layer for IncidentsApi (fetchIncidents, createIncident, getIncident, updateIncident, shared helpers incidentUserMessage, parseIncidentId)
-- `client/src/api/audits.ts` — typed fetch layer for AuditsApi (fetchAudits, createAudit, getAudit, updateAudit, shared helpers auditUserMessage, parseAuditId)
+- `client/src/api/audits.ts` — typed fetch layer for AuditsApi (fetchAudits, createAudit, getAudit, updateAudit, deleteAudit, shared helpers auditUserMessage, parseAuditId)
 - `client/src/types.ts` — shared TypeScript types (e.g. `Item`, `CreateItemRequest`)
 - `client/src/errors.ts` — `ApiClientError` and `toUserMessage` error mapping
 - `client/src/guards.ts` — runtime type guards for API response parsing

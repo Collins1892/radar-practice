@@ -1,11 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { parseAuditId } from '@/api/audits';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Dialog as DialogPrimitive } from 'radix-ui';
+import { toast } from 'sonner';
+import { auditUserMessage, deleteAudit, parseAuditId } from '@/api/audits';
 import { AuditPageChrome } from '@/components/AuditPageChrome';
 import { Badge } from '@/components/Badge';
 import { ErrorState } from '@/components/ErrorState';
+import { InlineAlert } from '@/components/InlineAlert';
 import { LoadingState } from '@/components/LoadingState';
+import { Modal } from '@/components/Modal';
 import {
   formatAuditDate,
   formatAuditStatusLabel,
@@ -19,16 +23,42 @@ import { useAudit } from '@/hooks/useAudit';
 import { Button } from '@/components/ui/button';
 import { formatPageTitle } from '@/pageTitle';
 
+const AUDIT_DELETE_SUCCESS_MESSAGE = 'Audit deleted successfully.';
+
 export function AuditDetailView(): JSX.Element {
+  const navigate = useNavigate();
   const { id } = useParams();
   const auditId = parseAuditId(id);
   const { audit, loading, error, reload } = useAudit(auditId);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (audit !== null) {
       document.title = formatPageTitle(audit.title);
     }
   }, [audit]);
+
+  function handleDeleteModalOpenChange(open: boolean): void {
+    if (!open && deleting) return;
+    setDeleteModalOpen(open);
+    if (!open) setDeleteError(null);
+  }
+
+  async function handleDeleteConfirm(confirmedAuditId: number): Promise<void> {
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      await deleteAudit(confirmedAuditId);
+      toast.success(AUDIT_DELETE_SUCCESS_MESSAGE);
+      navigate('/audits');
+    } catch (err) {
+      setDeleteError(auditUserMessage(err, 'deleting'));
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (auditId === null) {
     return (
@@ -92,9 +122,49 @@ export function AuditDetailView(): JSX.Element {
         heading={audit.title}
         subtitle={`Audit #${audit.id}`}
         actions={
-          <Button asChild className="w-full sm:w-auto">
-            <Link to={`/audits/${audit.id}/edit`}>{AUDIT_EDIT_HEADING}</Link>
-          </Button>
+          <>
+            <Button asChild className="w-full sm:w-auto">
+              <Link to={`/audits/${audit.id}/edit`}>{AUDIT_EDIT_HEADING}</Link>
+            </Button>
+            <Modal
+              open={deleteModalOpen}
+              onOpenChange={handleDeleteModalOpenChange}
+              trigger={
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full sm:w-auto"
+                >
+                  Delete audit
+                </Button>
+              }
+              title="Delete audit?"
+              description="This removes the audit from the list. You won't be able to access it from the app afterwards."
+            >
+              {deleteError !== null ? (
+                <InlineAlert
+                  variant="error"
+                  message={deleteError}
+                  className="mb-4"
+                />
+              ) : null}
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <DialogPrimitive.Close asChild>
+                  <Button type="button" variant="outline" disabled={deleting}>
+                    Cancel
+                  </Button>
+                </DialogPrimitive.Close>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={deleting}
+                  onClick={() => void handleDeleteConfirm(audit.id)}
+                >
+                  {deleting ? 'Deleting…' : 'Confirm delete'}
+                </Button>
+              </div>
+            </Modal>
+          </>
         }
       />
 

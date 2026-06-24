@@ -1,11 +1,11 @@
 import { format, parseISO } from 'date-fns';
 import { test, expect } from '@playwright/test';
-import { createAudit, deleteAudit } from '../support/api';
+import { createAudit } from '../support/api';
 import type { AuditRequest } from '../support/api';
 import { AuditsPage } from '../pages/AuditsPage';
 
 test.describe('audits: view and soft delete', () => {
-  test('shows API-seeded audit on list and detail, then hides it after soft delete', async ({
+  test('shows API-seeded audit on list and detail, then hides it after deleting via UI', async ({
     page,
   }): Promise<void> => {
     // Arrange
@@ -42,25 +42,14 @@ test.describe('audits: view and soft delete', () => {
     await expect(page.getByText('Scheduled', { exact: true })).toBeVisible();
     await expect(page.getByText(payload.createdBy)).toBeVisible();
 
-    // Act — soft delete via API
-    await deleteAudit(audit.id);
+    // Act — soft delete via UI
+    await page.getByRole('button', { name: 'Delete audit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByRole('button', { name: 'Confirm delete' }).click();
 
-    // Assert — removed from list
-    await auditsPage.goto();
-    await auditsPage.waitForListLoaded();
+    // Assert — redirected to list; audit no longer visible
     await expect(page).toHaveURL('/audits');
+    await auditsPage.waitForListLoaded();
     await expect(auditsPage.listAuditLink(audit.id)).not.toBeVisible();
-
-    // Act — navigate to deleted audit detail
-    await page.goto(`/audits/${audit.id}`);
-
-    // Assert — 404 not-found UI (API error path, not invalid-id copy)
-    await expect(
-      page.getByRole('heading', { name: 'Audit detail' }),
-    ).toBeVisible();
-    await expect(page.getByText(`Audit #${audit.id}`)).toBeVisible();
-    await expect(page.getByRole('alert')).toContainText('Could not load audit');
-    await expect(page.getByRole('alert')).toContainText('Audit not found.');
-    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
   });
 });

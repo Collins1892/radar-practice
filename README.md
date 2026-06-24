@@ -59,7 +59,7 @@ radar-practice/
 │   ├── src/components/AuditsView.tsx      # Audit list with filters, sort, pagination
 │   ├── src/components/AuditForm.tsx       # Shared create/edit form (mode prop)
 │   ├── src/components/AuditCreateView.tsx # Thin wrapper — mode=create
-│   ├── src/components/AuditDetailView.tsx # Read-only detail view
+│   ├── src/components/AuditDetailView.tsx # Detail view with Edit and Delete actions (confirmation modal)
 │   ├── src/components/AuditEditView.tsx   # Thin wrapper — mode=edit
 │   ├── src/components/AuditPageChrome.tsx # Shared page chrome (h1 + back link)
 │   ├── src/hooks/useAudits.ts             # List fetch/state hook for AuditsView

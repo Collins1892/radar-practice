@@ -6,7 +6,7 @@ const AUDITS_NETWORK_MESSAGE =
 
 export function auditUserMessage(
   error: unknown,
-  verb: 'loading' | 'creating' | 'updating',
+  verb: 'loading' | 'creating' | 'updating' | 'deleting',
 ): string {
   if (error instanceof ApiClientError) {
     if (error.kind === 'network') {
@@ -252,4 +252,18 @@ export async function updateAudit(
   }
 
   return body;
+}
+
+export async function deleteAudit(id: number): Promise<void> {
+  const response = await request(`/audits/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new ApiClientError(
+      await parseErrorMessage(response),
+      'http',
+      response.status,
+    );
+  }
 }
