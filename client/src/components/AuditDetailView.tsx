@@ -139,7 +139,7 @@ export function AuditDetailView(): JSX.Element {
                 </Button>
               }
               title="Delete audit?"
-              description="This will permanently remove the audit from the list. This action cannot be undone."
+              description="This removes the audit from the list. You won't be able to access it from the app afterwards."
             >
               {deleteError !== null ? (
                 <InlineAlert
