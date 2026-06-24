@@ -253,3 +253,17 @@ export async function updateAudit(
 
   return body;
 }
+
+export async function deleteAudit(id: number): Promise<void> {
+  const response = await request(`/audits/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new ApiClientError(
+      await parseErrorMessage(response),
+      'http',
+      response.status,
+    );
+  }
+}
