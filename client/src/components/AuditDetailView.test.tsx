@@ -246,10 +246,11 @@ describe('AuditDetailView', () => {
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByRole('alert', { hidden: true })).toHaveTextContent(
+      expect(screen.getByRole('alert')).toHaveTextContent(
         AUDITS_NETWORK_MESSAGE,
       );
     });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
     expect(toast.success).not.toHaveBeenCalled();
   });

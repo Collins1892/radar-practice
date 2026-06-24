@@ -32,12 +32,19 @@ export function AuditDetailView(): JSX.Element {
   const { audit, loading, error, reload } = useAudit(auditId);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (audit !== null) {
       document.title = formatPageTitle(audit.title);
     }
   }, [audit]);
+
+  function handleDeleteModalOpenChange(open: boolean): void {
+    if (!open && deleting) return;
+    setDeleteModalOpen(open);
+    if (!open) setDeleteError(null);
+  }
 
   async function handleDeleteConfirm(confirmedAuditId: number): Promise<void> {
     setDeleteError(null);
@@ -47,7 +54,7 @@ export function AuditDetailView(): JSX.Element {
       toast.success(AUDIT_DELETE_SUCCESS_MESSAGE);
       navigate('/audits');
     } catch (err) {
-      setDeleteError(auditUserMessage(err, 'updating'));
+      setDeleteError(auditUserMessage(err, 'deleting'));
     } finally {
       setDeleting(false);
     }
@@ -120,6 +127,8 @@ export function AuditDetailView(): JSX.Element {
               <Link to={`/audits/${audit.id}/edit`}>{AUDIT_EDIT_HEADING}</Link>
             </Button>
             <Modal
+              open={deleteModalOpen}
+              onOpenChange={handleDeleteModalOpenChange}
               trigger={
                 <Button
                   type="button"
@@ -132,6 +141,13 @@ export function AuditDetailView(): JSX.Element {
               title="Delete audit?"
               description="This will permanently remove the audit from the list. This action cannot be undone."
             >
+              {deleteError !== null ? (
+                <InlineAlert
+                  variant="error"
+                  message={deleteError}
+                  className="mb-4"
+                />
+              ) : null}
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <DialogPrimitive.Close asChild>
                   <Button type="button" variant="outline" disabled={deleting}>
@@ -188,10 +204,6 @@ export function AuditDetailView(): JSX.Element {
           </div>
         </dl>
       </section>
-
-      {deleteError !== null ? (
-        <InlineAlert variant="error" message={deleteError} className="mt-4" />
-      ) : null}
     </>
   );
 }
