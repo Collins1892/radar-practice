@@ -63,6 +63,8 @@ export function Pagination({
   const pageTokens = getPageTokens(safeCurrentPage, safeTotalPages);
   const isPrevDisabled = safeCurrentPage <= 1;
   const isNextDisabled = safeCurrentPage >= safeTotalPages;
+  const previousTargetPage = safeCurrentPage - 1;
+  const nextTargetPage = safeCurrentPage + 1;
 
   return (
     <nav aria-label="Pagination">
@@ -71,6 +73,9 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage - 1)}
           disabled={isPrevDisabled}
+          aria-label={
+            isPrevDisabled ? undefined : `Go to page ${previousTargetPage}`
+          }
           className={getArrowButtonClassName(isPrevDisabled)}
         >
           Previous
@@ -114,6 +119,9 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage + 1)}
           disabled={isNextDisabled}
+          aria-label={
+            isNextDisabled ? undefined : `Go to page ${nextTargetPage}`
+          }
           className={getArrowButtonClassName(isNextDisabled)}
         >
           Next

@@ -74,11 +74,11 @@ describe('Pagination', () => {
       'aria-current',
     );
     expect(
-      screen.getByRole('button', { name: 'Previous' }),
+      screen.getByRole('button', { name: 'Go to page 1' }),
     ).not.toHaveAttribute('aria-current');
-    expect(screen.getByRole('button', { name: 'Next' })).not.toHaveAttribute(
-      'aria-current',
-    );
+    expect(
+      screen.getByRole('button', { name: 'Go to page 3' }),
+    ).not.toHaveAttribute('aria-current');
   });
 
   it('calls onPageChange with the clicked page number', (): void => {
@@ -136,7 +136,7 @@ describe('Pagination', () => {
     });
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Go to page 2' }));
 
     // Assert
     expect(onPageChange).toHaveBeenCalledTimes(1);
@@ -151,7 +151,7 @@ describe('Pagination', () => {
     });
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Previous' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Go to page 2' }));
 
     // Assert
     expect(onPageChange).toHaveBeenCalledTimes(1);
