@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Modal } from './Modal';
 
 describe('Modal', () => {
@@ -116,5 +116,69 @@ describe('Modal', () => {
     // Assert
     const dialog = screen.getByRole('dialog');
     expect(dialog).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('shows the dialog when open is true without clicking the trigger', async (): Promise<void> => {
+    // Arrange — defaults via renderModal
+
+    // Act
+    renderModal({ open: true });
+
+    // Assert
+    expect(await screen.findByRole('dialog')).toBeVisible();
+    expect(screen.getByText('Test title')).toBeVisible();
+  });
+
+  it('does not show the dialog when open is false', (): void => {
+    // Arrange — defaults via renderModal
+
+    // Act
+    renderModal({ open: false });
+
+    // Assert
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByText('Test title')).not.toBeInTheDocument();
+  });
+
+  it('calls onOpenChange with false when the user dismisses a controlled dialog', async (): Promise<void> => {
+    const user = userEvent.setup();
+
+    // ESC dismiss
+    // Arrange
+    const onOpenChangeEsc = vi.fn();
+    const { unmount: unmountEsc } = renderModal({
+      open: true,
+      onOpenChange: onOpenChangeEsc,
+    });
+    await screen.findByRole('dialog');
+
+    // Act
+    await user.keyboard('{Escape}');
+
+    // Assert
+    expect(onOpenChangeEsc).toHaveBeenCalledTimes(1);
+    expect(onOpenChangeEsc).toHaveBeenCalledWith(false);
+    unmountEsc();
+
+    // Backdrop dismiss
+    // Arrange
+    const onOpenChangeBackdrop = vi.fn();
+    renderModal({ open: true, onOpenChange: onOpenChangeBackdrop });
+    await screen.findByRole('dialog');
+
+    // Act
+    // Radix overlay is portaled and has no ARIA role, so a DOM-level selector is unavoidable.
+    const overlay = document.querySelector(
+      'div[data-state="open"]:not([role="dialog"])',
+    );
+    if (overlay === null) {
+      throw new Error('Expected dialog overlay to be present');
+    }
+    // Radix Dialog 1.1.17+ defers outside dismiss until click (deferPointerDownOutside).
+    await user.click(overlay);
+
+    // Assert
+    expect(onOpenChangeBackdrop).toHaveBeenCalledTimes(1);
+    expect(onOpenChangeBackdrop).toHaveBeenCalledWith(false);
   });
 });

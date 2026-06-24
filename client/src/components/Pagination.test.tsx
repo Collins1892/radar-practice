@@ -45,7 +45,7 @@ describe('Pagination', () => {
 
     // Assert
     expect(screen.getByText('...')).toBeInTheDocument();
-    expect(screen.getByLabelText('More pages')).toBeInTheDocument();
+    expect(screen.getByText('More pages')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Page 1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Page 2' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Page 3' })).toBeInTheDocument();
@@ -74,10 +74,10 @@ describe('Pagination', () => {
       'aria-current',
     );
     expect(
-      screen.getByRole('button', { name: 'Go to page 1' }),
+      screen.getByRole('button', { name: 'Previous, go to page 1' }),
     ).not.toHaveAttribute('aria-current');
     expect(
-      screen.getByRole('button', { name: 'Go to page 3' }),
+      screen.getByRole('button', { name: 'Next, go to page 3' }),
     ).not.toHaveAttribute('aria-current');
   });
 
@@ -136,7 +136,7 @@ describe('Pagination', () => {
     });
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Go to page 2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next, go to page 2' }));
 
     // Assert
     expect(onPageChange).toHaveBeenCalledTimes(1);
@@ -151,7 +151,9 @@ describe('Pagination', () => {
     });
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Go to page 2' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Previous, go to page 2' }),
+    );
 
     // Assert
     expect(onPageChange).toHaveBeenCalledTimes(1);
