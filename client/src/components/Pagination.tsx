@@ -74,7 +74,9 @@ export function Pagination({
           onClick={() => onPageChange(safeCurrentPage - 1)}
           disabled={isPrevDisabled}
           aria-label={
-            isPrevDisabled ? undefined : `Go to page ${previousTargetPage}`
+            isPrevDisabled
+              ? undefined
+              : `Previous, go to page ${previousTargetPage}`
           }
           className={getArrowButtonClassName(isPrevDisabled)}
         >
@@ -86,10 +88,10 @@ export function Pagination({
             return (
               <span
                 key={`ellipsis-${index}`}
-                aria-label="More pages"
                 className="inline-flex h-9 min-w-9 items-center justify-center text-sm text-muted-foreground"
               >
-                ...
+                <span aria-hidden="true">...</span>
+                <span className="sr-only">More pages</span>
               </span>
             );
           }
@@ -104,7 +106,7 @@ export function Pagination({
               aria-label={`Page ${token}`}
               aria-current={isActivePage ? 'page' : undefined}
               className={cn(
-                'h-9 min-w-9 rounded-md border px-3 text-sm font-medium',
+                'h-9 min-w-9 rounded-md border px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground',
                 isActivePage
                   ? 'border-primary bg-primary text-primary-foreground'
                   : 'border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
@@ -120,7 +122,7 @@ export function Pagination({
           onClick={() => onPageChange(safeCurrentPage + 1)}
           disabled={isNextDisabled}
           aria-label={
-            isNextDisabled ? undefined : `Go to page ${nextTargetPage}`
+            isNextDisabled ? undefined : `Next, go to page ${nextTargetPage}`
           }
           className={getArrowButtonClassName(isNextDisabled)}
         >
