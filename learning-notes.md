@@ -1,3 +1,135 @@
+## Week 6 Day 3 — Wednesday 24 June 2026
+
+### Summary
+
+A long day across security comprehension, dependency hygiene, and
+feature implementation. Three PRs merged (#122, #123, #124), one open
+(#125 a11y batch).
+
+### PAT vs GITHUB_TOKEN — decision locked
+
+Staying with `GITHUB_TOKEN`. A PAT would fix the CI auto-trigger
+friction but introduces a long-lived credential tied to a personal
+account with broad repo-level write access. In production the correct
+pattern is a GitHub App with scoped permissions and short-lived
+rotating tokens. The manual re-trigger is accepted as a deliberate
+human gate, not a bug.
+
+### Branch protection (T63)
+
+Ruleset enabled on main — PR required, `Test` status check enforced,
+approvals set to 0 for solo development. Two-layer enforcement: the
+nightly agent workflow design (no merge step) plus GitHub's ruleset.
+Neither alone is sufficient — the ruleset is the hard wall.
+
+### Security comprehension
+
+Full threat model covered in conversation, then written up as
+`docs/agentic-workflow-security.md`:
+
+- **Permissions model** — `contents: write` + `pull-requests: write`
+  scoped to workflows that need it; `nightly-e2e.yml` is `contents: read`
+  only
+- **Fail-closed design** — agent aborts when it cannot safely know the
+  state of the world: failed PR fetch, git operation failure, 3-attempt
+  exhaustion, 10-call hard cap
+- **Trust boundaries** — sensitive path guard blocks `.github/`,
+  `.husky/`, `package.json` before any file is written; normalised path
+  matching makes it OS-safe; known gaps T49/T55 documented
+- **Prompt injection** — two-layer defence: execution controls (path
+  guard, API caps) and merge controls (human gate, branch protection)
+- **GDPR** — CLAUDE.md as process control, no-secrets ESLint as
+  technical control (frontend only — backend gap acknowledged);
+  Bogus for synthetic test data from day one; privacy by design
+- **Process vs technical control** — key distinction: CLAUDE.md
+  reminds developers what not to do; it cannot stop them. The ESLint
+  plugin enforces at commit time. Gap on the backend.
+
+### GitHub Security and Quality tabs
+
+Dependabot alerts and secret scanning enabled. 9 vulnerability alerts
+surfaced immediately — all resolved via `npm update` in the same
+session. Highest severity: Vite `server.fs.deny` bypass (CVE, High) —
+fixed by upgrading Vite 8.0.13 → 8.1.0. 0 secrets found in repo
+history. All npm package versions synced across CLAUDE.md, skill files,
+and `project.mdc`.
+
+### Repo health check
+
+Agent-assisted full review via code-reviewer skill. Key findings:
+- Critical: audit soft-delete UI-only (no delete button) — fixed same
+  day as T67
+- Critical: Items page legacy styling — deferred, noted for walkthrough
+  story
+- Critical: Incidents/Audits architectural drift — T58, deferred
+- Security backlog T49/T55/T45/T60 — highest priority for production
+  readiness in a healthcare context
+
+### T67 — Audit soft-delete UI (PR #124)
+
+Full delete flow implemented: `deleteAudit` in API layer, destructive
+button on AuditDetailView, controlled confirmation Modal (converted from
+uncontrolled to fix error alert visibility behind backdrop), InlineAlert
+on failure with modal staying open for retry, success toast, navigation
+to list. `ModalClose` exported from Modal.tsx to remove direct Radix
+import from AuditDetailView. `aria-busy` on confirm button. e2e journey
+updated to delete via UI instead of API helper. All 248 tests passing.
+Time taken: 1 hour 24 minutes vs Cursor's 2–3 hour estimate.
+
+### A11y batch T28/T31/T35/T37/T40 (PR #125 — open)
+
+- T28: `ring-foreground` on DataTable sort buttons (SC 1.4.11)
+- T31: `min-h-[24px]` on DataTable sort buttons (SC 2.5.8)
+- T35: `focus-visible:ring-foreground` on Pagination Previous/Next and
+  page-number buttons (SC 2.4.7)
+- T37: `aria-hidden` dots + `sr-only` "More pages" — reliable AT pattern
+  replacing `aria-label` on generic span (SC 1.3.1)
+- T40: "Previous, go to page N" / "Next, go to page N" — SC 2.5.3
+  Label in Name fix; initial implementation regressed SC 2.5.3 by
+  replacing the visible label entirely
+- Modal controlled mode tests added; `auditUserMessage` 'deleting' verb
+  tested; T40 completed log SC reference corrected to 2.5.3
+
+### Audit components deep dive
+
+Sort → `IsValidSortField` allowlist → SQL injection prevention; client-
+side then server-side validation (two layers); 201 vs 200; CORS
+preflight; soft delete and why it matters in healthcare (audit trail,
+recovery, retention law); React Strict Mode double-fetch (not a bug);
+global exception handler and no stack traces (PHI / information
+disclosure).
+
+### .NET 8 backend deep dive
+
+`Program.cs` structure: builder → services → middleware → routes;
+DI lifetimes (scoped vs singleton — repository must be scoped because
+DbContext is scoped); `JsonStringEnumConverter` (enums as strings not
+numbers); CORS hardcoded origin gap (T60); `Database.Migrate()` on
+startup; middleware order matters; `appsettings.json` vs
+`appsettings.Development.json` vs environment variables;
+`TestWebApplicationFactory` — in-memory SQLite, scoped per test run,
+disposed cleanly, no trace left on disk; integration vs unit tests —
+tests the full HTTP pipeline, not mocked behaviour.
+
+### Key learnings
+
+- T40 SC 2.5.3: `aria-label` overrides the accessible name entirely —
+  visible label text must be a substring of the accessible name for
+  voice control ("Click Previous" must match). Initial implementation
+  failed this.
+- T37: `aria-label` on a generic `<span>` without a role is not
+  reliably exposed by AT — use `sr-only` text instead.
+- `aria-busy` on a button communicates in-flight state to AT, not just
+  disabled and label change.
+- Controlled vs uncontrolled Modal: when error state needs to render
+  inside the dialog, the dialog must be controlled — otherwise the error
+  renders behind the aria-hidden backdrop.
+- Process vs technical control is a key distinction — know which controls enforce and which only remind.
+
+### Test count at Day 3 close
+
+255 Vitest + Playwright e2e (unchanged) + xUnit (unchanged)
+
 ## Week 6 Day 2 — Tuesday 23 June 2026
 
 ### PR housekeeping — T15 and T18
@@ -188,7 +320,7 @@ Question: if PRs go unmerged across multiple nights (e.g. a holiday), does the n
 
 - Two distinct AI-reviewer failure modes observed back-to-back on the same PRs: **confident wrongness on stable factual knowledge** (action versions — the model's training cutoff is simply behind reality) vs **correct literal tracing of control flow** (the soft-delete URL bug) that several attentive humans skimmed past. Worth keeping both review channels rather than trusting or dismissing either wholesale.
 - The git annotated-tag dereferencing issue is a good "frontier tooling subtlety" example — the kind of thing that looks like a reviewer being wrong but is actually a verification step being done correctly and finding a genuinely confusing API shape (two different SHAs both technically true depending on which endpoint you ask).
-- `workflow_dispatch`'s default-branch-only constraint is a useful interview point: it's not a discipline you *choose* (review before merge) so much as a hard technical gate that happens to align with good discipline — worth distinguishing the two when articulating the safety story.
+- `workflow_dispatch`'s default-branch-only constraint is a useful demo point: it's not a discipline you *choose* (review before merge) so much as a hard technical gate that happens to align with good discipline — worth distinguishing the two when articulating the safety story.
 
 ## Week 5 Day 5 — Friday 19 June 2026
 
@@ -516,7 +648,7 @@ should be one already trusted.
 paper before the agent has run. Each Week 5 morning standup includes a
 nightly-agent review — what it picked, did it stay in scope, was the done
 condition right — and the guardrails are tightened from observed
-behaviour. This is also a strong interview narrative: not "built it and
+behaviour. This is also a strong demo narrative: not "built it and
 hoped" but "ran it, reviewed every morning, tuned from what I saw."
 
 ### Modernisation refactor — Audits module
@@ -531,7 +663,7 @@ shared component library (DataTable, Pagination, FormField).
 AngularJS Audits) stays in the repo permanently as the before-state.
 Crucially, the migration is raised as a PR so the *diff* captures the
 transformation — the legacy folder shows the starting point, the PR shows
-the change. Both preserved for the interview walkthrough. Concrete,
+the change. Both preserved for a walkthrough. Concrete,
 honest before/after that maps onto the real modernisation brief.
 
 **Tooling.** Cursor Auto for the legacy build and the conversion —
@@ -623,7 +755,7 @@ first real tasks. Hand-fixing them now would spend the agent's best
 demonstration material. Protecting the backlog as fuel for the headline
 build is the right discipline: it gives the agent real, verifiable work
 for its first run, and gives a genuine "here's a PR it raised overnight"
-to show at interview.
+to show at demo.
 
 ### Durable wrapper — the GitHub Actions skeleton
 
@@ -2355,7 +2487,7 @@ tokens held up well throughout the day.
 ### Time saved today
 
 - No coding today by design — thinking and safety work
-- Safety position statement drafted, polished and ready for interviews and conversations
+- Safety position statement drafted, polished and ready for demo and conversations
 
 ## Week 1 Day 3 — 21 May 2026
 
