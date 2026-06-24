@@ -84,8 +84,9 @@ radar-practice/
 ├── .claude/commands/      # Claude Code slash commands (/review, /standup, /observations, /tidy)
 ├── legacy/                # .NET 4 / AngularJS 1.6 Audits module — before-state for modernisation migration
 ├── docs/                  # Workflow friction log, agent backlog, and supporting documentation
-│   ├── nightly-agent-backlog.md   # Open tasks for the nightly agent
-│   └── nightly-agent-completed.md # Completed tasks log
+│   ├── nightly-agent-backlog.md        # Open tasks for the nightly agent
+│   ├── nightly-agent-completed.md      # Completed tasks log
+│   └── agentic-workflow-security.md    # Agentic workflow security posture document
 ├── .github/workflows/     # GitHub Actions — ci.yml, pr-review.yml, nightly-agent.yml, nightly-e2e.yml
 └── learning-notes.md      # Daily observations from the build
 ```
