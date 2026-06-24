@@ -1,6 +1,6 @@
 ---
 name: playwright-test-writer
-description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create an e2e test, Playwright spec, browser test, or user journey under client/e2e/. One test() per request. Uses @playwright/test 1.60.0 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Playwright webServer boots ItemsApi, IncidentsApi, AuditsApi, and Vite automatically. Run npm run e2e (or npx playwright test) from client/ after adding or changing a test. Confirm the suite passes before declaring done. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, API seeding, or Radix e2e interactions.
+description: Write Playwright end-to-end tests for the React TypeScript client in this project. Use when the user asks to write, add, generate, or create an e2e test, Playwright spec, browser test, or user journey under client/e2e/. One test() per request. Uses @playwright/test 1.61.1 (Chromium only), Arrange/Act/Assert comments, and the page object pattern under client/e2e/pages/. Playwright webServer boots ItemsApi, IncidentsApi, AuditsApi, and Vite automatically. Run npm run e2e (or npx playwright test) from client/ after adding or changing a test. Confirm the suite passes before declaring done. Synthetic data only; no PII. Calibrate effort: think hard for journey tests, page objects, API seeding, or Radix e2e interactions.
 ---
 
 # Playwright Test Writer
@@ -37,12 +37,12 @@ When **think hard** applies, classify smoke vs journey before writing; do not re
 
 | Library | Version |
 |---------|---------|
-| @playwright/test | 1.60.0 |
+| @playwright/test | 1.61.1 |
 | Node.js | 24 (LTS) |
-| Vite dev server | 8.0.12 (port 5173) |
-| React | 19.2.6 |
-| TypeScript | 6.0.2 |
-| react-router-dom | 7.16.0 |
+| Vite dev server | 8.1.0 (port 5173) |
+| React | 19.2.7 |
+| TypeScript | 6.0.3 |
+| react-router-dom | 7.18.0 |
 
 Run tests with `npm run e2e` from the `client/` directory. The `e2e` script in [`package.json`](../../../client/package.json) runs `playwright test --project=chromium`. `npx playwright test` is equivalent when iterating on a single file or `-g` filter.
 

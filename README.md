@@ -166,7 +166,7 @@ These are practical lessons from building this project with Claude Code (termina
 - Radix Select requires `Element.prototype.scrollIntoView = vi.fn()` in jsdom tests (now global in `setup.ts`).
 - Any component using `Link`, `NavLink`, or `useNavigate` must be wrapped in `MemoryRouter` in tests.
 - UTC date serialization: use `format(date, 'yyyy-MM-dd')` (local date) not UTC getters — affects users in UTC+ timezones.
-- Radix Dialog overlay has no ARIA role and is portaled — use `document.querySelector('div[data-state="open"]:not([role="dialog"])')` to locate it in tests. Fire `pointerDown` not `click` — Radix dismisses on pointer events at the document level, not click events.
+- Radix Dialog overlay has no ARIA role and is portaled — use `document.querySelector('div[data-state="open"]:not([role="dialog"])')` to locate it in tests. Use `userEvent.click(overlay)` for backdrop dismiss — Radix Dialog 1.1.17+ defers outside dismiss until a full click (`deferPointerDownOutside`), so `fireEvent.pointerDown` alone no longer closes the dialog in tests.
 
 **Safety habits (especially relevant to healthcare work)**
 - Never paste identifiable patient data into prompts — anything in a prompt leaves your environment via the API.

@@ -104,18 +104,18 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - Microsoft.AspNetCore.Mvc.Testing 8.0.0
 
 **Frontend:**
-- React 19.2.6 with TypeScript 6.0.2
-- Vite 8.0.12 for bundling
-- `react-router-dom` 7.16.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (items), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`
-- Tailwind CSS 4.3.0 via `@tailwindcss/vite` 4.3.0 plugin
+- React 19.2.7 with TypeScript 6.0.3
+- Vite 8.1.0 for bundling
+- `react-router-dom` 7.18.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (items), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`
+- Tailwind CSS 4.3.1 via `@tailwindcss/vite` 4.3.1 plugin
 - shadcn/ui — Nova preset, Radix component library, `components.json` config
-- `radix-ui` 1.4.3 and `@radix-ui/react-slot` 1.2.4 (Radix primitives)
+- `radix-ui` 1.6.0 and `@radix-ui/react-slot` 1.3.0 (Radix primitives)
 - `class-variance-authority` 0.7.1, `clsx` 2.1.1, `tailwind-merge` 3.6.0 (shadcn utilities)
-- `lucide-react` 1.17.0 (icons)
-- ESLint 10.3.0 with typescript-eslint
-- Prettier 3.8.3 with semicolons enabled, single quotes, trailing commas
-- Vitest 4.1.7 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, @testing-library/user-event 14.6.1, and jsdom 29.1.1
-- `@playwright/test` 1.60.0 — e2e tests, Chromium only. 8 tests (3 smoke + items + components + 2 incidents + 1 audit journey); nightly suite via `nightly-e2e.yml`.
+- `lucide-react` 1.21.0 (icons)
+- ESLint 10.5.0 with typescript-eslint
+- Prettier 3.8.4 with semicolons enabled, single quotes, trailing commas
+- Vitest 4.1.9 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, @testing-library/user-event 14.6.1, and jsdom 29.1.1
+- `@playwright/test` 1.61.1 — e2e tests, Chromium only. 8 tests (3 smoke + items + components + 2 incidents + 1 audit journey); nightly suite via `nightly-e2e.yml`.
 - `date-fns` 4.4.0 — date formatting utilities
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar
 - `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level
@@ -220,7 +220,7 @@ changed library API.
 - When changing `api.ts` parsing or `guards.ts`, add or update tests in `client/src/guards.test.ts`
 - When changing `errors.ts`, add or update tests in `client/src/errors.test.ts` using the same style as guards — one test per prompt, AAA, no RTL
 
-**End-to-end — Playwright 1.60.0:**
+**End-to-end — Playwright 1.61.1:**
 - Installed with Chromium only. Eight tests: 3 smoke (`client/e2e/app.spec.ts`) plus items, components, 2 incidents, and 1 audit journey specs under `client/e2e/journeys/`
 - Nightly suite live via `.github/workflows/nightly-e2e.yml` — `workflow_dispatch` + 3 AM Perth cron; four-server `webServer` boot (ItemsApi, IncidentsApi, AuditsApi, Vite); explicit `dotnet restore`/`build` before CI-guarded `dotnet run --no-build`; `dorny/test-reporter` publishes JUnit results
 - E2e does not run on PR builds

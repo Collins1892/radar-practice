@@ -1,6 +1,6 @@
 ---
 name: component-builder
-description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use when the user asks to build, add, scaffold, implement, or create a hand-authored React component, screen, or route shell in client/. One component (or one cohesive feature slice) per request. Uses React 19.2.6, TypeScript 6.0.2, Tailwind CSS 4.3.0, shadcn/ui (Nova), react-router-dom 7.16.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after behavioural changes. Confirm the suite passes before declaring done. Calibrate effort: think hard for screens, feature forms, or app shell/routing.
+description: Build React TypeScript components for the client in this project — reusable primitives, form fields, data display, feature forms, screens/views, route shells, and app-shell elements. Use when the user asks to build, add, scaffold, implement, or create a hand-authored React component, screen, or route shell in client/. One component (or one cohesive feature slice) per request. Uses React 19.2.7, TypeScript 6.0.3, Tailwind CSS 4.3.1, shadcn/ui (Nova), react-router-dom 7.18.0. Cross-references wcag, react-test-writer, playwright-test-writer, and code-reviewer — does not duplicate their content. Run npm test from client/ after behavioural changes. Confirm the suite passes before declaring done. Calibrate effort: think hard for screens, feature forms, or app shell/routing.
 ---
 
 # Component Builder
@@ -65,19 +65,19 @@ Versions aligned with [`CLAUDE.md`](../../../CLAUDE.md) and [`client/package.jso
 
 | Library | Version | Build relevance |
 |---------|---------|-----------------|
-| React | 19.2.6 | function components, hooks, explicit return types |
-| TypeScript | 6.0.2 | no `any`, no `!`, explicit function return types |
-| Vite | 8.0.12 | `@/` path alias |
-| Tailwind CSS | 4.3.0 | OKLCH tokens in `index.css`; `cn()` for class composition |
+| React | 19.2.7 | function components, hooks, explicit return types |
+| TypeScript | 6.0.3 | no `any`, no `!`, explicit function return types |
+| Vite | 8.1.0 | `@/` path alias |
+| Tailwind CSS | 4.3.1 | OKLCH tokens in `index.css`; `cn()` for class composition |
 | shadcn/ui (Nova) | — | vendor primitives under `components/ui/` |
-| radix-ui | 1.4.3 | accessible interactive widgets |
+| radix-ui | 1.6.0 | accessible interactive widgets |
 | class-variance-authority | 0.7.1 | variant styling (`Badge`) |
-| lucide-react | 1.17.0 | decorative icons → `aria-hidden` |
-| react-router-dom | 7.16.0 | routing, `Link`, `useParams`, `useNavigate` |
+| lucide-react | 1.21.0 | decorative icons → `aria-hidden` |
+| react-router-dom | 7.18.0 | routing, `Link`, `useParams`, `useNavigate` |
 | date-fns | 4.4.0 | date formatting in display and API payloads |
 | react-day-picker | 10.0.1 | `autoFocus` on Calendar (not `initialFocus`) |
 | sonner | 2.0.7 | toast notifications via `toast.success` / `toast.warning` / `toast.error` / `toast.info`; mount `<Toaster />` from `@/components/ui/sonner` at app shell level |
-| Vitest | 4.1.7 | run after behavioural changes |
+| Vitest | 4.1.9 | run after behavioural changes |
 
 Imports from `src/` use the `@/` alias (e.g. `@/components/Badge`, `@/lib/utils`, `@/api/incidents`).
 
