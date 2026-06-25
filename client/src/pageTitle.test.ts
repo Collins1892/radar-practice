@@ -12,9 +12,20 @@ import {
 import { formatPageTitle, resolvePageTitle, SITE_TITLE } from './pageTitle';
 
 describe('resolvePageTitle', () => {
-  it('returns Items title at /', (): void => {
+  it('returns Components title at /', (): void => {
     // Arrange
     const pathname = '/';
+
+    // Act
+    const result = resolvePageTitle(pathname);
+
+    // Assert
+    expect(result).toBe(formatPageTitle('Components'));
+  });
+
+  it('returns Items title at /items', (): void => {
+    // Arrange
+    const pathname = '/items';
 
     // Act
     const result = resolvePageTitle(pathname);

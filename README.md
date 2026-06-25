@@ -7,7 +7,7 @@ A full-stack practice project built to explore **agentic AI development** — us
 
 This is not a production system. It is a deliberately small codebase that demonstrates how AI-assisted workflows behave in practice: what agents do well, where they stall, and why human review remains essential.
 
-The project covers three domains: an **items catalogue** (the initial safe practice domain), an **incident reporting module** (healthcare-relevant, added in Week 3), and a **clinical audits module** (added in Week 5 as a legacy-to-modern migration — see below) — each built as a standalone API and full React frontend using a shared reusable component library.
+The project covers three domains: an **items catalogue** (the Week 1 demo learning scaffold — list and add only, legacy styling, warning banner on `/items`), an **incident reporting module** (healthcare-relevant, added in Week 3), and a **clinical audits module** (added in Week 5 as a legacy-to-modern migration — see below). The Items module is a demo learning scaffold — included for agentic-workflow practice only, not intended for production use. Incidents and Audits are the reference feature modules — each built as a standalone API and full React frontend using a shared reusable component library.
 
 ## What this project demonstrates
 
@@ -27,13 +27,13 @@ Every stage followed the same principle: the agent proposes and implements, the 
 
 ### A realistic but safe codebase
 
-The domain is a simple **items catalogue** — no patient data, no production dependencies. That keeps the focus on tooling and workflow rather than healthcare-specific complexity, while still reflecting habits that matter in regulated environments (prompt sanitisation, never pasting PII, reviewing every diff before commit).
+The domain is a simple **items catalogue** — no patient data, no production dependencies. That keeps the focus on tooling and workflow rather than healthcare-specific complexity, while still reflecting habits that matter in regulated environments (prompt sanitisation, never pasting PII, reviewing every diff before commit). Items remains the initial scaffold; Incidents and Audits are the modules built to production-quality patterns.
 
 ### Legacy modernisation, demonstrated
 
 The Audits module simulates a realistic legacy-to-modern migration: a believable .NET 4 / AngularJS 1.6 implementation (`legacy/`) migrated to .NET 8 / EF Core and a React 19 client reusing the existing shared component library. The legacy code is retained permanently as the before-state — both versions are preserved so the diff itself tells the migration story.
 
-The methodology mattered more than the mechanics: legacy code is a reference for *what* a feature does (fields, validation, behaviour), never *how* the new code should be structured. The structural template is always the most recent correctly-built equivalent module already in the repo — porting AngularJS's `$scope` god-controller pattern 1:1 onto React state would have reproduced the exact smell the migration exists to fix.
+The methodology mattered more than the mechanics: legacy code is a reference for *what* a feature does (fields, validation, behaviour), never *how* the new code should be structured. The structural template is always the most recent correctly-built equivalent module already in the repo — Incidents or Audits, not Items — porting AngularJS's `$scope` god-controller pattern 1:1 onto React state would have reproduced the exact smell the migration exists to fix.
 
 ## Architecture
 
@@ -41,7 +41,7 @@ Illustrative layout — not an exhaustive file inventory. See [CLAUDE.md](CLAUDE
 
 ```
 radar-practice/
-├── ItemsApi/              # .NET 8 minimal API (GET/POST /items), EF Core + SQLite
+├── ItemsApi/              # demo learning scaffold — GET/POST /items, EF Core + SQLite
 ├── ItemsApi.Tests/        # xUnit integration tests
 ├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT /incidents, GET /incidents/{id}), EF Core + SQLite
 ├── IncidentsApi.Tests/    # xUnit integration tests
@@ -93,7 +93,7 @@ radar-practice/
 
 | Layer | Stack |
 |-------|-------|
-| Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`) |
+| Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`); demo learning scaffold |
 | Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
 | Audits API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`audits.db`), soft delete via `RecordStatus` — migrated from `legacy/` (.NET 4 / AngularJS 1.6) |
 | Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — see CI badge above for live count |
@@ -154,7 +154,7 @@ These are practical lessons from building this project with Claude Code (termina
 - On a large migration PR, the automated review loop itself shows diminishing returns — later rounds increasingly re-surface findings already deferred or already confirmed correct. The fix is a stopping rule: once two independent reviewers converge on suggestion-tier-only findings, the bot's next pass becomes the final gate, not another round of manual fixes.
 
 **Legacy migration — reference for *what*, never *how***
-- Legacy code being migrated should inform what a feature does (fields, validation, behaviour) — never how the new code is structured. The structural template is always the most recent correctly-built equivalent module already in the repo. Mapping legacy control flow onto new code 1:1 reproduces the legacy smell the migration exists to fix, even when the framework changes underneath it.
+- Legacy code being migrated should inform what a feature does (fields, validation, behaviour) — never how the new code is structured. The structural template is always the most recent correctly-built equivalent module already in the repo — Incidents or Audits, not Items. Mapping legacy control flow onto new code 1:1 reproduces the legacy smell the migration exists to fix, even when the framework changes underneath it.
 - Reusable component reuse has to be provable, not assumed. A migration prompt needs a hard constraint mapping every UI need to an existing shared component, plus a self-check requiring the agent to justify any new component file it creates.
 
 **WCAG 2.2 AA — layered accessibility approach**

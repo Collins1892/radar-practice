@@ -7,8 +7,14 @@ This file provides guidance for AI agents working in this repository. It defines
 This is a full-stack learning project built to demonstrate agentic AI 
 development practices. It is not a production system.
 
-**Domain:** Items catalogue — a simple API and frontend used as a safe, 
-realistic practice domain. No patient data, no production dependencies.
+**Domain:** Items catalogue — the Week 1 scaffolding domain: a simple API and 
+frontend used as a safe, realistic practice starting point. No patient data, 
+no production dependencies.
+
+**Items module:** The Items module is a demo learning scaffold — included for 
+agentic-workflow practice only, not intended for production use. Incidents and 
+Audits are the reference feature modules. The `/items` route displays a warning 
+banner with the same message.
 
 **Purpose:** To demonstrate how AI agents can be directed to scaffold, 
 extend, test, and maintain a real application under human direction — 
@@ -23,7 +29,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 `legacy/AuditsApi/`; soft delete via `RecordStatus` (legacy used hard delete).
 
 **Repo layout:**
-- `ItemsApi/` — .NET 8 minimal API
+- `ItemsApi/` — .NET 8 minimal API; demo learning scaffold (not a production feature module)
 - `ItemsApi/Data/AppDbContext.cs` — EF Core DbContext for ItemsApi (`DbSet<Item>` only)
 - `ItemsApi/Repositories/EfItemsRepository.cs` — EF Core repository implementation
 - `ItemsApi/Migrations/` — EF Core migrations
@@ -122,7 +128,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level
 
 **CSS approach:**
-New components use Tailwind CSS and shadcn/ui. Items catalogue components (`App.tsx`, `ItemsList`) are partially migrated — some Tailwind classes are in use, but `ItemsList.css` and legacy classes in `App.css` remain. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
+New components use Tailwind CSS and shadcn/ui. As a demo scaffold, Items catalogue components (`App.tsx`, `ItemsList`) are partially migrated — some Tailwind classes are in use, but `ItemsList.css` and legacy classes in `App.css` remain; this is expected, not a backlog gap to close unprompted. Do not add new legacy CSS. Theme tokens defined as CSS variables (OKLCH) in `src/index.css` under `@theme inline`. Use `cn()` (clsx + tailwind-merge) for class composition.
 The global `button {}` rule has been removed from `App.css` — all buttons now carry explicit Tailwind classes.
 Dark mode: `@custom-variant dark` uses the Tailwind v4 block form responding to both `.dark` class and `prefers-color-scheme: dark`. All three sync points (`.dark` class, media query, `@custom-variant`) must be kept in sync when tokens change.
 

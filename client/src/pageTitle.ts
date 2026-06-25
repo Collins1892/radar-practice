@@ -44,8 +44,11 @@ export function resolvePageTitle(pathname: string): string {
   if (matchPath({ path: '/components', end: true }, pathname)) {
     return formatPageTitle('Components');
   }
-  if (matchPath({ path: '/', end: true }, pathname)) {
+  if (matchPath({ path: '/items', end: true }, pathname)) {
     return formatPageTitle('Items');
+  }
+  if (matchPath({ path: '/', end: true }, pathname)) {
+    return formatPageTitle('Components');
   }
   return SITE_TITLE;
 }

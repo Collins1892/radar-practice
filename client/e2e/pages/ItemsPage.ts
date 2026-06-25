@@ -2,6 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 
 export class ItemsPage {
   readonly pageHeading: Locator;
+  readonly addItemForm: Locator;
   readonly addItemHeading: Locator;
   readonly nameInput: Locator;
   readonly priceInput: Locator;
@@ -12,17 +13,18 @@ export class ItemsPage {
 
   constructor(private readonly page: Page) {
     this.pageHeading = page.getByRole('heading', { name: 'Items' });
+    this.addItemForm = page.locator('form.item-form');
     this.addItemHeading = page.getByRole('heading', { name: 'Add item' });
-    this.nameInput = page.getByLabel('Name');
-    this.priceInput = page.getByLabel('Price');
-    this.addButton = page.getByRole('button', { name: 'Add item' });
+    this.nameInput = this.addItemForm.getByLabel('Name');
+    this.priceInput = this.addItemForm.getByLabel('Price');
+    this.addButton = this.addItemForm.getByRole('button', { name: 'Add item' });
     this.allItemsHeading = page.getByRole('heading', { name: 'All items' });
     this.refreshButton = page.getByRole('button', { name: 'Refresh' });
     this.loadingState = page.getByText('Loading items…');
   }
 
   async goto(): Promise<void> {
-    await this.page.goto('/');
+    await this.page.goto('/items');
   }
 
   async waitForListLoaded(): Promise<void> {

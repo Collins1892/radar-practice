@@ -14,7 +14,18 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/items': 'http://localhost:5133',
+      '/items': {
+        target: 'http://localhost:5133',
+        bypass(req): string | undefined {
+          if (
+            req.method === 'GET' &&
+            req.headers.accept?.includes('text/html')
+          ) {
+            return '/index.html';
+          }
+          return undefined;
+        },
+      },
     },
   },
   test: {
