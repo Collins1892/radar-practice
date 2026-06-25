@@ -69,27 +69,31 @@ export function IncidentDetailView(): JSX.Element {
     }
   }, [incident, incidentId]);
 
-  function handleDeleteModalOpenChange(open: boolean): void {
-    if (!open && deleting) return;
-    setDeleteModalOpen(open);
-    if (!open) setDeleteError(null);
-  }
+  const handleDeleteModalOpenChange = useCallback(
+    (open: boolean): void => {
+      if (!open && deleting) return;
+      setDeleteModalOpen(open);
+      if (!open) setDeleteError(null);
+    },
+    [deleting],
+  );
 
-  async function handleDeleteConfirm(
-    confirmedIncidentId: number,
-  ): Promise<void> {
-    setDeleteError(null);
-    setDeleting(true);
-    try {
-      await deleteIncident(confirmedIncidentId);
-      toast.success(INCIDENT_DELETE_SUCCESS_MESSAGE);
-      navigate('/incidents');
-    } catch (err) {
-      setDeleteError(incidentUserMessage(err, 'deleting'));
-    } finally {
-      setDeleting(false);
-    }
-  }
+  const handleDeleteConfirm = useCallback(
+    async (confirmedIncidentId: number): Promise<void> => {
+      setDeleteError(null);
+      setDeleting(true);
+      try {
+        await deleteIncident(confirmedIncidentId);
+        toast.success(INCIDENT_DELETE_SUCCESS_MESSAGE);
+        navigate('/incidents');
+      } catch (err) {
+        setDeleteError(incidentUserMessage(err, 'deleting'));
+      } finally {
+        setDeleting(false);
+      }
+    },
+    [navigate],
+  );
 
   if (incidentId === null) {
     return (

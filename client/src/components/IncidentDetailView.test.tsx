@@ -216,6 +216,23 @@ describe('IncidentDetailView', () => {
     expect(deleteIncident).not.toHaveBeenCalled();
   });
 
+  it('cannot dismiss the modal while a delete is in flight', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(deleteIncident).mockImplementation(() => new Promise(() => {}));
+    await renderLoadedIncidentDetailView();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete incident' }));
+    await screen.findByRole('dialog');
+
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm delete' }));
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
   it('calls deleteIncident and navigates to the incidents list on confirm success', async (): Promise<void> => {
     // Arrange
     vi.mocked(deleteIncident).mockResolvedValue(undefined);
