@@ -1,6 +1,6 @@
 # Radar Practice — Frontend
 
-React 19 + TypeScript + Vite frontend covering three domains: an **items catalogue** (demo learning scaffold — list and add only; warning banner on `/`), an **incident reporting module** (create, view, edit, and filter incidents), and an **audits module** (full CRUD shape, migrated from a legacy .NET 4 / AngularJS implementation), backed by three .NET 8 minimal APIs. The Items module is a demo learning scaffold — included for agentic-workflow practice only, not intended for production use. Incidents and Audits are the reference feature modules.
+React 19 + TypeScript + Vite frontend covering three domains: an **items catalogue** (demo learning scaffold — list and add only; warning banner on `/items`), an **incident reporting module** (create, view, edit, and filter incidents), and an **audits module** (full CRUD shape, migrated from a legacy .NET 4 / AngularJS implementation), backed by three .NET 8 minimal APIs. The Items module is a demo learning scaffold — included for agentic-workflow practice only, not intended for production use. Incidents and Audits are the reference feature modules.
 
 ## Prerequisites
 

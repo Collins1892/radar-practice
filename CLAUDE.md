@@ -13,7 +13,7 @@ no production dependencies.
 
 **Items module:** The Items module is a demo learning scaffold — included for 
 agentic-workflow practice only, not intended for production use. Incidents and 
-Audits are the reference feature modules. The `/` route displays a warning 
+Audits are the reference feature modules. The `/items` route displays a warning 
 banner with the same message.
 
 **Purpose:** To demonstrate how AI agents can be directed to scaffold, 

@@ -7,7 +7,7 @@ A full-stack practice project built to explore **agentic AI development** — us
 
 This is not a production system. It is a deliberately small codebase that demonstrates how AI-assisted workflows behave in practice: what agents do well, where they stall, and why human review remains essential.
 
-The project covers three domains: an **items catalogue** (the Week 1 demo learning scaffold — list and add only, legacy styling, warning banner on `/`), an **incident reporting module** (healthcare-relevant, added in Week 3), and a **clinical audits module** (added in Week 5 as a legacy-to-modern migration — see below). The Items module is a demo learning scaffold — included for agentic-workflow practice only, not intended for production use. Incidents and Audits are the reference feature modules — each built as a standalone API and full React frontend using a shared reusable component library.
+The project covers three domains: an **items catalogue** (the Week 1 demo learning scaffold — list and add only, legacy styling, warning banner on `/items`), an **incident reporting module** (healthcare-relevant, added in Week 3), and a **clinical audits module** (added in Week 5 as a legacy-to-modern migration — see below). The Items module is a demo learning scaffold — included for agentic-workflow practice only, not intended for production use. Incidents and Audits are the reference feature modules — each built as a standalone API and full React frontend using a shared reusable component library.
 
 ## What this project demonstrates
 

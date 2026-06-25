@@ -126,6 +126,20 @@ describe('App', () => {
     expect(screen.getByText('Sprocket')).toBeInTheDocument();
   });
 
+  it('shows demo warning banner at /items', (): void => {
+    // Arrange
+    vi.mocked(fetchItems).mockResolvedValue([]);
+
+    // Act
+    renderApp(['/items']);
+
+    // Assert
+    const banner = screen
+      .getAllByRole('status')
+      .find((element) => element.textContent?.includes('demo purposes only'));
+    expect(banner).toHaveTextContent('demo purposes only');
+  });
+
   it('shows load failure alert when fetchItems rejects', async (): Promise<void> => {
     // Arrange
     vi.mocked(fetchItems).mockRejectedValue(
