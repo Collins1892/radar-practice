@@ -103,6 +103,9 @@ describe('IncidentDetailView', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('High')).toBeInTheDocument();
     expect(screen.getByText(formattedReportedDate)).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Edit incident' }),
+    ).toBeInTheDocument();
   });
 
   it('shows loading state while fetching the incident', (): void => {
