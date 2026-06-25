@@ -76,7 +76,14 @@ blocklist:
 |-------------|--------|
 | `.github/` | Workflow files and automation scripts — agent must not rewrite its own guardrails |
 | `.husky/` | Pre-commit hooks including the `no-secrets` ESLint check |
-| `package.json` | Dependency manifest and test script definitions |
+| `package.json` (repo root only) | Root dependency manifest and test script definitions |
+| `*.csproj`, `*.sln` | .NET project and solution files |
+| `*/Migrations/*` | EF Core migration files |
+| `package-lock.json` | npm lockfiles (root or nested) |
+| `.env*` | Environment and secrets files |
+| `Dockerfile` | Container build definitions |
+| `.npmrc` | npm configuration |
+| `tsconfig.json` | TypeScript project config (not `tsconfig.app.json` / `tsconfig.node.json`) |
 
 Sensitive paths are filtered from the plan before implementation begins.
 If all planned changes target sensitive paths, the run raises a draft
@@ -84,11 +91,9 @@ failure PR and stops — no files are written.
 
 Path matching normalises all separators to forward slashes before
 comparison, so the guard works identically on Windows and Linux runners.
-
-**Known gaps (backlog T49, T55):** `.env*`, `package-lock.json`,
-`tsconfig.json`, and `.csproj` files are not yet in the blocklist. These
-are documented and tracked. They would be the first additions before any
-production deployment.
+Both `pr-review.js` and `nightly-agent.js` import the shared
+`.github/scripts/sensitive-paths.js` module so the blocklist stays
+consistent across automation entry points.
 
 ---
 
@@ -114,8 +119,9 @@ to manipulate the agent's behaviour.
 Mitigations in place:
 
 - **Sensitive path guard** — any injected instruction to modify
-  `.github/`, `.husky/`, or `package.json` is blocked before the agent
-  writes a single file.
+  blocked paths (workflows, hooks, root `package.json`, lockfiles, env
+  files, project files, migrations, Dockerfiles, etc.) is rejected before
+  the agent writes a single file.
 - **Human merge gate** — any manipulated output still requires human
   approval before landing on `main`.
 - **Execution caps** — the 3-attempt and 10-call limits constrain the
@@ -197,16 +203,8 @@ practical rule: if in doubt, leave it out.
 
 ## Known security backlog items
 
-The following open backlog tasks are the highest priority for production
-readiness in a regulated environment:
-
-| ID | Area | Risk |
-|----|------|------|
-| T49 | PR review sensitive path guard | Too narrow — `.env`, migration files, and Dockerfiles are not blocked |
-| T55 | Nightly agent sensitive path guard | Missing `.env*`, `tsconfig.json`, lockfiles, and project files |
-| T45 | Git staging | `git add -A` could stage unintended files, including `.env` if present in the working tree |
-| T60 | Backend configuration | Connection strings and CORS origins are hardcoded in `Program.cs` — must be environment-scoped before any real data handling |
-
-These items are tracked in `docs/nightly-agent-backlog.md` and would be
-addressed before deploying this workflow against a system handling real
-data.
+Backend connection strings and CORS allowed origins are configuration-driven
+via each API's `appsettings.json`, overridable through ASP.NET Core
+environment variables (documented in `.env.example`). No high-priority
+security backlog items remain in this section; other tasks are tracked in
+[`docs/nightly-agent-backlog.md`](nightly-agent-backlog.md).

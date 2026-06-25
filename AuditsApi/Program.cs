@@ -10,6 +10,12 @@ const string InvalidStatusMessage =
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? throw new InvalidOperationException("Cors:AllowedOrigins is not configured.");
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -18,13 +24,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod());
 });
 
 builder.Services.AddDbContext<AuditsDbContext>(options =>
-    options.UseSqlite("DataSource=audits.db"));
+    options.UseSqlite(connectionString));
 
 builder.Services.AddScoped<IAuditRepository, EfAuditRepository>();
 
