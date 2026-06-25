@@ -57,7 +57,7 @@ describe('App', () => {
     expect(document.getElementById('main-content')).toBeInTheDocument();
   });
 
-  it('sets document title to Items | Radar Practice at /', (): void => {
+  it('sets document title to Components | Radar Practice at /', (): void => {
     // Arrange
     vi.mocked(fetchItems).mockResolvedValue([]);
 
@@ -65,7 +65,7 @@ describe('App', () => {
     renderApp();
 
     // Assert
-    expect(document.title).toBe('Items | Radar Practice');
+    expect(document.title).toBe('Components | Radar Practice');
   });
 
   it('renders Audits NavLink in app navigation', (): void => {
@@ -119,7 +119,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue(items);
 
     // Act
-    renderApp();
+    renderApp(['/items']);
 
     // Assert
     await screen.findByRole('list');
@@ -133,7 +133,7 @@ describe('App', () => {
     );
 
     // Act
-    renderApp();
+    renderApp(['/items']);
 
     // Assert
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -146,7 +146,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue([]);
 
     // Act
-    renderApp();
+    renderApp(['/items']);
 
     // Assert
     await screen.findByText('No items yet. Add one above to get started.');
@@ -158,7 +158,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue(items);
 
     // Act
-    renderApp();
+    renderApp(['/items']);
     await screen.findByRole('list');
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
 
@@ -171,7 +171,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue([]);
 
     // Act
-    renderApp();
+    renderApp(['/items']);
     await screen.findByText('No items yet. Add one above to get started.');
     fireEvent.click(screen.getByRole('button', { name: 'Add item' }));
 
@@ -184,7 +184,7 @@ describe('App', () => {
     vi.mocked(fetchItems).mockResolvedValue([]);
 
     // Act
-    renderApp();
+    renderApp(['/items']);
     await screen.findByText('No items yet. Add one above to get started.');
     fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: 'Sprocket' },
@@ -207,7 +207,7 @@ describe('App', () => {
     vi.mocked(createItem).mockResolvedValue(newItem);
 
     // Act
-    renderApp();
+    renderApp(['/items']);
     await screen.findByText('No items yet. Add one above to get started.');
     fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: 'Widget' },
@@ -233,7 +233,7 @@ describe('App', () => {
     );
 
     // Act
-    renderApp();
+    renderApp(['/items']);
     await screen.findByText('No items yet. Add one above to get started.');
     fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: 'Widget' },

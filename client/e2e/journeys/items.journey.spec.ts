@@ -13,6 +13,7 @@ test.describe('items: add item', () => {
     const itemName = `E2E Widget ${Date.now()}`;
 
     // Act
+    await itemsPage.openAddForm();
     await itemsPage.fillItem(itemName, '9.99');
     await itemsPage.submit();
 

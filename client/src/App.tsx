@@ -207,7 +207,10 @@ function App(): JSX.Element {
           className="pb-4 flex gap-1 border-b border-border"
           aria-label="Views"
         >
-          <NavLink to="/" end className={navLinkClass}>
+          <NavLink to="/components" className={navLinkClass}>
+            Components
+          </NavLink>
+          <NavLink to="/items" end className={navLinkClass}>
             Items
           </NavLink>
           <NavLink to="/incidents" className={navLinkClass}>
@@ -216,15 +219,13 @@ function App(): JSX.Element {
           <NavLink to="/audits" className={navLinkClass}>
             Audits
           </NavLink>
-          <NavLink to="/components" className={navLinkClass}>
-            Components
-          </NavLink>
         </nav>
       </header>
 
       <div id="main-content" tabIndex={-1}>
         <Routes>
-          <Route path="/" element={<ItemsView />} />
+          <Route path="/" element={<Navigate to="/components" replace />} />
+          <Route path="/items" element={<ItemsView />} />
           <Route path="/audits/create" element={<AuditCreateView />} />
           <Route path="/audits/:id/edit" element={<AuditEditView />} />
           <Route path="/audits/:id" element={<AuditDetailView />} />
@@ -237,7 +238,7 @@ function App(): JSX.Element {
             path="/components"
             element={<ComponentsView components={componentRegistry} />}
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/components" replace />} />
         </Routes>
       </div>
       <Toaster />

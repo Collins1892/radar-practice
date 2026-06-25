@@ -9,6 +9,7 @@ test('app loads', async ({ page }): Promise<void> => {
 
   // Assert
   await expect(page).toHaveTitle(/Radar Practice/);
+  await expect(page.getByRole('heading', { name: 'Components' })).toBeVisible();
 });
 
 test('incidents page shows the Incidents heading', async ({
