@@ -61,6 +61,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `client/src/componentRegistry.tsx` — registry of all components for the components view (has file-level eslint-disable — see decisions log)
 - `client/src/components/formFieldUtils.ts` — shared form utility (formFieldErrorId)
 - `client/src/components/incidentDisplay.ts` — shared incident display helpers — badge variants, status label, reported-date formatter, severity/status/filter option lists
+- `client/src/components/incidentPageCopy.ts` — shared incident page headings, subtitles, and success messages
 - `client/src/components/auditDisplay.ts` — shared audit display helpers — badge variants, status label, audit-date formatter, status/filter option lists
 - `client/src/components/auditPageCopy.ts` — shared audit page headings, subtitles, and success messages
 - `client/src/hooks/useAudits.ts` — list hook for AuditsView (filters, sort, pagination, fetch state)
