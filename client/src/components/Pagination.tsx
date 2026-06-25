@@ -44,9 +44,10 @@ const getPageTokens = (
   ];
 };
 
+// ring-foreground (not ring-ring): meets SC 1.4.11 3:1 on bg-background / bg-muted.
 const getArrowButtonClassName = (disabled: boolean): string =>
   cn(
-    'h-9 rounded-md border px-3 text-sm font-medium',
+    'h-9 rounded-md border px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground',
     disabled
       ? 'border-input bg-muted text-muted-foreground cursor-not-allowed'
       : 'border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
@@ -62,6 +63,8 @@ export function Pagination({
   const pageTokens = getPageTokens(safeCurrentPage, safeTotalPages);
   const isPrevDisabled = safeCurrentPage <= 1;
   const isNextDisabled = safeCurrentPage >= safeTotalPages;
+  const previousTargetPage = safeCurrentPage - 1;
+  const nextTargetPage = safeCurrentPage + 1;
 
   return (
     <nav aria-label="Pagination">
@@ -70,6 +73,11 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage - 1)}
           disabled={isPrevDisabled}
+          aria-label={
+            isPrevDisabled
+              ? undefined
+              : `Previous, go to page ${previousTargetPage}`
+          }
           className={getArrowButtonClassName(isPrevDisabled)}
         >
           Previous
@@ -80,10 +88,10 @@ export function Pagination({
             return (
               <span
                 key={`ellipsis-${index}`}
-                aria-hidden="true"
                 className="inline-flex h-9 min-w-9 items-center justify-center text-sm text-muted-foreground"
               >
-                ...
+                <span aria-hidden="true">...</span>
+                <span className="sr-only">More pages</span>
               </span>
             );
           }
@@ -98,7 +106,7 @@ export function Pagination({
               aria-label={`Page ${token}`}
               aria-current={isActivePage ? 'page' : undefined}
               className={cn(
-                'h-9 min-w-9 rounded-md border px-3 text-sm font-medium',
+                'h-9 min-w-9 rounded-md border px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground',
                 isActivePage
                   ? 'border-primary bg-primary text-primary-foreground'
                   : 'border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
@@ -113,6 +121,9 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(safeCurrentPage + 1)}
           disabled={isNextDisabled}
+          aria-label={
+            isNextDisabled ? undefined : `Next, go to page ${nextTargetPage}`
+          }
           className={getArrowButtonClassName(isNextDisabled)}
         >
           Next

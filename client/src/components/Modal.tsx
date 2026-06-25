@@ -15,6 +15,12 @@ type ModalProps = {
   onOpenChange?: (open: boolean) => void;
 };
 
+type ModalCloseProps = React.ComponentProps<typeof DialogPrimitive.Close>;
+
+export function ModalClose(props: ModalCloseProps): React.ReactElement {
+  return <DialogPrimitive.Close {...props} />;
+}
+
 export const Modal = ({
   trigger,
   title,

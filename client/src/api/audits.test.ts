@@ -132,6 +132,17 @@ describe('auditUserMessage', () => {
     // Assert
     expect(result).toBe('Something went wrong while loading the audit.');
   });
+
+  it('returns the deleting fallback message when the error is an unknown value', (): void => {
+    // Arrange
+    const error = null;
+
+    // Act
+    const result = auditUserMessage(error, 'deleting');
+
+    // Assert
+    expect(result).toBe('Something went wrong while deleting the audit.');
+  });
 });
 
 describe('deleteAudit', () => {
