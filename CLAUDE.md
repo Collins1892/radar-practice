@@ -42,6 +42,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `AuditsApi.Tests/` — xUnit integration tests
 - `AuditsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
 - `legacy/AuditsApi/` — original .NET Framework API retained as the before-state reference for the AuditsApi modernisation migration; not stale or dead code
+- `RadarPractice.sln` — solution file grouping all six .NET projects. Run `dotnet build RadarPractice.sln` or `dotnet test RadarPractice.sln` to build/test the full backend in one command. New .NET projects must be registered manually via `dotnet sln add`
 - `client/` — React TypeScript Vite frontend
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
 - `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, AuditsView, AuditForm, AuditCreateView, AuditDetailView, AuditEditView, AuditPageChrome, InlineAlert, Modal)
