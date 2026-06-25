@@ -41,9 +41,10 @@ Illustrative layout — not an exhaustive file inventory. See [CLAUDE.md](CLAUDE
 
 ```
 radar-practice/
+├── RadarPractice.sln      # Solution file — groups all six .NET projects for single-command build/test/audit
 ├── ItemsApi/              # demo learning scaffold — GET/POST /items, EF Core + SQLite
 ├── ItemsApi.Tests/        # xUnit integration tests
-├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT /incidents, GET /incidents/{id}), EF Core + SQLite
+├── IncidentsApi/          # .NET 8 minimal API (GET/POST/PUT/DELETE /incidents, GET /incidents/{id}), EF Core + SQLite — soft delete via RecordStatus
 ├── IncidentsApi.Tests/    # xUnit integration tests
 ├── AuditsApi/             # .NET 8 minimal API (GET/POST/PUT/DELETE /audits), EF Core + SQLite — migrated from legacy/
 ├── AuditsApi.Tests/       # xUnit integration tests
@@ -98,7 +99,7 @@ radar-practice/
 | Audits API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`audits.db`), soft delete via `RecordStatus` — migrated from `legacy/` (.NET 4 / AngularJS 1.6) |
 | Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — see CI badge above for live count |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes include `/`, `/components`, `/incidents`, `/audits`, and create/detail/edit for both modules |
-| Frontend tests | Vitest + `@testing-library/react` (see CI badge above); Playwright e2e — 8 tests (3 smoke + items + components + 2 incidents + 1 audit journey) via `nightly-e2e.yml` |
+| Frontend tests | Vitest + `@testing-library/react` (see CI badge above); Playwright e2e — 9 tests (3 smoke + items + components + 3 incidents + 1 audit journey) via `nightly-e2e.yml` |
 | CI | GitHub Actions — `dotnet test` (all three APIs) and `npm test` (Vitest) on push/PR to `main`; Playwright e2e nightly only (not on PR builds) |
 
 > **Note:** Each API uses its own SQLite database (`app.db` for items, `incidents.db` for incidents, `audits.db` for audits). All are local only and not committed.
@@ -209,6 +210,14 @@ The Audits API listens on `http://localhost:5135`.
 
 ### Run the tests
 
+Run all six .NET projects at once:
+
+```bash
+dotnet test RadarPractice.sln
+```
+
+Or run individual projects:
+
 ```bash
 dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj
 dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj
@@ -229,7 +238,7 @@ cd client
 npx playwright test
 ```
 
-Eight Playwright tests: 3 smoke (`app.spec.ts`) plus items, components, 2 incidents, and 1 audit journey specs under `e2e/journeys/`. Playwright's `webServer` config boots all four servers automatically — ItemsApi (5133), IncidentsApi (5134), AuditsApi (5135), and Vite (5173). In CI, the [nightly e2e workflow](.github/workflows/nightly-e2e.yml) runs the same suite on a 3 AM Perth cron (`workflow_dispatch` + schedule), with explicit `dotnet restore`/`build` before `dotnet run --no-build` for cold-start hardening; `dorny/test-reporter` publishes JUnit results.
+Nine Playwright tests: 3 smoke (`app.spec.ts`) plus items, components, 3 incidents, and 1 audit journey specs under `e2e/journeys/`. Playwright's `webServer` config boots all four servers automatically — ItemsApi (5133), IncidentsApi (5134), AuditsApi (5135), and Vite (5173). In CI, the [nightly e2e workflow](.github/workflows/nightly-e2e.yml) runs the same suite on a 3 AM Perth cron (`workflow_dispatch` + schedule), with explicit `dotnet restore`/`build` before `dotnet run --no-build` for cold-start hardening; `dorny/test-reporter` publishes JUnit results.
 
 ### Run the frontend
 
@@ -259,4 +268,4 @@ The [PR review workflow](.github/workflows/pr-review.yml) runs after CI passes o
 
 The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch` — it picks a backlog task, implements it, runs the full test suite, and raises a PR. See `docs/nightly-agent-completed.md` for the completed-task log.
 
-The [nightly e2e workflow](.github/workflows/nightly-e2e.yml) runs the 8-test Playwright suite on the same schedule (`workflow_dispatch` + cron). Boots three .NET APIs plus Vite via Playwright `webServer`; pre-restores and pre-builds API projects before `dotnet run --no-build`; publishes results via `dorny/test-reporter`. Does not run on PR builds.
+The [nightly e2e workflow](.github/workflows/nightly-e2e.yml) runs the 9-test Playwright suite on the same schedule (`workflow_dispatch` + cron). Boots three .NET APIs plus Vite via Playwright `webServer`; pre-restores and pre-builds API projects before `dotnet run --no-build`; publishes results via `dorny/test-reporter`. Does not run on PR builds.

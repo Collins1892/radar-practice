@@ -113,7 +113,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 **Frontend:**
 - React 19.2.7 with TypeScript 6.0.3
 - Vite 8.1.0 for bundling
-- `react-router-dom` 7.18.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (items), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`
+- `react-router-dom` 7.18.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (redirects to `/components`), `/items` (Items demo scaffold), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`
 - Tailwind CSS 4.3.1 via `@tailwindcss/vite` 4.3.1 plugin
 - shadcn/ui — Nova preset, Radix component library, `components.json` config
 - `radix-ui` 1.6.0 and `@radix-ui/react-slot` 1.3.0 (Radix primitives)

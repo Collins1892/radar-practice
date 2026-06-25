@@ -1,3 +1,71 @@
+## Week 6 Day 4 — Thursday 25 June 2026
+
+### Summary
+
+A full day focused on standardisation and security across the full stack.
+Incidents and Audits modules brought to parity — backend and frontend.
+Security backlog cleared. Four interview narratives strengthened.
+
+### AI impact story and fix-loop judgement story
+
+Both narratives drafted and added to `phase-3-articulate.md`. Key
+themes: PR review speed and quality (hours to minutes, plus caught a
+real bug), nightly agent parallel throughput, skills eliminating
+inconsistency, analysis tasks done in a fraction of the time. Fix-loop
+story: nightly agent → human-approved PR review → fail-closed at 3
+attempts, healthcare context justifying the human gate.
+
+### Items page — routing and context
+
+Default route changed from `/` to `/components`. Items moved to `/items`.
+Nav reordered: Components, Items, Incidents, Audits. Warning InlineAlert
+added to Items page — "This module is included for demo purposes only
+and is not intended for production use." CLAUDE.md, README.md,
+client/README.md, and project.mdc updated to reflect Items as a demo
+learning scaffold, not a production module.
+
+### Incidents vs Audits parity — full stack
+
+Gap analysis completed across frontend and backend. IncidentsApi brought
+to full parity with AuditsApi: RecordStatus soft delete, IncidentResponse
+DTO (no entity leak), PutIncidentRequest with id-in-body, null payload
+guards, DELETE endpoint, filter/sort integration tests, 65 tests (up
+from 25). React client updated: PutIncidentRequest type, deleteIncident
+function, incidentUserMessage deleting verb, IncidentDetailView delete
+flow with Modal/toast/navigate, IncidentPageChrome actions slot. 264
+Vitest + 9 Playwright passing.
+
+### RadarPractice.sln — solution file added
+
+All six .NET projects grouped under one solution file. `dotnet build`,
+`dotnet test`, and `dotnet list package --vulnerable` now run across the
+full backend in one command. New projects must be registered manually
+via `dotnet sln add`.
+
+### Security backlog — T45, T49, T55, T60
+
+Four security items implemented:
+- **T45** — `commitAndPushFixes` now uses `git add -- ...writtenFilePaths`
+  instead of `git add -A`; only files the fix loop wrote are staged
+- **T49/T55** — shared `sensitive-paths.js` module extracted; blocklist
+  expanded to cover `*.csproj`, `*.sln`, `/Migrations/`, `package-lock.json`,
+  `.env*`, `Dockerfile`, `.npmrc`, `tsconfig.json`
+- **T60** — connection strings and CORS origins moved from hardcoded
+  `Program.cs` to `appsettings.json`; environment variable overrides
+  documented in `.env.example`
+
+### API credit exhaustion — operational observation
+
+Overnight jobs (nightly-agent, nightly-e2e) did not run — Claude console
+API credit exhausted. Topped up $5.50 in the morning. Agent reliability
+has a hard dependency on API credit balance — a real operational risk for
+any team running autonomous agents in production.
+
+### Test counts (end of day)
+- .NET: 130 (65 Incidents, 52 Audits, 13 Items)
+- Vitest: 265
+- Playwright: 9
+
 ## Week 6 Day 3 — Wednesday 24 June 2026
 
 ### Summary
