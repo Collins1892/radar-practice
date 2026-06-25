@@ -95,10 +95,10 @@ radar-practice/
 | Layer | Stack |
 |-------|-------|
 | Items API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`app.db`); demo learning scaffold |
-| Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums |
+| Incidents API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`incidents.db`), Severity/Status as int enums, soft delete via `RecordStatus`, DELETE endpoint |
 | Audits API | .NET 8, minimal APIs, repository pattern, EF Core + SQLite (`audits.db`), soft delete via `RecordStatus` — migrated from `legacy/` (.NET 4 / AngularJS 1.6) |
 | Backend tests | xUnit, `TestWebApplicationFactory` (in-memory SQLite per project), NSubstitute — see CI badge above for live count |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes include `/`, `/components`, `/incidents`, `/audits`, and create/detail/edit for both modules |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui, react-router-dom — routes: `/` (redirects to `/components`), `/items`, `/components`, `/incidents`, `/audits`, and create/detail/edit for Incidents and Audits |
 | Frontend tests | Vitest + `@testing-library/react` (see CI badge above); Playwright e2e — 9 tests (3 smoke + items + components + 3 incidents + 1 audit journey) via `nightly-e2e.yml` |
 | CI | GitHub Actions — `dotnet test` (all three APIs) and `npm test` (Vitest) on push/PR to `main`; Playwright e2e nightly only (not on PR builds) |
 

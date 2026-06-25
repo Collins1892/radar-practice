@@ -32,8 +32,7 @@ DTO (no entity leak), PutIncidentRequest with id-in-body, null payload
 guards, DELETE endpoint, filter/sort integration tests, 65 tests (up
 from 25). React client updated: PutIncidentRequest type, deleteIncident
 function, incidentUserMessage deleting verb, IncidentDetailView delete
-flow with Modal/toast/navigate, IncidentPageChrome actions slot. 264
-Vitest + 9 Playwright passing.
+flow with Modal/toast/navigate, IncidentPageChrome actions slot. 264 Vitest at that point + 9 Playwright passing.
 
 ### RadarPractice.sln — solution file added
 

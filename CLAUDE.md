@@ -228,7 +228,7 @@ changed library API.
 - When changing `errors.ts`, add or update tests in `client/src/errors.test.ts` using the same style as guards — one test per prompt, AAA, no RTL
 
 **End-to-end — Playwright 1.61.1:**
-- Installed with Chromium only. Eight tests: 3 smoke (`client/e2e/app.spec.ts`) plus items, components, 2 incidents, and 1 audit journey specs under `client/e2e/journeys/`
+- Installed with Chromium only. Nine tests: 3 smoke (`client/e2e/app.spec.ts`) plus items, components, 3 incidents, and 1 audit journey specs under `client/e2e/journeys/`
 - Nightly suite live via `.github/workflows/nightly-e2e.yml` — `workflow_dispatch` + 3 AM Perth cron; four-server `webServer` boot (ItemsApi, IncidentsApi, AuditsApi, Vite); explicit `dotnet restore`/`build` before CI-guarded `dotnet run --no-build`; `dorny/test-reporter` publishes JUnit results
 - E2e does not run on PR builds
 - Run from `client/` with `npx playwright test` — Playwright boots all three APIs plus Vite via `webServer` config
