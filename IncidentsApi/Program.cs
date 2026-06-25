@@ -160,11 +160,8 @@ app.MapDelete("/incidents/{id}", (int id, IIncidentRepository repo) =>
 
 app.Run();
 
-static IResult? ValidateIncidentRequest(IncidentRequest? req)
+static IResult? ValidateIncidentRequest(IncidentRequest req)
 {
-    if (req is null)
-        return Results.BadRequest(new { error = "Incident payload is required." });
-
     return ValidateIncidentFields(
         req.Title,
         req.Description,
@@ -174,11 +171,8 @@ static IResult? ValidateIncidentRequest(IncidentRequest? req)
         req.ReportedDate);
 }
 
-static IResult? ValidatePutIncidentRequest(PutIncidentRequest? req)
+static IResult? ValidatePutIncidentRequest(PutIncidentRequest req)
 {
-    if (req is null)
-        return Results.BadRequest(new { error = "Incident payload is required." });
-
     if (req.Id <= 0)
         return Results.BadRequest(new { error = "A valid incident id is required." });
 
