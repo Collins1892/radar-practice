@@ -1,6 +1,6 @@
 # Radar Practice — Frontend
 
-React 19 + TypeScript + Vite frontend covering three domains: an **items catalogue** (list and add items), an **incident reporting module** (create, view, edit, and filter incidents), and an **audits module** (the same CRUD shape, migrated from a legacy .NET 4 / AngularJS implementation), backed by three .NET 8 minimal APIs.
+React 19 + TypeScript + Vite frontend covering three domains: an **items catalogue** (demo learning scaffold — list and add only; warning banner on `/`), an **incident reporting module** (create, view, edit, and filter incidents), and an **audits module** (full CRUD shape, migrated from a legacy .NET 4 / AngularJS implementation), backed by three .NET 8 minimal APIs. The Items module is a demo learning scaffold — included for agentic-workflow practice only, not intended for production use. Incidents and Audits are the reference feature modules.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-Items API must be running on port 5133. Incidents API must be running on port 5134. Audits API must be running on port 5135.
+Items API must be running on port 5133. Incidents API must be running on port 5134. Audits API must be running on port 5135. The Items API is required for the `/` demo route and e2e smoke tests; it is not a finished production module.
 
 ## Test
 

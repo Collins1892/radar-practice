@@ -8,18 +8,19 @@ alwaysApply: true
 ## Project overview
 
 Full-stack learning project demonstrating agentic AI development — not production.
-Domain: Items catalogue (`ItemsApi/` .NET 8 minimal API + `client/` React/TS/Vite client).
-No patient data, no production dependencies.
+Domain: Items catalogue — the Week 1 scaffolding domain (`ItemsApi/` .NET 8 minimal API + `client/` React/TS/Vite client). No patient data, no production dependencies.
+Items module: demo learning scaffold — included for agentic-workflow practice only, not intended for production use. Incidents and Audits are the reference feature modules. The `/` route displays a warning banner with the same message.
 
 ## Repo layout
 
-- `IncidentsApi/` — standalone .NET 8 minimal API for incident reporting
+- `ItemsApi/` — .NET 8 minimal API; demo learning scaffold (not a production feature module)
+- `IncidentsApi/` — standalone .NET 8 minimal API for incident reporting (reference feature module)
 - `IncidentsApi/Data/IncidentsDbContext.cs` — dedicated DbContext (`incidents.db`); no shared context with ItemsApi
 - `IncidentsApi/Repositories/EfIncidentRepository.cs` — EF Core repository
 - `IncidentsApi/Migrations/` — EF Core migrations
 - `IncidentsApi.Tests/` — xUnit integration tests
 - `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
-- `AuditsApi/` — standalone .NET 8 minimal API for clinical quality audits
+- `AuditsApi/` — standalone .NET 8 minimal API for clinical quality audits (reference feature module)
 - `AuditsApi/Data/AuditsDbContext.cs` — dedicated DbContext (`audits.db`); no shared context with ItemsApi
 - `AuditsApi/Repositories/EfAuditRepository.cs` — EF Core repository
 - `AuditsApi/Migrations/` — EF Core migrations
@@ -38,8 +39,8 @@ No patient data, no production dependencies.
 
 - .NET 8.0 minimal API; repository pattern + built-in DI.
 - Entity Framework Core 8.0.27 with SQLite (`Microsoft.EntityFrameworkCore.Sqlite`).
-- `AppDbContext` in `Data/` — shared context (`DbSet<Item>` now, `DbSet<Incident>` in Week 3).
-- `EfItemsRepository` implements `IItemsRepository` — scoped lifetime, `AsNoTracking()` for reads.
+- `AppDbContext` — ItemsApi only (`DbSet<Item>`). IncidentsApi and AuditsApi each have their own DbContext. ItemsApi is a demo learning scaffold; use IncidentsApi/AuditsApi as reference for new backend patterns.
+- `EfItemsRepository` implements `IItemsRepository` — scoped lifetime, `AsNoTracking()` for reads (ItemsApi demo scaffold only).
 - `Price` stored as TEXT via `HasConversion<string>()` for exact decimal precision.
 - `Name` has `HasMaxLength(100)` in `OnModelCreating`.
 - Database file `app.db` — local only, never committed.
@@ -60,7 +61,7 @@ No patient data, no production dependencies.
 - `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level.
 - ESLint 10.5.0 (typescript-eslint); Prettier 3.8.4 (semicolons, single quotes, trailing commas).
 - Vitest 4.1.9 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, @testing-library/user-event 14.6.1, jsdom 29.1.1; Playwright 1.61.1 (Chromium only, e2e/; 8 tests (3 smoke + items + components + 2 incidents + 1 audit journey); nightly suite via `nightly-e2e.yml`).
-- CSS: OKLCH theme tokens in `src/index.css` under `@theme inline`; compose classes with `cn()`; no new legacy CSS.
+- CSS: OKLCH theme tokens in `src/index.css` under `@theme inline`; compose classes with `cn()`; no new legacy CSS. As a demo scaffold, Items catalogue components (`App.tsx`, `ItemsList`) retain legacy `ItemsList.css` / `App.css` — expected, not a backlog gap to close unprompted.
 - Dark mode: `@custom-variant dark` uses the Tailwind v4 block form responding to both `.dark` class and `prefers-color-scheme: dark`. All three sync points (`.dark` class, media query, `@custom-variant`) must be kept in sync when tokens change.
 
 ## Component file locations
@@ -128,7 +129,7 @@ Don't:
 - Run destructive operations (delete files, drop tables) without confirmation.
 - Make large unsupervised refactors; generate multiple tests in one prompt; skip the test run.
 - Expose stack traces or internal errors to the client; use `any`, non-null assertions, or disable ESLint rules (except documented exceptions in `componentRegistry.tsx` and `FormField.tsx`).
-- Over-engineer; translate AngularJS patterns directly — rewrite idiomatically in React (legacy is a reference for *what*, not *how*).
+- Over-engineer; translate AngularJS patterns directly — rewrite idiomatically in React (legacy is a reference for *what*, not *how*). For structural templates, use Incidents or Audits — not Items.
 - Place hand-authored components in `src/components/ui/` — that directory is for shadcn vendor files only.
 
 ## Data protection
