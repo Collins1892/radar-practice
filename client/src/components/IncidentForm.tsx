@@ -246,7 +246,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
 
     try {
       if (isEdit && incidentId !== undefined) {
-        await updateIncident(incidentId, payload);
+        await updateIncident(incidentId, { id: incidentId, ...payload });
       } else {
         await createIncident(payload);
       }

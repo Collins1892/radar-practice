@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
+  deleteIncident,
   getIncident,
   incidentUserMessage,
   parseIncidentId,
@@ -20,16 +22,24 @@ import {
 import { Badge } from '@/components/Badge';
 import { ErrorState } from '@/components/ErrorState';
 import { IncidentPageChrome } from '@/components/IncidentPageChrome';
+import { InlineAlert } from '@/components/InlineAlert';
 import { LoadingState } from '@/components/LoadingState';
+import { Modal, ModalClose } from '@/components/Modal';
 import { Button } from '@/components/ui/button';
 import { formatPageTitle } from '@/pageTitle';
 
+const INCIDENT_DELETE_SUCCESS_MESSAGE = 'Incident deleted successfully.';
+
 export function IncidentDetailView(): JSX.Element {
+  const navigate = useNavigate();
   const { id } = useParams();
   const incidentId = parseIncidentId(id);
   const [incident, setIncident] = useState<Incident | null>(null);
   const [loading, setLoading] = useState(incidentId !== null);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const loadIncident = useCallback(async (): Promise<void> => {
     if (incidentId === null) return;
@@ -58,6 +68,32 @@ export function IncidentDetailView(): JSX.Element {
       document.title = formatPageTitle(incident.title);
     }
   }, [incident, incidentId]);
+
+  const handleDeleteModalOpenChange = useCallback(
+    (open: boolean): void => {
+      if (!open && deleting) return;
+      setDeleteModalOpen(open);
+      if (!open) setDeleteError(null);
+    },
+    [deleting],
+  );
+
+  const handleDeleteConfirm = useCallback(
+    async (confirmedIncidentId: number): Promise<void> => {
+      setDeleteError(null);
+      setDeleting(true);
+      try {
+        await deleteIncident(confirmedIncidentId);
+        toast.success(INCIDENT_DELETE_SUCCESS_MESSAGE);
+        navigate('/incidents');
+      } catch (err) {
+        setDeleteError(incidentUserMessage(err, 'deleting'));
+      } finally {
+        setDeleting(false);
+      }
+    },
+    [navigate],
+  );
 
   if (incidentId === null) {
     return (
@@ -117,24 +153,58 @@ export function IncidentDetailView(): JSX.Element {
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1>{incident.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Incident #{incident.id}
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link to="/incidents">Back to incidents</Link>
-          </Button>
-          <Button asChild className="w-full sm:w-auto">
-            <Link to={`/incidents/${incident.id}/edit`}>
-              {INCIDENT_EDIT_HEADING}
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <IncidentPageChrome
+        heading={incident.title}
+        subtitle={`Incident #${incident.id}`}
+        actions={
+          <>
+            <Button asChild className="w-full sm:w-auto">
+              <Link to={`/incidents/${incident.id}/edit`}>
+                {INCIDENT_EDIT_HEADING}
+              </Link>
+            </Button>
+            <Modal
+              open={deleteModalOpen}
+              onOpenChange={handleDeleteModalOpenChange}
+              trigger={
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full sm:w-auto"
+                >
+                  Delete incident
+                </Button>
+              }
+              title="Delete incident?"
+              description="This removes the incident from the list. You won't be able to access it from the app afterwards."
+            >
+              {deleteError !== null ? (
+                <InlineAlert
+                  variant="error"
+                  message={deleteError}
+                  className="mb-4"
+                />
+              ) : null}
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <ModalClose asChild>
+                  <Button type="button" variant="outline" disabled={deleting}>
+                    Cancel
+                  </Button>
+                </ModalClose>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={deleting}
+                  aria-busy={deleting}
+                  onClick={() => void handleDeleteConfirm(incident.id)}
+                >
+                  {deleting ? 'Deleting…' : 'Confirm delete'}
+                </Button>
+              </div>
+            </Modal>
+          </>
+        }
+      />
 
       <section className="mt-6 rounded-lg border border-border bg-card p-6">
         <dl className="space-y-4">

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiClientError } from '../errors';
 import {
+  deleteIncident,
   fetchIncidents,
   incidentUserMessage,
   parseIncidentId,
@@ -159,5 +160,104 @@ describe('incidentUserMessage', () => {
     expect(unknownResult).toBe(
       'Something went wrong while loading the incident.',
     );
+  });
+
+  it('returns the deleting fallback message when the error is an unknown value', (): void => {
+    // Arrange
+    const error = null;
+
+    // Act
+    const result = incidentUserMessage(error, 'deleting');
+
+    // Assert
+    expect(result).toBe('Something went wrong while deleting the incident.');
+  });
+});
+
+describe('deleteIncident', () => {
+  afterEach((): void => {
+    vi.unstubAllGlobals();
+  });
+
+  it('resolves when the server responds with 204', async (): Promise<void> => {
+    // Arrange
+    const fetchMock = vi.fn(
+      (): Promise<Response> =>
+        Promise.resolve(new Response(null, { status: 204 })),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    // Act
+    await deleteIncident(42);
+
+    // Assert
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:5134/incidents/42',
+      {
+        method: 'DELETE',
+      },
+    );
+  });
+
+  it('rejects with ApiClientError when the server responds with 404', async (): Promise<void> => {
+    // Arrange
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (): Promise<Response> =>
+          Promise.resolve(
+            new Response(JSON.stringify({ error: 'Incident not found.' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' },
+            }),
+          ),
+      ),
+    );
+
+    // Act
+    const rejection = deleteIncident(999);
+
+    // Assert
+    await expect(rejection).rejects.toSatisfy((error: unknown): boolean => {
+      return (
+        error instanceof ApiClientError &&
+        error.kind === 'http' &&
+        error.status === 404 &&
+        error.message === 'Incident not found.'
+      );
+    });
+  });
+
+  it('rejects with ApiClientError when the server responds with 500', async (): Promise<void> => {
+    // Arrange
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (): Promise<Response> =>
+          Promise.resolve(
+            new Response(
+              JSON.stringify({ error: 'An unexpected error occurred.' }),
+              {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            ),
+          ),
+      ),
+    );
+
+    // Act
+    const rejection = deleteIncident(1);
+
+    // Assert
+    await expect(rejection).rejects.toSatisfy((error: unknown): boolean => {
+      return (
+        error instanceof ApiClientError &&
+        error.kind === 'http' &&
+        error.status === 500 &&
+        error.message === 'An unexpected error occurred.'
+      );
+    });
   });
 });

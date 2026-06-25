@@ -342,6 +342,7 @@ Journey specs live under `client/e2e/journeys/`. This section defines the catalo
 | Create incident | `/incidents/create` | IncidentsApi | Fill form → submit → redirect/detail |
 | View incident | `/incidents/:id` | IncidentsApi | List → row link → detail fields |
 | Edit incident | `/incidents/:id/edit` | IncidentsApi | Detail → edit → save → updated UI |
+| Incidents soft delete | `/incidents` | IncidentsApi | Seed via `createIncident` in [`e2e/support/api.ts`](../../../client/e2e/support/api.ts) → detail → Delete incident → Confirm delete → row hidden from list |
 | Audits list + detail | `/audits`, `/audits/:id` | AuditsApi | Seed via `createAudit` in [`e2e/support/api.ts`](../../../client/e2e/support/api.ts) → list → detail |
 | Audits soft delete | `/audits` | AuditsApi | Seed → list/detail → Delete audit button → confirm modal → row hidden from list |
 

@@ -122,7 +122,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - ESLint 10.5.0 with typescript-eslint
 - Prettier 3.8.4 with semicolons enabled, single quotes, trailing commas
 - Vitest 4.1.9 for component, integration, and unit tests (RTL where UI is involved) with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, @testing-library/user-event 14.6.1, and jsdom 29.1.1
-- `@playwright/test` 1.61.1 — e2e tests, Chromium only. 8 tests (3 smoke + items + components + 2 incidents + 1 audit journey); nightly suite via `nightly-e2e.yml`.
+- `@playwright/test` 1.61.1 — e2e tests, Chromium only. 9 tests (3 smoke + items + components + 3 incidents + 1 audit journey); nightly suite via `nightly-e2e.yml`.
 - `date-fns` 4.4.0 — date formatting utilities
 - `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar
 - `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level
