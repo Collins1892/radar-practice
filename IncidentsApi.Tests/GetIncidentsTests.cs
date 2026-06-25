@@ -117,7 +117,7 @@ public class GetIncidentsTests : IClassFixture<TestWebApplicationFactory>
         // Arrange
         var client = CreateDefaultClient();
         var reportedDate = DateTime.UtcNow.Date;
-        await CreateIncidentAsync(
+        var high = await CreateIncidentAsync(
             client, "High severity", "Desc", "Ward 1",
             IncidentSeverity.High, IncidentStatus.Open, reportedDate);
         var low = await CreateIncidentAsync(
@@ -132,7 +132,8 @@ public class GetIncidentsTests : IClassFixture<TestWebApplicationFactory>
         var body = await response.Content.ReadFromJsonAsync<PagedIncidentsResponse>(JsonOptions);
         Assert.NotNull(body);
         Assert.Contains(body.Items, i => i.Id == low.Id);
-        Assert.All(body.Items, i => Assert.Equal(IncidentSeverity.Low, i.Severity));
+        Assert.DoesNotContain(body.Items, i => i.Id == high.Id);
+        Assert.Equal(IncidentSeverity.Low, body.Items.Single(i => i.Id == low.Id).Severity);
     }
 
     [Fact]
@@ -141,7 +142,7 @@ public class GetIncidentsTests : IClassFixture<TestWebApplicationFactory>
         // Arrange
         var client = CreateDefaultClient();
         var reportedDate = DateTime.UtcNow.Date;
-        await CreateIncidentAsync(
+        var open = await CreateIncidentAsync(
             client, "Open incident", "Desc", "Ward 1",
             IncidentSeverity.Medium, IncidentStatus.Open, reportedDate);
         var resolved = await CreateIncidentAsync(
@@ -156,7 +157,8 @@ public class GetIncidentsTests : IClassFixture<TestWebApplicationFactory>
         var body = await response.Content.ReadFromJsonAsync<PagedIncidentsResponse>(JsonOptions);
         Assert.NotNull(body);
         Assert.Contains(body.Items, i => i.Id == resolved.Id);
-        Assert.All(body.Items, i => Assert.Equal(IncidentStatus.Resolved, i.Status));
+        Assert.DoesNotContain(body.Items, i => i.Id == open.Id);
+        Assert.Equal(IncidentStatus.Resolved, body.Items.Single(i => i.Id == resolved.Id).Status);
     }
 
     [Fact]
@@ -657,22 +659,4 @@ public class GetIncidentsTests : IClassFixture<TestWebApplicationFactory>
         Assert.NotNull(incident);
         return incident;
     }
-
-    private record PagedIncidentsResponse(
-        IncidentResponse[] Items,
-        int Page,
-        int PageSize,
-        int TotalCount,
-        int TotalPages);
-
-    private record IncidentResponse(
-        int Id,
-        string Title,
-        string Description,
-        string Location,
-        IncidentSeverity Severity,
-        IncidentStatus Status,
-        DateTime ReportedDate);
-
-    private record ErrorResponse(string Error);
 }

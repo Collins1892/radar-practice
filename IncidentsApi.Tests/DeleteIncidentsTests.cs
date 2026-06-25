@@ -118,22 +118,4 @@ public class DeleteIncidentsTests : IClassFixture<TestWebApplicationFactory>
         Assert.NotNull(body);
         Assert.Equal("Incident not found.", body.Error);
     }
-
-    private record PagedIncidentsResponse(
-        IncidentResponse[] Items,
-        int Page,
-        int PageSize,
-        int TotalCount,
-        int TotalPages);
-
-    private record IncidentResponse(
-        int Id,
-        string Title,
-        string Description,
-        string Location,
-        IncidentSeverity Severity,
-        IncidentStatus Status,
-        DateTime ReportedDate);
-
-    private record ErrorResponse(string Error);
 }

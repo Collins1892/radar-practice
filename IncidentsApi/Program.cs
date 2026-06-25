@@ -93,13 +93,16 @@ app.MapGet("/incidents", (
 
 app.MapPost("/incidents", (IncidentRequest? req, IIncidentRepository repo) =>
 {
+    if (req is null)
+        return Results.BadRequest(new { error = "Incident payload is required." });
+
     var validation = ValidateIncidentRequest(req);
     if (validation is not null)
         return validation;
 
     var incident = new Incident
     {
-        Title = req!.Title,
+        Title = req.Title,
         Description = req.Description,
         Location = req.Location,
         Severity = req.Severity,

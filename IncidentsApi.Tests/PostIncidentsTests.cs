@@ -417,15 +417,4 @@ public class PostIncidentsTests : IClassFixture<TestWebApplicationFactory>
         Assert.NotNull(body);
         Assert.Equal("Location must be 100 characters or fewer.", body.Error);
     }
-
-    private record IncidentResponse(
-        int Id,
-        string Title,
-        string Description,
-        string Location,
-        IncidentSeverity Severity,
-        IncidentStatus Status,
-        DateTime ReportedDate);
-
-    private record ErrorResponse(string Error);
 }

@@ -462,6 +462,55 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
     }
 
     [Fact]
+    public async Task Put_RecordStatusInJsonBody_Ignored_NotExposedInResponse()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+        var reportedDate = DateTime.UtcNow.Date;
+        var createResponse = await client.PostAsJsonAsync(
+            "/incidents",
+            new
+            {
+                title = "Initial report",
+                description = "Initial description",
+                location = "Ward 1",
+                severity = IncidentSeverity.Low,
+                status = IncidentStatus.Open,
+                reportedDate,
+            },
+            JsonOptions);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
+        Assert.NotNull(created);
+
+        var reportedDateString = reportedDate.ToString("yyyy-MM-dd");
+        var json = $$"""
+            {
+              "id": {{created.Id}},
+              "title": "Spill in corridor B",
+              "description": "Water on floor near supplies",
+              "location": "Building 2, level 1",
+              "severity": "Medium",
+              "status": "Open",
+              "reportedDate": "{{reportedDateString}}",
+              "recordStatus": "Deleted"
+            }
+            """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PutAsync($"/incidents/{created.Id}", content);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var raw = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("recordStatus", raw, StringComparison.OrdinalIgnoreCase);
+        var incident = await response.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
+        Assert.NotNull(incident);
+        Assert.Equal(created.Id, incident.Id);
+    }
+
+    [Fact]
     public async Task Put_SoftDeletedIncident_Returns404WithError()
     {
         // Arrange
@@ -592,15 +641,4 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(IncidentStatus.Resolved, body.Status);
         Assert.Equal(reportedDate, body.ReportedDate.Date);
     }
-
-    private record IncidentResponse(
-        int Id,
-        string Title,
-        string Description,
-        string Location,
-        IncidentSeverity Severity,
-        IncidentStatus Status,
-        DateTime ReportedDate);
-
-    private record ErrorResponse(string Error);
 }
