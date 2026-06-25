@@ -8,6 +8,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { createItem, fetchItems } from './api';
+import { InlineAlert } from './components/InlineAlert';
 import { ItemsList } from './components/ItemsList';
 import type { ItemsListStatus } from './components/ItemsList';
 import { ComponentsView } from './components/ComponentsView';
@@ -125,6 +126,12 @@ function ItemsView(): JSX.Element {
 
   return (
     <>
+      <InlineAlert
+        variant="warning"
+        message="This module is included for demo purposes only and is not intended for production use."
+        className="mb-4"
+      />
+
       <h1>Items</h1>
       <p className="subtitle">Inventory from the Items API</p>
 
