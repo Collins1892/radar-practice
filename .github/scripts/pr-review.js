@@ -565,7 +565,7 @@ function splitActionableFindings(findings, changedFiles) {
       continue;
     }
 
-    if (isSensitivePath(filePath)) {
+    if (isSensitivePath(filePath, repoRoot)) {
       warn('Rejected sensitive path — treating as advisory for this run');
       log(`Demoted finding: [${finding.severity}] ${finding.description}`);
       advisory.push(finding);

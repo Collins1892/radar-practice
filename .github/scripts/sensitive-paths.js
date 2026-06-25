@@ -13,11 +13,11 @@ const SENSITIVE_PATH_BASENAME_PREFIXES = ['.env'];
 const MIGRATIONS_SEGMENT = '/Migrations/';
 
 function normalizeRepoRelativePath(filePath, repoRoot) {
-  let rel = filePath;
   if (repoRoot !== undefined && repoRoot !== null) {
-    rel = path.relative(repoRoot, path.resolve(repoRoot, filePath));
+    const rel = path.relative(repoRoot, path.resolve(repoRoot, filePath));
+    return rel.split(path.sep).join('/');
   }
-  return rel.split(path.sep).join('/');
+  return filePath.split(path.sep).join('/');
 }
 
 /**
@@ -45,7 +45,7 @@ function isSensitivePath(filePath, repoRoot) {
     return true;
   }
 
-  if (rel.includes(MIGRATIONS_SEGMENT)) {
+  if (rel.startsWith('Migrations/') || rel.includes(MIGRATIONS_SEGMENT)) {
     return true;
   }
 

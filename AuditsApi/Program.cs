@@ -16,6 +16,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? throw new InvalidOperationException("Cors:AllowedOrigins is not configured.");
 
+if (allowedOrigins.Length == 0)
+    throw new InvalidOperationException("Cors:AllowedOrigins must contain at least one origin in configuration.");
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
