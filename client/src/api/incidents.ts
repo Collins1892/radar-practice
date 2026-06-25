@@ -6,7 +6,7 @@ const INCIDENTS_NETWORK_MESSAGE =
 
 export function incidentUserMessage(
   error: unknown,
-  verb: 'loading' | 'creating' | 'updating',
+  verb: 'loading' | 'creating' | 'updating' | 'deleting',
 ): string {
   if (error instanceof ApiClientError) {
     if (error.kind === 'network') {
@@ -75,6 +75,12 @@ export type CreateIncidentRequest = {
   severity: IncidentSeverity;
   status: IncidentStatus;
   reportedDate: string;
+};
+
+// id is included for type completeness and required-field clarity at call sites;
+// the server authoritatively uses the route parameter, not the body value.
+export type PutIncidentRequest = CreateIncidentRequest & {
+  id: number;
 };
 
 const SEVERITIES: readonly IncidentSeverity[] = [
@@ -244,7 +250,7 @@ export async function getIncident(id: number): Promise<Incident> {
 
 export async function updateIncident(
   id: number,
-  data: CreateIncidentRequest,
+  data: PutIncidentRequest,
 ): Promise<Incident> {
   const response = await request(`/incidents/${id}`, {
     method: 'PUT',
@@ -266,4 +272,18 @@ export async function updateIncident(
   }
 
   return body;
+}
+
+export async function deleteIncident(id: number): Promise<void> {
+  const response = await request(`/incidents/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new ApiClientError(
+      await parseErrorMessage(response),
+      'http',
+      response.status,
+    );
+  }
 }

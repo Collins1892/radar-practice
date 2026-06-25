@@ -225,6 +225,7 @@ describe('IncidentForm', () => {
     await waitFor(() => {
       expect(updateIncident).toHaveBeenCalledTimes(1);
       expect(updateIncident).toHaveBeenCalledWith(1, {
+        id: 1,
         title: 'Spill in corridor B',
         description: 'Water on floor',
         location: 'Building 2',

@@ -51,4 +51,22 @@ describe('IncidentPageChrome', () => {
     // getByRole('paragraph') is unreliable across Testing Library/jsdom versions (ARIA 1.2 support inconsistent) — getByText is the robust choice here
     expect(screen.getByText(subtitle)).toBeInTheDocument();
   });
+
+  it('renders the actions slot alongside the back link', (): void => {
+    // Arrange
+    const actionLabel = 'Test action';
+
+    // Act
+    renderIncidentPageChrome({
+      actions: <button type="button">{actionLabel}</button>,
+    });
+
+    // Assert
+    expect(
+      screen.getByRole('link', { name: 'Back to incidents' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: actionLabel }),
+    ).toBeInTheDocument();
+  });
 });
