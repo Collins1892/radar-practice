@@ -3,6 +3,7 @@ using System;
 using IncidentsApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IncidentsApi.Migrations
 {
     [DbContext(typeof(IncidentsDbContext))]
-    partial class IncidentsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260625071749_AddRecordStatus")]
+    partial class AddRecordStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.27");
