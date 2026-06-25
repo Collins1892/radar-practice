@@ -16,6 +16,8 @@ public class GetIncidentByIdTests : IClassFixture<TestWebApplicationFactory>
         _factory = factory;
     }
 
+    private HttpClient CreateDefaultClient() => _factory.CreateClient();
+
     private HttpClient CreateClientWithRepo(IIncidentRepository repo) =>
         _factory.WithWebHostBuilder(b =>
             b.ConfigureServices(s => s.AddSingleton(repo)))
@@ -53,14 +55,16 @@ public class GetIncidentByIdTests : IClassFixture<TestWebApplicationFactory>
         // Arrange
         const int id = 1;
         var reportedDate = DateTime.UtcNow.Date;
-        var incident = new Incident(
-            id,
-            "Spill in corridor B",
-            "Water on floor near supplies",
-            "Building 2, level 1",
-            IncidentSeverity.Medium,
-            IncidentStatus.Open,
-            reportedDate);
+        var incident = new Incident
+        {
+            Id = id,
+            Title = "Spill in corridor B",
+            Description = "Water on floor near supplies",
+            Location = "Building 2, level 1",
+            Severity = IncidentSeverity.Medium,
+            Status = IncidentStatus.Open,
+            ReportedDate = reportedDate,
+        };
 
         var repo = Substitute.For<IIncidentRepository>();
         repo.GetById(id).Returns(incident);
@@ -81,6 +85,40 @@ public class GetIncidentByIdTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(IncidentSeverity.Medium, body.Severity);
         Assert.Equal(IncidentStatus.Open, body.Status);
         Assert.Equal(reportedDate, body.ReportedDate.Date);
+    }
+
+    [Fact]
+    public async Task Get_ById_SoftDeleted_Returns404WithError()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+        var reportedDate = DateTime.UtcNow.Date;
+        var createResponse = await client.PostAsJsonAsync(
+            "/incidents",
+            new
+            {
+                title = "To be deleted",
+                description = "Desc",
+                location = "Ward 1",
+                severity = IncidentSeverity.Low,
+                status = IncidentStatus.Open,
+                reportedDate,
+            },
+            JsonOptions);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
+        Assert.NotNull(created);
+        var deleteResponse = await client.DeleteAsync($"/incidents/{created.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        // Act
+        var response = await client.GetAsync($"/incidents/{created.Id}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Incident not found.", body.Error);
     }
 
     [Fact]

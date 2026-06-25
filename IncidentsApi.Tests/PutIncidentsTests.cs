@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using IncidentsApi;
@@ -43,13 +44,15 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
             $"/incidents/{missingId}",
             new
             {
+                id = missingId,
                 title = "Spill in corridor B",
                 description = "Water on floor near supplies",
                 location = "Building 2, level 1",
                 severity = IncidentSeverity.Medium,
                 status = IncidentStatus.Open,
                 reportedDate = DateTime.UtcNow.Date,
-            });
+            },
+            JsonOptions);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -65,14 +68,16 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
         // Arrange
         const int id = 1;
         var reportedDate = DateTime.UtcNow.Date;
-        var updatedIncident = new Incident(
-            id,
-            "Updated spill report",
-            "Floor dried and signs placed",
-            "Building 2, level 2",
-            IncidentSeverity.High,
-            IncidentStatus.Resolved,
-            reportedDate);
+        var updatedIncident = new Incident
+        {
+            Id = id,
+            Title = "Updated spill report",
+            Description = "Floor dried and signs placed",
+            Location = "Building 2, level 2",
+            Severity = IncidentSeverity.High,
+            Status = IncidentStatus.Resolved,
+            ReportedDate = reportedDate,
+        };
 
         var repo = Substitute.For<IIncidentRepository>();
         repo.Update(Arg.Any<Incident>()).Returns(updatedIncident);
@@ -83,13 +88,15 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
             $"/incidents/{id}",
             new
             {
+                id,
                 title = "Updated spill report",
                 description = "Floor dried and signs placed",
                 location = "Building 2, level 2",
                 severity = IncidentSeverity.High,
                 status = IncidentStatus.Resolved,
                 reportedDate,
-            });
+            },
+            JsonOptions);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -106,6 +113,86 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
     }
 
     [Fact]
+    public async Task Put_RouteIdMismatch_Returns400WithError()
+    {
+        // Arrange
+        const int routeId = 1;
+        const int bodyId = 2;
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{routeId}",
+            new
+            {
+                id = bodyId,
+                title = "Updated spill report",
+                description = "Floor dried and signs placed",
+                location = "Building 2, level 2",
+                severity = IncidentSeverity.High,
+                status = IncidentStatus.Resolved,
+                reportedDate = DateTime.UtcNow.Date,
+            },
+            JsonOptions);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Route id does not match incident id.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_NullPayload_Returns400WithError()
+    {
+        // Arrange
+        const int id = 1;
+        var repo = Substitute.For<IIncidentRepository>();
+        var client = CreateClientWithRepo(repo);
+
+        // Act
+        var response = await client.PutAsync(
+            $"/incidents/{id}",
+            JsonContent.Create<PutIncidentRequest?>(null));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Incident payload is required.", body.Error);
+        repo.DidNotReceive().Update(Arg.Any<Incident>());
+    }
+
+    [Fact]
+    public async Task Put_InvalidIncidentId_Returns400WithError()
+    {
+        // Arrange
+        const int id = 0;
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{id}",
+            new
+            {
+                id,
+                title = "Updated spill report",
+                description = "Floor dried and signs placed",
+                location = "Building 2, level 2",
+                severity = IncidentSeverity.High,
+                status = IncidentStatus.Resolved,
+                reportedDate = DateTime.UtcNow.Date,
+            },
+            JsonOptions);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("A valid incident id is required.", body.Error);
+    }
+
+    [Fact]
     public async Task Put_BlankTitle_Returns400WithError()
     {
         // Arrange
@@ -117,13 +204,15 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
             $"/incidents/{id}",
             new
             {
+                id,
                 title = "",
                 description = "Water on floor near supplies",
                 location = "Building 2, level 1",
                 severity = IncidentSeverity.Medium,
                 status = IncidentStatus.Open,
                 reportedDate = DateTime.UtcNow.Date,
-            });
+            },
+            JsonOptions);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -131,6 +220,214 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(body);
         Assert.Equal("Title is required.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_TitleOver50Chars_Returns400WithError()
+    {
+        // Arrange
+        const int id = 1;
+        var longTitle = new string('x', 51);
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{id}",
+            new
+            {
+                id,
+                title = longTitle,
+                description = "Water on floor near supplies",
+                location = "Building 2, level 1",
+                severity = IncidentSeverity.Medium,
+                status = IncidentStatus.Open,
+                reportedDate = DateTime.UtcNow.Date,
+            },
+            JsonOptions);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Title must be 50 characters or fewer.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_BlankDescription_Returns400WithError()
+    {
+        // Arrange
+        const int id = 1;
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{id}",
+            new
+            {
+                id,
+                title = "Spill in corridor B",
+                description = "",
+                location = "Building 2, level 1",
+                severity = IncidentSeverity.Medium,
+                status = IncidentStatus.Open,
+                reportedDate = DateTime.UtcNow.Date,
+            },
+            JsonOptions);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Description is required.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_DescriptionOver100Chars_Returns400WithError()
+    {
+        // Arrange
+        const int id = 1;
+        var longDescription = new string('x', 101);
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{id}",
+            new
+            {
+                id,
+                title = "Spill in corridor B",
+                description = longDescription,
+                location = "Building 2, level 1",
+                severity = IncidentSeverity.Medium,
+                status = IncidentStatus.Open,
+                reportedDate = DateTime.UtcNow.Date,
+            },
+            JsonOptions);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Description must be 100 characters or fewer.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_BlankLocation_Returns400WithError()
+    {
+        // Arrange
+        const int id = 1;
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{id}",
+            new
+            {
+                id,
+                title = "Spill in corridor B",
+                description = "Water on floor near supplies",
+                location = "",
+                severity = IncidentSeverity.Medium,
+                status = IncidentStatus.Open,
+                reportedDate = DateTime.UtcNow.Date,
+            },
+            JsonOptions);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Location is required.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_LocationOver100Chars_Returns400WithError()
+    {
+        // Arrange
+        const int id = 1;
+        var longLocation = new string('x', 101);
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{id}",
+            new
+            {
+                id,
+                title = "Spill in corridor B",
+                description = "Water on floor near supplies",
+                location = longLocation,
+                severity = IncidentSeverity.Medium,
+                status = IncidentStatus.Open,
+                reportedDate = DateTime.UtcNow.Date,
+            },
+            JsonOptions);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Location must be 100 characters or fewer.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_InvalidSeverity_Returns400WithError()
+    {
+        // Arrange
+        const int id = 1;
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+        var reportedDate = DateTime.UtcNow.Date.ToString("yyyy-MM-dd");
+        var json = $$"""
+            {
+              "id": {{id}},
+              "title": "Spill in corridor B",
+              "description": "Water on floor near supplies",
+              "location": "Building 2, level 1",
+              "severity": 99,
+              "status": 0,
+              "reportedDate": "{{reportedDate}}"
+            }
+            """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PutAsync($"/incidents/{id}", content);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Invalid severity value.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_InvalidStatus_Returns400WithError()
+    {
+        // Arrange
+        const int id = 1;
+        var client = CreateClientWithRepo(Substitute.For<IIncidentRepository>());
+        var reportedDate = DateTime.UtcNow.Date.ToString("yyyy-MM-dd");
+        var json = $$"""
+            {
+              "id": {{id}},
+              "title": "Spill in corridor B",
+              "description": "Water on floor near supplies",
+              "location": "Building 2, level 1",
+              "severity": 1,
+              "status": 99,
+              "reportedDate": "{{reportedDate}}"
+            }
+            """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PutAsync($"/incidents/{id}", content);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Invalid status value.", body.Error);
     }
 
     [Fact]
@@ -146,13 +443,15 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
             $"/incidents/{id}",
             new
             {
+                id,
                 title = "Spill in corridor B",
                 description = "Water on floor near supplies",
                 location = "Building 2, level 1",
                 severity = IncidentSeverity.Medium,
                 status = IncidentStatus.Open,
                 reportedDate = futureReportedDate,
-            });
+            },
+            JsonOptions);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -160,6 +459,101 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
         var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(body);
         Assert.Equal("Reported date must not be in the future.", body.Error);
+    }
+
+    [Fact]
+    public async Task Put_RecordStatusInJsonBody_Ignored_NotExposedInResponse()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+        var reportedDate = DateTime.UtcNow.Date;
+        var createResponse = await client.PostAsJsonAsync(
+            "/incidents",
+            new
+            {
+                title = "Initial report",
+                description = "Initial description",
+                location = "Ward 1",
+                severity = IncidentSeverity.Low,
+                status = IncidentStatus.Open,
+                reportedDate,
+            },
+            JsonOptions);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
+        Assert.NotNull(created);
+
+        var reportedDateString = reportedDate.ToString("yyyy-MM-dd");
+        var json = $$"""
+            {
+              "id": {{created.Id}},
+              "title": "Spill in corridor B",
+              "description": "Water on floor near supplies",
+              "location": "Building 2, level 1",
+              "severity": "Medium",
+              "status": "Open",
+              "reportedDate": "{{reportedDateString}}",
+              "recordStatus": "Deleted"
+            }
+            """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PutAsync($"/incidents/{created.Id}", content);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var raw = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("recordStatus", raw, StringComparison.OrdinalIgnoreCase);
+        var incident = await response.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
+        Assert.NotNull(incident);
+        Assert.Equal(created.Id, incident.Id);
+    }
+
+    [Fact]
+    public async Task Put_SoftDeletedIncident_Returns404WithError()
+    {
+        // Arrange
+        var client = CreateDefaultClient();
+        var reportedDate = DateTime.UtcNow.Date;
+        var createResponse = await client.PostAsJsonAsync(
+            "/incidents",
+            new
+            {
+                title = "To be deleted",
+                description = "Desc",
+                location = "Ward 1",
+                severity = IncidentSeverity.Low,
+                status = IncidentStatus.Open,
+                reportedDate,
+            },
+            JsonOptions);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
+        Assert.NotNull(created);
+        var deleteResponse = await client.DeleteAsync($"/incidents/{created.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/incidents/{created.Id}",
+            new
+            {
+                id = created.Id,
+                title = "Updated report",
+                description = "Updated description",
+                location = "Ward 2",
+                severity = IncidentSeverity.High,
+                status = IncidentStatus.Resolved,
+                reportedDate,
+            },
+            JsonOptions);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Incident not found.", body.Error);
     }
 
     [Fact]
@@ -177,24 +571,26 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
             $"/incidents/{id}",
             new
             {
+                id,
                 title = "Spill in corridor B",
                 description = "Water on floor near supplies",
                 location = "Building 2, level 1",
                 severity = IncidentSeverity.Medium,
                 status = IncidentStatus.Open,
                 reportedDate = DateTime.UtcNow.Date,
-            });
+            },
+            JsonOptions);
 
         // Assert
+        var raw = await response.Content.ReadAsStringAsync();
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
-        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        var body = JsonSerializer.Deserialize<ErrorResponse>(raw, JsonOptions);
         Assert.NotNull(body);
         Assert.Equal("An unexpected error occurred.", body.Error);
-        Assert.DoesNotContain("Update failed.", body.Error);
+        Assert.DoesNotContain("Update failed.", raw);
     }
 
-    // Exercises real EF persistence via CreateDefaultClient(); Put_ById_ValidData_Returns200WithUpdatedIncident uses a mocked repository.
     [Fact]
     public async Task Put_ExistingIncident_PersistsUpdatedValuesInDatabase()
     {
@@ -212,7 +608,8 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
                 severity = IncidentSeverity.Low,
                 status = IncidentStatus.Open,
                 reportedDate,
-            });
+            },
+            JsonOptions);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var created = await createResponse.Content.ReadFromJsonAsync<IncidentResponse>(JsonOptions);
         Assert.NotNull(created);
@@ -222,13 +619,15 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
             $"/incidents/{created.Id}",
             new
             {
+                id = created.Id,
                 title = "Updated report",
                 description = "Updated description",
                 location = "Ward 2",
                 severity = IncidentSeverity.High,
                 status = IncidentStatus.Resolved,
                 reportedDate,
-            });
+            },
+            JsonOptions);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -242,15 +641,4 @@ public class PutIncidentsTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(IncidentStatus.Resolved, body.Status);
         Assert.Equal(reportedDate, body.ReportedDate.Date);
     }
-
-    private record IncidentResponse(
-        int Id,
-        string Title,
-        string Description,
-        string Location,
-        IncidentSeverity Severity,
-        IncidentStatus Status,
-        DateTime ReportedDate);
-
-    private record ErrorResponse(string Error);
 }

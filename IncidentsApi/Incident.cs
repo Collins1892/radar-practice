@@ -16,11 +16,17 @@ public enum IncidentStatus
     Closed,
 }
 
-public record Incident(
-    int Id,
-    string Title,
-    string Description,
-    string Location,
-    IncidentSeverity Severity,
-    IncidentStatus Status,
-    DateTime ReportedDate);
+/// <summary>
+/// Represents an incident report record.
+/// </summary>
+public class Incident
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Location { get; set; } = string.Empty;
+    public IncidentSeverity Severity { get; set; }
+    public IncidentStatus Status { get; set; }
+    public DateTime ReportedDate { get; set; }
+    public RecordStatus RecordStatus { get; set; } = RecordStatus.Active;
+}

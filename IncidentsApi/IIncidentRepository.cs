@@ -6,4 +6,6 @@ public interface IIncidentRepository
     Incident? GetById(int id);
     Incident Add(Incident incident);
     Incident? Update(Incident incident);
+    bool SoftDelete(int id);
+    bool IsValidSortField(string sortField);
 }

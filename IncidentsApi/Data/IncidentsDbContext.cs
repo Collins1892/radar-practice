@@ -30,5 +30,9 @@ public class IncidentsDbContext : DbContext
         modelBuilder.Entity<Incident>()
             .Property(i => i.Status)
             .HasConversion<int>();
+
+        modelBuilder.Entity<Incident>()
+            .Property(i => i.RecordStatus)
+            .HasConversion<int>();
     }
 }

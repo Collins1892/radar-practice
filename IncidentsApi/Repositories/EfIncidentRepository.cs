@@ -5,13 +5,24 @@ namespace IncidentsApi;
 
 public class EfIncidentRepository : IIncidentRepository
 {
+    private static readonly HashSet<string> SortableFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "title",
+        "description",
+        "location",
+        "severity",
+        "status",
+        "reporteddate",
+    };
+
     private readonly IncidentsDbContext _db;
 
     public EfIncidentRepository(IncidentsDbContext db) => _db = db;
 
     public PagedIncidentsResult GetPaged(IncidentListQuery query)
     {
-        var incidents = _db.Incidents.AsNoTracking().AsQueryable();
+        var incidents = _db.Incidents.AsNoTracking()
+            .Where(i => i.RecordStatus == RecordStatus.Active);
 
         if (query.Severity is not null)
             incidents = incidents.Where(i => i.Severity == query.Severity);
@@ -36,10 +47,12 @@ public class EfIncidentRepository : IIncidentRepository
     }
 
     public Incident? GetById(int id) =>
-        _db.Incidents.AsNoTracking().FirstOrDefault(i => i.Id == id);
+        _db.Incidents.AsNoTracking()
+            .FirstOrDefault(i => i.Id == id && i.RecordStatus == RecordStatus.Active);
 
     public Incident Add(Incident incident)
     {
+        incident.RecordStatus = RecordStatus.Active;
         _db.Incidents.Add(incident);
         _db.SaveChanges();
         return incident;
@@ -47,14 +60,36 @@ public class EfIncidentRepository : IIncidentRepository
 
     public Incident? Update(Incident incident)
     {
-        var existing = _db.Incidents.Find(incident.Id);
+        var existing = _db.Incidents.FirstOrDefault(
+            i => i.Id == incident.Id && i.RecordStatus == RecordStatus.Active);
         if (existing is null)
             return null;
 
-        _db.Entry(existing).CurrentValues.SetValues(incident);
+        existing.Title = incident.Title;
+        existing.Description = incident.Description;
+        existing.Location = incident.Location;
+        existing.Severity = incident.Severity;
+        existing.Status = incident.Status;
+        existing.ReportedDate = incident.ReportedDate;
+
         _db.SaveChanges();
         return existing;
     }
+
+    public bool SoftDelete(int id)
+    {
+        var existing = _db.Incidents.FirstOrDefault(
+            i => i.Id == id && i.RecordStatus == RecordStatus.Active);
+        if (existing is null)
+            return false;
+
+        existing.RecordStatus = RecordStatus.Deleted;
+        _db.SaveChanges();
+        return true;
+    }
+
+    public bool IsValidSortField(string sortField) =>
+        SortableFields.Contains(sortField);
 
     private static IQueryable<Incident> ApplySort(
         IQueryable<Incident> query,
@@ -81,7 +116,7 @@ public class EfIncidentRepository : IIncidentRepository
             "reporteddate" => sortDescending
                 ? query.OrderByDescending(i => i.ReportedDate)
                 : query.OrderBy(i => i.ReportedDate),
-            _ => query,
+            _ => query.OrderByDescending(i => i.ReportedDate),
         };
     }
 }

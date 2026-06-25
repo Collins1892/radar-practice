@@ -62,7 +62,7 @@ app.MapGet("/incidents", (
         return Results.BadRequest(new { error = "Page size must be 100 or fewer." });
 
     var resolvedSortBy = string.IsNullOrWhiteSpace(sortBy) ? "reportedDate" : sortBy;
-    if (!IsValidSortBy(resolvedSortBy))
+    if (!repo.IsValidSortField(resolvedSortBy))
         return Results.BadRequest(new { error = "Invalid sort field." });
 
     var resolvedDirection = string.IsNullOrWhiteSpace(sortDirection) ? "desc" : sortDirection;
@@ -83,33 +83,35 @@ app.MapGet("/incidents", (
         page,
         pageSize));
 
-    return Results.Ok(new
-    {
-        items = result.Items,
-        page = result.Page,
-        pageSize = result.PageSize,
-        totalCount = result.TotalCount,
-        totalPages = result.TotalPages,
-    });
+    return Results.Ok(new PagedIncidentsResponse(
+        result.Items.Select(i => i.ToResponse()).ToList(),
+        result.Page,
+        result.PageSize,
+        result.TotalCount,
+        result.TotalPages));
 });
 
-app.MapPost("/incidents", (IncidentRequest req, IIncidentRepository repo) =>
+app.MapPost("/incidents", (IncidentRequest? req, IIncidentRepository repo) =>
 {
+    if (req is null)
+        return Results.BadRequest(new { error = "Incident payload is required." });
+
     var validation = ValidateIncidentRequest(req);
     if (validation is not null)
         return validation;
 
-    var incident = new Incident(
-        0,
-        req.Title,
-        req.Description,
-        req.Location,
-        req.Severity,
-        req.Status,
-        req.ReportedDate);
+    var incident = new Incident
+    {
+        Title = req.Title,
+        Description = req.Description,
+        Location = req.Location,
+        Severity = req.Severity,
+        Status = req.Status,
+        ReportedDate = req.ReportedDate,
+    };
 
     var created = repo.Add(incident);
-    return Results.Created($"/incidents/{created.Id}", created);
+    return Results.Created($"/incidents/{created.Id}", created.ToResponse());
 });
 
 app.MapGet("/incidents/{id}", (int id, IIncidentRepository repo) =>
@@ -117,73 +119,108 @@ app.MapGet("/incidents/{id}", (int id, IIncidentRepository repo) =>
     var incident = repo.GetById(id);
     return incident is null
         ? Results.NotFound(new { error = "Incident not found." })
-        : Results.Ok(incident);
+        : Results.Ok(incident.ToResponse());
 });
 
-app.MapPut("/incidents/{id}", (int id, IncidentRequest req, IIncidentRepository repo) =>
+app.MapPut("/incidents/{id}", (int id, PutIncidentRequest? req, IIncidentRepository repo) =>
 {
-    var validation = ValidateIncidentRequest(req);
+    if (req is null)
+        return Results.BadRequest(new { error = "Incident payload is required." });
+
+    if (id != req.Id)
+        return Results.BadRequest(new { error = "Route id does not match incident id." });
+
+    var validation = ValidatePutIncidentRequest(req);
     if (validation is not null)
         return validation;
 
-    var incident = new Incident(
-        id,
-        req.Title,
-        req.Description,
-        req.Location,
-        req.Severity,
-        req.Status,
-        req.ReportedDate);
+    var incident = new Incident
+    {
+        Id = id,
+        Title = req.Title,
+        Description = req.Description,
+        Location = req.Location,
+        Severity = req.Severity,
+        Status = req.Status,
+        ReportedDate = req.ReportedDate,
+    };
 
     var updated = repo.Update(incident);
     return updated is null
         ? Results.NotFound(new { error = "Incident not found." })
-        : Results.Ok(updated);
+        : Results.Ok(updated.ToResponse());
+});
+
+app.MapDelete("/incidents/{id}", (int id, IIncidentRepository repo) =>
+{
+    return repo.SoftDelete(id)
+        ? Results.NoContent()
+        : Results.NotFound(new { error = "Incident not found." });
 });
 
 app.Run();
 
 static IResult? ValidateIncidentRequest(IncidentRequest req)
 {
-    if (string.IsNullOrWhiteSpace(req.Title))
+    return ValidateIncidentFields(
+        req.Title,
+        req.Description,
+        req.Location,
+        req.Severity,
+        req.Status,
+        req.ReportedDate);
+}
+
+static IResult? ValidatePutIncidentRequest(PutIncidentRequest req)
+{
+    if (req.Id <= 0)
+        return Results.BadRequest(new { error = "A valid incident id is required." });
+
+    return ValidateIncidentFields(
+        req.Title,
+        req.Description,
+        req.Location,
+        req.Severity,
+        req.Status,
+        req.ReportedDate);
+}
+
+static IResult? ValidateIncidentFields(
+    string title,
+    string description,
+    string location,
+    IncidentSeverity severity,
+    IncidentStatus status,
+    DateTime reportedDate)
+{
+    if (string.IsNullOrWhiteSpace(title))
         return Results.BadRequest(new { error = "Title is required." });
 
-    if (req.Title.Length > 50)
+    if (title.Length > 50)
         return Results.BadRequest(new { error = "Title must be 50 characters or fewer." });
 
-    if (string.IsNullOrWhiteSpace(req.Description))
+    if (string.IsNullOrWhiteSpace(description))
         return Results.BadRequest(new { error = "Description is required." });
 
-    if (req.Description.Length > 100)
+    if (description.Length > 100)
         return Results.BadRequest(new { error = "Description must be 100 characters or fewer." });
 
-    if (string.IsNullOrWhiteSpace(req.Location))
+    if (string.IsNullOrWhiteSpace(location))
         return Results.BadRequest(new { error = "Location is required." });
 
-    if (req.Location.Length > 100)
+    if (location.Length > 100)
         return Results.BadRequest(new { error = "Location must be 100 characters or fewer." });
 
-    if (!Enum.IsDefined(req.Severity))
+    if (!Enum.IsDefined(severity))
         return Results.BadRequest(new { error = "Invalid severity value." });
 
-    if (!Enum.IsDefined(req.Status))
+    if (!Enum.IsDefined(status))
         return Results.BadRequest(new { error = "Invalid status value." });
 
-    if (req.ReportedDate.Date > DateTime.UtcNow.Date)
+    if (reportedDate.Date > DateTime.UtcNow.Date)
         return Results.BadRequest(new { error = "Reported date must not be in the future." });
 
     return null;
-}
-
-static bool IsValidSortBy(string sortBy)
-{
-    return sortBy.ToLowerInvariant() is
-        "title" or
-        "description" or
-        "location" or
-        "severity" or
-        "status" or
-        "reporteddate";
 }
 
 static bool TryParseSortDirection(string sortDirection, out bool sortDescending)
