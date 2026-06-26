@@ -61,6 +61,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `client/src/componentRegistry.tsx` — registry of all components for the components view (has file-level eslint-disable — see decisions log)
 - `client/src/components/formFieldUtils.ts` — shared form utility (formFieldErrorId)
 - `client/src/components/incidentDisplay.ts` — shared incident display helpers — badge variants, status label, reported-date formatter, severity/status/filter option lists
+- `client/src/components/incidentPageCopy.ts` — shared incident page headings, subtitles, and success messages
 - `client/src/components/auditDisplay.ts` — shared audit display helpers — badge variants, status label, audit-date formatter, status/filter option lists
 - `client/src/components/auditPageCopy.ts` — shared audit page headings, subtitles, and success messages
 - `client/src/hooks/useAudits.ts` — list hook for AuditsView (filters, sort, pagination, fetch state)
@@ -113,7 +114,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 **Frontend:**
 - React 19.2.7 with TypeScript 6.0.3
 - Vite 8.1.0 for bundling
-- `react-router-dom` 7.18.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (items), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`
+- `react-router-dom` 7.18.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`). Routes: `/` (redirects to `/components`), `/items` (Items demo scaffold), `/components`, `/incidents`, `/incidents/create`, `/incidents/:id`, `/incidents/:id/edit`, `/audits`, `/audits/create`, `/audits/:id`, `/audits/:id/edit`
 - Tailwind CSS 4.3.1 via `@tailwindcss/vite` 4.3.1 plugin
 - shadcn/ui — Nova preset, Radix component library, `components.json` config
 - `radix-ui` 1.6.0 and `@radix-ui/react-slot` 1.3.0 (Radix primitives)
@@ -228,7 +229,7 @@ changed library API.
 - When changing `errors.ts`, add or update tests in `client/src/errors.test.ts` using the same style as guards — one test per prompt, AAA, no RTL
 
 **End-to-end — Playwright 1.61.1:**
-- Installed with Chromium only. Eight tests: 3 smoke (`client/e2e/app.spec.ts`) plus items, components, 2 incidents, and 1 audit journey specs under `client/e2e/journeys/`
+- Installed with Chromium only. Nine tests: 3 smoke (`client/e2e/app.spec.ts`) plus items, components, 3 incidents, and 1 audit journey specs under `client/e2e/journeys/`
 - Nightly suite live via `.github/workflows/nightly-e2e.yml` — `workflow_dispatch` + 3 AM Perth cron; four-server `webServer` boot (ItemsApi, IncidentsApi, AuditsApi, Vite); explicit `dotnet restore`/`build` before CI-guarded `dotnet run --no-build`; `dorny/test-reporter` publishes JUnit results
 - E2e does not run on PR builds
 - Run from `client/` with `npx playwright test` — Playwright boots all three APIs plus Vite via `webServer` config
