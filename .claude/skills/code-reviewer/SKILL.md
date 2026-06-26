@@ -178,7 +178,7 @@ Applies under `ItemsApi/`, `ItemsApi.Tests/`, `IncidentsApi/`, `IncidentsApi.Tes
 
 - **Repository pattern** — HTTP layer depends on abstractions (e.g. `IItemsRepository`), not concrete repository classes; use built-in DI.
 - **EF Core persistence** — each API uses its own DbContext and repository (`AppDbContext` / `EfItemsRepository`, `IncidentsDbContext` / `EfIncidentRepository`, `AuditsDbContext` / `EfAuditRepository`). Endpoints depend on repository interfaces, never on DbContext or concrete repositories directly. Repositories are registered **scoped**.
-- **Soft delete (`RecordStatus`)** — verify on any AuditsApi change or PR introducing similar patterns:
+- **Soft delete (`RecordStatus`)** — verify on any IncidentsApi or AuditsApi change or PR introducing similar patterns:
   - `RecordStatus` (`Active`, `Deleted`) lives on the entity, not the wire DTOs (`AuditRequest` for POST, `PutAuditRequest` for PUT — neither has `RecordStatus`)
   - POST/PUT must not bind or accept `RecordStatus` from JSON; repository `Add` sets `Active`
   - `Update` must not assign `RecordStatus`; updates target active rows only
