@@ -53,7 +53,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `client/src/components/ui/` — shadcn generated components (vendor, ESLint-ignored)
 - `client/src/components/` — hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, AuditsView, AuditForm, AuditCreateView, AuditDetailView, AuditEditView, AuditPageChrome, InlineAlert, Modal)
 - `client/src/api.ts` — typed fetch layer for ItemsApi (fetchItems, createItem)
-- `client/src/api/incidents.ts` — typed fetch layer for IncidentsApi (fetchIncidents, createIncident, getIncident, updateIncident, shared helpers incidentUserMessage, parseIncidentId)
+- `client/src/api/incidents.ts` — typed fetch layer for IncidentsApi (fetchIncidents, createIncident, getIncident, updateIncident, deleteIncident, shared helpers incidentUserMessage, parseIncidentId)
 - `client/src/api/audits.ts` — typed fetch layer for AuditsApi (fetchAudits, createAudit, getAudit, updateAudit, deleteAudit, shared helpers auditUserMessage, parseAuditId)
 - `client/src/types.ts` — shared TypeScript types (e.g. `Item`, `CreateItemRequest`)
 - `client/src/errors.ts` — `ApiClientError` and `toUserMessage` error mapping
@@ -72,7 +72,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `client/src/**/*.test.{ts,tsx}` — Vitest tests
 - `client/src/test/setup.ts` — Vitest setup
 - `client/e2e/` — Playwright e2e tests
-- `package.json` (repo root) — scripting-only Node package for repo automation scripts. Scripts: `npm run pr-review` (automated PR review), `npm run nightly-agent` (autonomous backlog agent), `npm test` (runs `pr-review.test.js` + `nightly-agent.test.js`). Unrelated to the `client/` workspace — do not confuse the two or add client dependencies here; frontend packages belong in `client/package.json`.
+- `package.json` (repo root) — scripting-only Node package for repo automation scripts. Scripts: `npm run pr-review` (automated PR review), `npm run nightly-agent` (autonomous backlog agent), `npm test` (runs `pr-review.test.js` + `nightly-agent.test.js` + `sensitive-paths.test.js`). Unrelated to the `client/` workspace — do not confuse the two or add client dependencies here; frontend packages belong in `client/package.json`.
 - `.github/scripts/` — repo automation scripts: `pr-review.js` (automated PR review), `nightly-agent.js` (nightly autonomous agent), `pr-review.test.js`, `nightly-agent.test.js`
 - `docs/nightly-agent-backlog.md` — open tasks for the nightly agent (authoritative source; T-numbers, difficulty, stack, category, attempts, notes)
 - `docs/nightly-agent-completed.md` — completed tasks log (moved from backlog on merge)
@@ -99,7 +99,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
   in `IncidentsApi/Data/`. AuditsApi uses its own AuditsDbContext in 
   `AuditsApi/Data/`. Three separate SQLite databases: `app.db` (items), 
   `incidents.db` (incidents), `audits.db` (audits). Dev ports: ItemsApi 5133, 
-  IncidentsApi 5134, AuditsApi 5135. IncidentsApi Severity/Status and 
+  IncidentsApi 5134, AuditsApi 5135. IncidentsApi Severity/Status/RecordStatus and 
   AuditsApi Status/RecordStatus enums stored as int for correct sort order and 
   query performance.
 - `EfItemsRepository` implements `IItemsRepository` — scoped lifetime, `AsNoTracking()` for reads
@@ -176,7 +176,7 @@ changed library API.
 - Global exception handler covers unhandled exceptions — do not add
   per-endpoint try/catch; the handler returns a consistent
   `{ error: "..." }` shape and never exposes stack traces to the client
-- **Soft delete (`RecordStatus`)** — established in AuditsApi; reuse this
+- **Soft delete (`RecordStatus`)** — used in IncidentsApi and AuditsApi; reuse this
   pattern when adding soft delete elsewhere:
   - `RecordStatus` enum (`Active`, `Deleted`) on the entity; stored as int
   - Wire DTOs (`AuditRequest` for POST, `PutAuditRequest` for PUT) exclude
