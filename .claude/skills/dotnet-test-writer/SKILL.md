@@ -46,7 +46,7 @@ The `Xunit` namespace is globally imported (via `<Using Include="Xunit" />` in e
 
 ## Configuration
 
-All three APIs read `DefaultConnection` and `Cors:AllowedOrigins` from their own `appsettings.json` via `builder.Configuration` — not hardcoded in `Program.cs`. Each `appsettings.json` sets `ConnectionStrings:DefaultConnection` to `DataSource=<api>.db` (`app.db`, `incidents.db`, `audits.db`) and `Cors:AllowedOrigins` to `http://localhost:5173` and `https://localhost:5173`. `TestWebApplicationFactory` uses in-memory SQLite (`DataSource=:memory:`) and does not depend on these files.
+All three APIs read `DefaultConnection` and `Cors:AllowedOrigins` from their own `appsettings.json` via `builder.Configuration` — not hardcoded in `Program.cs`. Each `appsettings.json` sets `ConnectionStrings:DefaultConnection` to `DataSource=<api>.db` (`app.db`, `incidents.db`, `audits.db`) and `Cors:AllowedOrigins` to `http://localhost:5173` and `https://localhost:5173`. In `ConfigureWebHost`, each `TestWebApplicationFactory` overrides `ConnectionStrings:DefaultConnection` (replacing the `AddDbContext` registration with a kept-open in-memory `SqliteConnection`, `DataSource=:memory:`), which is why integration tests work without `appsettings.json` being present.
 
 ## Project layout
 
