@@ -502,8 +502,8 @@ Hand-authored components call typed modules — never inline `fetch` in primitiv
 | API | Module | User messages |
 |-----|--------|---------------|
 | Items | [`api.ts`](../../../client/src/api.ts) | `toUserMessage(err, 'load' \| 'create')` from [`errors.ts`](../../../client/src/errors.ts) |
-| Incidents | [`api/incidents.ts`](../../../client/src/api/incidents.ts) | `incidentUserMessage(err, 'loading' \| 'creating' \| 'updating')` |
-| Audits | [`api/audits.ts`](../../../client/src/api/audits.ts) | `auditUserMessage(err, 'loading' \| 'creating' \| 'updating')` |
+| Incidents | [`api/incidents.ts`](../../../client/src/api/incidents.ts) | `incidentUserMessage(err, 'loading' \| 'creating' \| 'updating' \| 'deleting')` |
+| Audits | [`api/audits.ts`](../../../client/src/api/audits.ts) | `auditUserMessage(err, 'loading' \| 'creating' \| 'updating' \| 'deleting')` |
 
 **Rules:**
 

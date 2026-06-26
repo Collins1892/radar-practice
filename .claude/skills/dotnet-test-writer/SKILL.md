@@ -1,6 +1,6 @@
 ---
 name: dotnet-test-writer
-description: Write integration tests for the .NET 8 minimal APIs in this project (ItemsApi, IncidentsApi, and AuditsApi). Use when the user asks to write, add, generate, or create an integration test for any of these APIs. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test <Project>.Tests/<Project>.Tests.csproj after adding or changing a test. Confirm the suite passes before declaring done. Calibrate effort: think hard for mock/exception paths, fixture isolation, new endpoints, any IncidentsApi or AuditsApi filter/sort/paginate or PUT round-trip test, or AuditsApi DELETE soft-delete tests.
+description: Write integration tests for the .NET 8 minimal APIs in this project (ItemsApi, IncidentsApi, and AuditsApi). Use when the user asks to write, add, generate, or create an integration test for any of these APIs. One [Fact] per request. Uses xUnit 2.5.3, the project's custom TestWebApplicationFactory (SQLite-backed), NSubstitute 5.1.0, the [Fact] attribute, and Arrange/Act/Assert comments. Run dotnet test <Project>.Tests/<Project>.Tests.csproj after adding or changing a test. Confirm the suite passes before declaring done. Calibrate effort: think hard for mock/exception paths, fixture isolation, new endpoints, any IncidentsApi or AuditsApi filter/sort/paginate or PUT round-trip test, or DELETE soft-delete test.
 ---
 
 # .NET Test Writer
@@ -23,8 +23,7 @@ Calibrate reasoning depth to the test scenario:
 |-----------|----------|
 | NSubstitute exception paths, scoped DI vs mock override, or shared-fixture persistence ordering | **think hard** |
 | New endpoint file, custom status/body shape, or GlobalExceptionHandler behaviour | **think hard** |
-| Any IncidentsApi filter, sort, paginate, or PUT round-trip test | **think hard** |
-| Any AuditsApi filter, sort, paginate, PUT round-trip, or DELETE soft-delete test | **think hard** |
+| Any IncidentsApi or AuditsApi filter, sort, paginate, PUT round-trip, or DELETE soft-delete test | **think hard** |
 | Happy-path GET/POST or single validation 400 following existing `[Fact]` patterns | Standard effort — no extra keyword |
 
 When **think hard** applies, read [Mocking with NSubstitute](#mocking-with-nsubstitute) and [Database and isolation gotchas](#database-and-isolation-gotchas) before choosing `CreateDefaultClient()` vs `CreateClientWithRepo()`. Do not over-mock persistence tests or over-assert DB-generated ids.
@@ -45,15 +44,19 @@ The test projects reference `Microsoft.EntityFrameworkCore.Sqlite` (8.0.27), and
 
 The `Xunit` namespace is globally imported (via `<Using Include="Xunit" />` in each csproj) — no `using Xunit;` needed.
 
+## Configuration
+
+All three APIs read `DefaultConnection` and `Cors:AllowedOrigins` from their own `appsettings.json` via `builder.Configuration` — not hardcoded in `Program.cs`. Each `appsettings.json` sets `ConnectionStrings:DefaultConnection` to `DataSource=<api>.db` (`app.db`, `incidents.db`, `audits.db`) and `Cors:AllowedOrigins` to `http://localhost:5173` and `https://localhost:5173`. In `ConfigureWebHost`, each `TestWebApplicationFactory` overrides `ConnectionStrings:DefaultConnection` (replacing the `AddDbContext` registration with a kept-open in-memory `SqliteConnection`, `DataSource=:memory:`), which is why integration tests work without `appsettings.json` being present.
+
 ## Project layout
 
 ### ItemsApi
 
 ```
 ItemsApi/
-  Program.cs                  — GET /items and POST /items endpoints; registers CORS,
-                                AddDbContext<AppDbContext> (SQLite "app.db"),
-                                AddScoped<IItemsRepository, EfItemsRepository>, and
+  Program.cs                  — GET /items and POST /items endpoints; registers CORS from
+                                appsettings.json, AddDbContext<AppDbContext> (connection string from
+                                appsettings.json), AddScoped<IItemsRepository, EfItemsRepository>, and
                                 runs Database.Migrate() on startup
   IItemsRepository.cs         — interface: GetAll(), Add(string name, decimal price) returns Item
   Item.cs                     — record Item(int Id, string Name, decimal Price); EF-mapped entity
@@ -76,26 +79,28 @@ ItemsApi.Tests/
 ```
 IncidentsApi/
   Program.cs                  — GET /incidents, POST /incidents, GET /incidents/{id},
-                                PUT /incidents/{id} endpoints; registers CORS,
-                                AddDbContext<IncidentsDbContext> (SQLite "incidents.db"),
-                                AddScoped<IIncidentRepository, EfIncidentRepository>,
+                                PUT /incidents/{id}, DELETE /incidents/{id} endpoints; registers CORS
+                                from appsettings.json, AddDbContext<IncidentsDbContext> (connection string
+                                from appsettings.json), AddScoped<IIncidentRepository, EfIncidentRepository>,
                                 JsonStringEnumConverter (enums serialised as strings in JSON),
                                 global exception handler, and runs Database.Migrate() on startup
-  IIncidentRepository.cs      — interface: GetPaged(query), GetById(id), Add(incident), Update(incident)
-  Incident.cs                 — record Incident(int Id, string Title, string Description,
-                                string Location, IncidentSeverity Severity, IncidentStatus Status,
-                                DateTime ReportedDate); also declares IncidentSeverity and
-                                IncidentStatus enums (stored as int in DB)
-  IncidentRequest.cs          — record IncidentRequest(string Title, string Description,
-                                string Location, IncidentSeverity Severity,
-                                IncidentStatus Status, DateTime ReportedDate)
+  IIncidentRepository.cs      — interface: GetPaged(query), GetById(id), Add(incident),
+                                Update(incident), SoftDelete(id), IsValidSortField(sortBy)
+  Incident.cs                 — entity with Title, Description, Location, Severity, Status,
+                                ReportedDate, RecordStatus (soft delete — not on wire DTOs);
+                                also declares IncidentSeverity and IncidentStatus enums (stored as int in DB)
+  RecordStatus.cs             — enum: Active, Deleted (stored as int; never on wire DTOs)
+  IncidentRequest.cs          — POST wire DTO (no RecordStatus)
+  PutIncidentRequest.cs       — PUT wire DTO (includes Id; no RecordStatus)
+  IncidentResponse.cs         — response DTO (no RecordStatus)
+  IncidentMappings.cs         — ToResponse extension (entity → IncidentResponse)
   IncidentListQuery.cs        — record IncidentListQuery(IncidentSeverity? Severity,
                                 IncidentStatus? Status, string SortBy, bool SortDescending,
                                 int Page, int PageSize)
-  PagedIncidentsResult.cs     — record PagedIncidentsResult(IReadOnlyList<Incident> Items,
+  PagedIncidentsResult.cs     — record PagedIncidentsResult(IReadOnlyList<IncidentResponse> Items,
                                 int Page, int PageSize, int TotalCount, int TotalPages)
-  Data/IncidentsDbContext.cs  — dedicated DbContext for incidents.db; enums stored as int
-  Repositories/EfIncidentRepository.cs — EF Core implementation of IIncidentRepository
+  Data/IncidentsDbContext.cs  — dedicated DbContext for incidents.db; enums and RecordStatus stored as int
+  Repositories/EfIncidentRepository.cs — EF Core implementation; SoftDelete sets RecordStatus Deleted
   Migrations/                 — EF migrations (initial: 20260604060010_InitialCreate)
 
 IncidentsApi.Tests/
@@ -104,6 +109,7 @@ IncidentsApi.Tests/
   PostIncidentsTests.cs       — POST /incidents tests (exists — append new [Fact] before private records)
   GetIncidentByIdTests.cs     — GET /incidents/{id} tests (exists — append new [Fact] before private records)
   PutIncidentsTests.cs        — PUT /incidents/{id} tests (exists — append new [Fact] before private records)
+  DeleteIncidentsTests.cs     — DELETE /incidents/{id} soft-delete tests (exists — append before private records)
 ```
 
 ### AuditsApi
@@ -111,9 +117,9 @@ IncidentsApi.Tests/
 ```
 AuditsApi/
   Program.cs                  — GET /audits, POST /audits, GET /audits/{id},
-                                PUT /audits/{id}, DELETE /audits/{id} endpoints; registers CORS,
-                                AddDbContext<AuditsDbContext> (SQLite "audits.db"),
-                                AddScoped<IAuditRepository, EfAuditRepository>,
+                                PUT /audits/{id}, DELETE /audits/{id} endpoints; registers CORS from
+                                appsettings.json, AddDbContext<AuditsDbContext> (connection string from
+                                appsettings.json), AddScoped<IAuditRepository, EfAuditRepository>,
                                 JsonStringEnumConverter (enums serialised as strings in JSON),
                                 global exception handler, and runs Database.Migrate() on startup
   Repositories/IAuditRepository.cs — interface: GetAll(query), GetById(id), Add(audit),
@@ -261,7 +267,7 @@ public class <FeatureName>Tests : IClassFixture<TestWebApplicationFactory>
 }
 ```
 
-Only include the private records the class actually uses. `PagedIncidentsResponse` is only needed in GET /incidents tests; `IncidentResponse` is used by POST, GET by id, and PUT tests.
+Only include the private records the class actually uses. `PagedIncidentsResponse` is only needed in GET /incidents tests; `IncidentResponse` is used by POST, GET by id, and PUT tests. **Never** add `RecordStatus` to wire response records — it is not exposed in JSON.
 
 Trim imports to what the class uses — `System.Text`, `System.Text.Json`, and `System.Text.Json.Serialization` are only needed for raw-JSON `StringContent` (invalid-enum) tests and `JsonOptions`; only include `using NSubstitute.ExceptionExtensions` when the class has `.Throws(...)` tests.
 
@@ -357,17 +363,24 @@ Format: `<HttpVerb>_<Scenario>_<ExpectedResult>`
 - `Get_PageSizeOver100_Returns400WithError`
 - `Get_InvalidSortBy_Returns400WithError`
 - `Get_FilterBySeverity_ReturnsOnlyMatchingIncidents`
+- `Get_SoftDeletedIncidents_ExcludedFromResults`
 - `Get_WhenRepositoryThrows_Returns500`
 - `Post_ValidIncident_Returns201WithIncident`
+- `Post_RecordStatusInJsonBody_Ignored_NotExposedInResponse`
 - `Post_BlankTitle_Returns400WithError`
 - `Post_InvalidSeverity_Returns400WithError`
 - `Post_WhenRepositoryThrows_Returns500`
 - `Get_ById_Exists_Returns200WithIncident`
 - `Get_ById_NotFound_Returns404WithError`
+- `Get_ById_SoftDeleted_Returns404WithError`
 - `Put_ById_ValidData_Returns200WithUpdatedIncident`
 - `Put_ExistingIncident_PersistsUpdatedValuesInDatabase`
+- `Put_SoftDeletedIncident_Returns404WithError`
 - `Put_ById_NotFound_Returns404WithError`
 - `Put_WhenRepositoryThrows_Returns500`
+- `Delete_ExistingActiveIncident_Returns204AndExcludesFromGetByIdAndGetAll`
+- `Delete_NotFound_Returns404WithError`
+- `Delete_AlreadyDeleted_Returns404Not204`
 
 **AuditsApi examples:**
 - `Get_NoFilters_Returns200WithPagedResult`
@@ -445,7 +458,7 @@ repo.Add(Arg.Any<string>(), Arg.Any<decimal>())
 
 ### IncidentsApi mocking
 
-**Real-persistence tests are preferred for IncidentsApi over mocked tests wherever the goal is verifying data behaviour.** Apply this guidance:
+**Real-persistence tests are preferred for IncidentsApi over mocked tests wherever the goal is verifying data behaviour** — same guidance as AuditsApi, plus soft-delete flows:
 
 | Goal | Client to use |
 |------|---------------|
@@ -454,9 +467,13 @@ repo.Add(Arg.Any<string>(), Arg.Any<decimal>())
 | POST happy path (201 + round-trip id) | `CreateDefaultClient()` |
 | GET by id 200 with known data | `CreateClientWithRepo(mock)` with stubbed `GetById` return, or `CreateDefaultClient()` after POST for full-stack |
 | PUT round-trip (assert update persisted) | `CreateDefaultClient()` — POST to create, PUT to update, assert PUT response body (optionally follow with GET to confirm persistence) |
+| DELETE soft-delete round-trip | `CreateDefaultClient()` — POST → DELETE (204) → GET 404 and excluded from GET list |
+| Assert `RecordStatus` never on wire | `CreateDefaultClient()` — POST with `recordStatus` in raw JSON; response must not include it |
 | 500 exception path | `CreateClientWithRepo(mock)` — configure mock to `.Throws(...)` |
-| 404 not-found | `CreateClientWithRepo(mock)` — configure `Update`/`GetById` to return `null` |
+| 404 not-found / already soft-deleted | `CreateClientWithRepo(mock)` or `CreateDefaultClient()` after DELETE |
 | Validation 400 that never reaches the repo | `CreateDefaultClient()` (or a bare mock — repo is never called) |
+
+**Soft delete (`RecordStatus`):** `Add` always sets `Active`. `Update` and reads exclude `Deleted`. DELETE calls `SoftDelete` — second delete returns 404, not 204. Wire DTOs (`IncidentRequest`, `PutIncidentRequest`) and `IncidentResponse` never include `RecordStatus`.
 
 For filter/sort/paginate tests using real persistence, seed records with different field values via `PostAsJsonAsync`, then call the filtered/sorted/paginated URL and assert only the expected records are returned in the expected order. For example, seed two incidents with different severities, then `GET /incidents?severity=High` and assert only the matching incident is returned.
 
@@ -542,7 +559,7 @@ For invalid enum values in POST/PUT, use raw JSON with `StringContent` (same pat
 ### IncidentsApi endpoints
 
 #### GET /incidents
-- **200** — paged result: `{ items, page, pageSize, totalCount, totalPages }`. Defaults: `sortBy=reportedDate`, `sortDirection=desc`, `page=1`, `pageSize=25`.
+- **200** — paged result: `{ items, page, pageSize, totalCount, totalPages }`. Defaults: `sortBy=reportedDate`, `sortDirection=desc`, `page=1`, `pageSize=25`. Soft-deleted rows excluded.
 - **400** `"Page must be at least 1."` — `page < 1`
 - **400** `"Page size must be at least 1."` — `pageSize < 1`
 - **400** `"Page size must be 100 or fewer."` — `pageSize > 100`
@@ -565,15 +582,24 @@ For invalid enum values in POST/PUT, use raw JSON with `StringContent` (same pat
 - **400** `"Reported date must not be in the future."` — `reportedDate` after `DateTime.UtcNow.Date`
 - **500** — repository throws; assert `"An unexpected error occurred."` AND `DoesNotContain` the internal exception message
 
+`recordStatus` in POST JSON is ignored — not bindable; assert it never appears in response body.
+
 #### GET /incidents/{id}
 - **200** — returns single `Incident` by id. Deserialise with `JsonOptions`.
-- **404** `"Incident not found."` — id not in database
+- **404** `"Incident not found."` — id not found or soft-deleted
 
 #### PUT /incidents/{id}
 - **200** — valid input; returns updated `Incident`. Applies the same validation rules as POST. Deserialise with `JsonOptions`.
+- **400** `"Incident payload is required."` — null body
+- **400** `"Route id does not match incident id."` — route id ≠ body `id`
 - **400** — same validation errors as POST
-- **404** `"Incident not found."` — id not in database; `repo.Update(...)` returns `null`
+- **404** `"Incident not found."` — id not found or soft-deleted
 - **500** — repository throws; assert `"An unexpected error occurred."` AND `DoesNotContain` the internal exception message
+
+#### DELETE /incidents/{id}
+- **204** — soft-deletes active incident; subsequent GET returns 404; excluded from GET list
+- **404** `"Incident not found."` — id not found or already soft-deleted (second DELETE is 404, not 204)
+- **500** — repository throws (if mocked)
 
 ### AuditsApi endpoints
 
@@ -635,7 +661,7 @@ Assert.DoesNotContain("<internal exception message>", raw);
 - **ItemsApi** uses `AppDbContext`; **IncidentsApi** uses `IncidentsDbContext`; **AuditsApi** uses `AuditsDbContext` — three separate databases and factories. Never mix test projects or factories.
 - Schema changes require a new EF migration — the factory applies the committed migrations through `Database.Migrate()` on host creation.
 - `Microsoft.Data.Sqlite` in-memory databases are destroyed when the connection closes, which is why the factory holds the `SqliteConnection` open for the fixture's lifetime.
-- **IncidentsApi enum storage:** `IncidentSeverity` and `IncidentStatus` are stored as `int` in `incidents.db` for correct sort order and query performance. The JSON layer uses `JsonStringEnumConverter` (string representation over the wire). This means: filter/sort tests on severity or status work correctly when seeding via POST (which round-trips through the string converter), but the DB column value is an int that EF queries against directly.
+- **IncidentsApi enum storage:** `IncidentSeverity`, `IncidentStatus`, and `RecordStatus` are stored as `int` in `incidents.db` for correct sort order and query performance. JSON uses `JsonStringEnumConverter` for `IncidentSeverity` and `IncidentStatus` only — `RecordStatus` is never serialised to clients. Soft-deleted rows must be invisible on all read paths and on PUT. Filter/sort tests on severity or status work correctly when seeding via POST (which round-trips through the string converter), but the DB column value is an int that EF queries against directly.
 - **AuditsApi enum storage:** `Status` and `RecordStatus` are stored as `int` in `audits.db`. JSON uses `JsonStringEnumConverter` for `Status` only — `RecordStatus` is never serialised to clients. Soft-deleted rows must be invisible on all read paths and on PUT.
 
 ## Which file to write to
@@ -650,6 +676,7 @@ Assert.DoesNotContain("<internal exception message>", raw);
 | IncidentsApi | POST /incidents | `IncidentsApi.Tests/PostIncidentsTests.cs` (exists — append before private records) |
 | IncidentsApi | GET /incidents/{id} | `IncidentsApi.Tests/GetIncidentByIdTests.cs` (exists — append before private records) |
 | IncidentsApi | PUT /incidents/{id} | `IncidentsApi.Tests/PutIncidentsTests.cs` (exists — append before private records) |
+| IncidentsApi | DELETE /incidents/{id} | `IncidentsApi.Tests/DeleteIncidentsTests.cs` (exists — append before private records) |
 | IncidentsApi | New endpoint | Create `IncidentsApi.Tests/<Endpoint>Tests.cs` |
 | AuditsApi | GET /audits | `AuditsApi.Tests/GetAuditsTests.cs` (exists — append before private records) |
 | AuditsApi | POST /audits | `AuditsApi.Tests/PostAuditsTests.cs` (exists — append before private records) |

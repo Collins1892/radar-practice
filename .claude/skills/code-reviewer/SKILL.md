@@ -74,9 +74,10 @@ Use paths to choose which rule sections apply:
 
 ```
 ItemsApi/
-  Program.cs                  — minimal API endpoints and middleware; registers CORS,
-                                AddDbContext<AppDbContext> (SQLite "app.db"),
-                                AddScoped<IItemsRepository, EfItemsRepository>, Database.Migrate()
+  Program.cs                  — minimal API endpoints and middleware; registers CORS from
+                                appsettings.json, AddDbContext<AppDbContext> (connection string from
+                                appsettings.json), AddScoped<IItemsRepository, EfItemsRepository>,
+                                Database.Migrate()
   IItemsRepository.cs         — repository interface
   Item.cs, ItemRequest.cs     — models / DTOs
   Data/AppDbContext.cs        — EF Core DbContext (DbSet<Item>, model config)
@@ -88,23 +89,29 @@ ItemsApi.Tests/
   TestWebApplicationFactory.cs  — custom factory; per-class in-memory SQLite DB
 
 IncidentsApi/
-  Program.cs                  — minimal API endpoints and middleware; registers CORS,
-                                AddDbContext<IncidentsDbContext> (SQLite "incidents.db"),
+  Program.cs                  — minimal API endpoints and middleware (including DELETE /incidents/{id});
+                                registers CORS from appsettings.json, AddDbContext<IncidentsDbContext>
+                                (connection string from appsettings.json),
                                 AddScoped<IIncidentRepository, EfIncidentRepository>, Database.Migrate()
   IIncidentRepository.cs      — repository interface
-  Incident.cs, IncidentRequest.cs — models / DTOs
+  IncidentRequest.cs, PutIncidentRequest.cs — wire DTOs (no RecordStatus)
+  Incident.cs, RecordStatus.cs — entity / enum
+  IncidentResponse.cs         — response DTO (no RecordStatus)
+  IncidentListQuery.cs, PagedIncidentsResult.cs — list query / paged response
   Data/IncidentsDbContext.cs  — EF Core DbContext (DbSet<Incident>, model config)
-  Repositories/EfIncidentRepository.cs — EF Core implementation of IIncidentRepository
+  Repositories/EfIncidentRepository.cs — EF Core implementation; soft delete via RecordStatus
   Migrations/                 — EF Core migrations
 
 IncidentsApi.Tests/
-  GetIncidentsTests.cs, GetIncidentByIdTests.cs, PostIncidentsTests.cs, PutIncidentsTests.cs
+  GetIncidentsTests.cs, GetIncidentByIdTests.cs, PostIncidentsTests.cs, PutIncidentsTests.cs,
+  DeleteIncidentsTests.cs
   TestWebApplicationFactory.cs  — custom factory; per-class in-memory SQLite DB
 
 AuditsApi/
-  Program.cs                  — minimal API endpoints and middleware; registers CORS,
-                                AddDbContext<AuditsDbContext> (SQLite "audits.db"),
-                                AddScoped<IAuditRepository, EfAuditRepository>, Database.Migrate()
+  Program.cs                  — minimal API endpoints and middleware; registers CORS from
+                                appsettings.json, AddDbContext<AuditsDbContext> (connection string from
+                                appsettings.json), AddScoped<IAuditRepository, EfAuditRepository>,
+                                Database.Migrate()
   IAuditRepository.cs         — repository interface (in Repositories/)
   AuditRequest.cs, PutAuditRequest.cs — wire DTOs (no RecordStatus)
   Audit.cs, Status.cs, RecordStatus.cs — models / enums (in Models/)
@@ -178,14 +185,14 @@ Applies under `ItemsApi/`, `ItemsApi.Tests/`, `IncidentsApi/`, `IncidentsApi.Tes
 
 - **Repository pattern** — HTTP layer depends on abstractions (e.g. `IItemsRepository`), not concrete repository classes; use built-in DI.
 - **EF Core persistence** — each API uses its own DbContext and repository (`AppDbContext` / `EfItemsRepository`, `IncidentsDbContext` / `EfIncidentRepository`, `AuditsDbContext` / `EfAuditRepository`). Endpoints depend on repository interfaces, never on DbContext or concrete repositories directly. Repositories are registered **scoped**.
-- **Soft delete (`RecordStatus`)** — verify on any AuditsApi change or PR introducing similar patterns:
-  - `RecordStatus` (`Active`, `Deleted`) lives on the entity, not the wire DTOs (`AuditRequest` for POST, `PutAuditRequest` for PUT — neither has `RecordStatus`)
+- **Soft delete (`RecordStatus`)** — verify on any IncidentsApi or AuditsApi change or PR introducing similar patterns:
+  - `RecordStatus` (`Active`, `Deleted`) lives on the entity, not the wire DTOs (`IncidentRequest` / `PutIncidentRequest` / `IncidentResponse` in IncidentsApi; `AuditRequest` / `PutAuditRequest` / `AuditResponse` in AuditsApi — none include `RecordStatus`)
   - POST/PUT must not bind or accept `RecordStatus` from JSON; repository `Add` sets `Active`
   - `Update` must not assign `RecordStatus`; updates target active rows only
-  - `GetAll` and `GetById` must unconditionally filter out `RecordStatus == Deleted`
+  - List and `GetById` reads must unconditionally filter out `RecordStatus == Deleted` (`GetPaged` in IncidentsApi; `GetAll` in AuditsApi)
   - DELETE must call repository soft delete (set `Deleted`); already-deleted rows return not found
 - **Migrations** — schema changes require a new EF Core migration; review generated migrations for correctness; do not hand-edit migrations that are already applied or committed.
-- **Connection strings / secrets** — local SQLite only (`app.db`, `incidents.db`, `audits.db`); no production connection strings or credentials in source (ties into the universal "no production access" rule).
+- **Connection strings / CORS config** — dev `DefaultConnection` and `Cors:AllowedOrigins` belong in each API's committed `appsettings.json` (local SQLite only: `app.db`, `incidents.db`, `audits.db`; CORS origins `http://localhost:5173`, `https://localhost:5173`). `Program.cs` must read them via `builder.Configuration` — flag hardcoded connection strings or CORS origins in `Program.cs`, not legitimate `appsettings.json` entries. No production connection strings or credentials in source (ties into the universal "no production access" rule).
 - **Global exception handler** — do not add per-endpoint try/catch; the global handler covers unhandled exceptions and returns a consistent `{ error: "..." }` shape; failures map to appropriate status codes.
 - **No stack traces to the client** — global exception handler returns generic errors only; never leak stack traces or internal details (see `Program.cs` and related middleware).
 - **Tests for new endpoints** — new or changed endpoints should have integration tests under the matching `*.Tests/` project (`ItemsApi.Tests`, `IncidentsApi.Tests`, or `AuditsApi.Tests`) covering happy path and failure cases.

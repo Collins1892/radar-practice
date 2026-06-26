@@ -1,3 +1,25 @@
+## Week 6 Day 5 — Friday 26 June 2026
+
+**PR #133 merged — T25 nightly agent task**
+CLAUDE.md component inventory updated: `incidentPageCopy.ts` added to
+the hand-authored component list. Minor: completed log date corrections
+applied before merge (T25 Created date, PR #125 links for T28–T40).
+
+**PR #131 merged — security backlog T45/T49/T55/T60**
+- T45: scoped `git add` in fix loop — only written files staged, not `git add -A`
+- T49/T55: shared `sensitive-paths.js` module consumed by both automation
+  scripts. Single source of truth for the blocklist, eliminating drift
+- T60: connection strings and CORS origins externalised to `appsettings.json`
+  across all three APIs. Fail-fast `InvalidOperationException` on missing values
+
+**Security review observation — Husky path gap**
+Claude Code `/review` caught a Major that the automated bot missed: the
+`.husky/` prefix only matched root-level paths. The actual hook lives at
+`client/.husky/pre-commit` and was not blocked. Fixed before merge with
+a segment check (`rel.includes('/.husky/')`). Confirms two-review
+discipline catches different classes of issue — neither reviewer alone
+is sufficient.
+
 ## Week 6 Day 4 — Thursday 25 June 2026
 
 ### Summary

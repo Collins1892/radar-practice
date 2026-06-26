@@ -112,7 +112,7 @@ client/src/
     AuditsView.tsx              — list + filters + DataTable + Pagination
     AuditForm.tsx               — create/edit validation + submit
     AuditCreateView.tsx         — thin route shell
-    AuditDetailView.tsx         — read-only detail
+    AuditDetailView.tsx         — detail with Edit + Delete actions and confirmation modal
     AuditEditView.tsx           — thin route shell + id parse
     AuditPageChrome.tsx         — shared h1 + back link
   App.tsx                     — new routes + NavLink (specific routes before parametric)
@@ -210,7 +210,7 @@ Match patterns already used for Incidents when building Audits (or any new migra
 | Paged list endpoint | `GET /incidents` in [IncidentsApi/Program.cs](../../../IncidentsApi/Program.cs) |
 | List screen + filters + table + pagination | [IncidentsView.tsx](../../../client/src/components/IncidentsView.tsx) → `AuditsView` |
 | Create/edit form + validation | [IncidentForm.tsx](../../../client/src/components/IncidentForm.tsx) → `AuditForm` |
-| Detail read-only view | [IncidentDetailView.tsx](../../../client/src/components/IncidentDetailView.tsx) → `AuditDetailView` |
+| Detail view (Edit + Delete with confirmation modal) | [IncidentDetailView.tsx](../../../client/src/components/IncidentDetailView.tsx) → `AuditDetailView` |
 | Route shells | [IncidentCreateView.tsx](../../../client/src/components/IncidentCreateView.tsx), [IncidentEditView.tsx](../../../client/src/components/IncidentEditView.tsx) |
 | Page chrome | [IncidentPageChrome.tsx](../../../client/src/components/IncidentPageChrome.tsx) → `AuditPageChrome` |
 | Display helpers | [incidentDisplay.ts](../../../client/src/components/incidentDisplay.ts) → `auditDisplay.ts` |

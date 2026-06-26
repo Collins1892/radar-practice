@@ -54,7 +54,7 @@ radar-practice/
 │   ├── src/components/IncidentsView.tsx   # Incident list with filters, sort, pagination
 │   ├── src/components/IncidentForm.tsx    # Shared create/edit form (mode prop)
 │   ├── src/components/IncidentCreateView.tsx # Thin wrapper — mode=create
-│   ├── src/components/IncidentDetailView.tsx # Read-only detail view
+│   ├── src/components/IncidentDetailView.tsx # Detail view with Edit and Delete actions (confirmation modal)
 │   ├── src/components/IncidentEditView.tsx   # Thin wrapper — mode=edit
 │   ├── src/components/IncidentPageChrome.tsx # Shared page chrome (h1 + back link)
 │   ├── src/components/AuditsView.tsx      # Audit list with filters, sort, pagination
@@ -143,7 +143,7 @@ These are practical lessons from building this project with Claude Code (termina
 **Nightly autonomous agent**
 - A GitHub Actions workflow (`nightly-agent.yml`) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch`, and picks the lowest-priority open task from `docs/nightly-agent-backlog.md` matching `TASK_MODE` (default: `easy`).
 - Two-phase plan-then-act: a planning call returns a structured JSON plan; implementation calls execute per file. The agent never acts without a valid plan.
-- Runs the full 4-command test suite before committing — broken fixes never reach the branch. Up to 3 retry attempts with test-failure feedback to the model between attempts.
+- Runs the full 5-command test suite before committing — broken fixes never reach the branch. Up to 3 retry attempts with test-failure feedback to the model between attempts.
 - On success: moves the task row from backlog to `docs/nightly-agent-completed.md`, commits code + backlog update in one commit, raises a normal PR.
 - On failure: discards code changes, increments the attempt counter, adds a failure note, raises a draft PR for human review.
 - Hard cap of 10 Anthropic API calls per run. Sensitive path guard rejects plan changes to `.github/`, `.husky/`, `package.json`.
@@ -264,7 +264,7 @@ Copy root `.env.example` to `.env` and add your `ANTHROPIC_API_KEY` for local Cl
 
 Pushes and pull requests targeting `main` trigger the [CI workflow](.github/workflows/ci.yml), which runs `dotnet test` and `npm test` (Vitest) on Ubuntu. The workflow fails if any test fails.
 
-The [PR review workflow](.github/workflows/pr-review.yml) runs after CI passes on every PR — it reviews the diff against the `code-reviewer` skill, autonomously fixes Blockers and Majors (up to 3 attempts), and posts findings as a PR comment.
+The [PR review workflow](.github/workflows/pr-review.yml) triggers on every PR in parallel with CI — it runs its own test job, then reviews the diff against the `code-reviewer` skill, autonomously fixes Blockers and Majors (up to 3 attempts), and posts findings as a PR comment.
 
 The [nightly agent workflow](.github/workflows/nightly-agent.yml) runs on a nightly cron schedule (3 AM Perth / UTC+8) and `workflow_dispatch` — it picks a backlog task, implements it, runs the full test suite, and raises a PR. See `docs/nightly-agent-completed.md` for the completed-task log.
 

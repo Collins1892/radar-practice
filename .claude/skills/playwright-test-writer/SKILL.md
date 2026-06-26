@@ -392,7 +392,7 @@ test.describe('items: add item', () => {
 - One domain per spec file: `journeys/items.journey.spec.ts`, `journeys/incidents.journey.spec.ts`, `journeys/audits.journey.spec.ts`.
 - `test.describe('domain: scenario', () => { ... })` — one `test` per agent request inside the describe.
 - Use `test.beforeEach` only when every test in that describe needs the same navigation — do not add shared setup for unrelated tests.
-- Prefer **UI-driven setup** for items/incidents; for audits soft-delete journeys, **API seeding** via [`e2e/support/api.ts`](../../../client/e2e/support/api.ts) (`createAudit` only) is established — delete via UI (Delete audit → Confirm delete) — follow [`audits.journey.spec.ts`](../../../client/e2e/journeys/audits.journey.spec.ts).
+- Prefer **UI-driven setup** for items/incidents; for soft-delete journeys, **API seeding** via [`e2e/support/api.ts`](../../../client/e2e/support/api.ts) (`createIncident` for incidents, `createAudit` for audits) is established — delete via UI (Delete via the detail view's Delete button → Confirm delete) — follow [`client/e2e/journeys/incidents.journey.spec.ts`](../../../client/e2e/journeys/incidents.journey.spec.ts) and [`audits.journey.spec.ts`](../../../client/e2e/journeys/audits.journey.spec.ts).
 - Use `await expect(locator).toBeVisible()` / `toHaveText` — prefer role and label queries over CSS selectors.
 - After API errors, assert `role="alert"` and preserved field values (see Vitest incident form tests).
 
