@@ -1,6 +1,6 @@
 import path from 'path';
 
-const SENSITIVE_PATH_PREFIXES = ['.github/', '.husky/'];
+const SENSITIVE_PATH_PREFIXES = ['.github/'];
 const SENSITIVE_PATH_EXACT = new Set(['package.json']);
 const SENSITIVE_PATH_SUFFIXES = ['.csproj', '.sln'];
 const SENSITIVE_PATH_BASENAMES = new Set([
@@ -11,6 +11,7 @@ const SENSITIVE_PATH_BASENAMES = new Set([
 ]);
 const SENSITIVE_PATH_BASENAME_PREFIXES = ['.env'];
 const MIGRATIONS_SEGMENT = '/Migrations/';
+const HUSKY_SEGMENT = '/.husky/';
 
 function normalizeRepoRelativePath(filePath, repoRoot) {
   if (repoRoot !== undefined && repoRoot !== null) {
@@ -46,6 +47,10 @@ function isSensitivePath(filePath, repoRoot) {
   }
 
   if (rel.startsWith('Migrations/') || rel.includes(MIGRATIONS_SEGMENT)) {
+    return true;
+  }
+
+  if (rel.startsWith('.husky/') || rel.includes(HUSKY_SEGMENT)) {
     return true;
   }
 

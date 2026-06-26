@@ -75,7 +75,7 @@ blocklist:
 | Blocked path | Reason |
 |-------------|--------|
 | `.github/` | Workflow files and automation scripts — agent must not rewrite its own guardrails |
-| `.husky/` | Pre-commit hooks including the `no-secrets` ESLint check |
+| `**/.husky/` (any depth) | Pre-commit hooks including the `no-secrets` ESLint check (e.g. `client/.husky/pre-commit`) |
 | `package.json` (repo root only) | Root dependency manifest and test script definitions |
 | `*.csproj`, `*.sln` | .NET project and solution files |
 | `*/Migrations/*` | EF Core migration files |

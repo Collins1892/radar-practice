@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   backoffMs,
+  buildScopedGitAddArgs,
+  commitAndPushFixes,
   extractFilePath,
   formatComment,
   getRetryWaitMs,
@@ -525,5 +527,29 @@ describe('mergeAdvisory', () => {
 
     assert.equal(merged.length, 1);
     assert.deepEqual(merged[0], advisory[0]);
+  });
+});
+
+describe('buildScopedGitAddArgs', () => {
+  it('stages only written paths via git add -- pathspec', () => {
+    const writtenFilePaths = ['client/src/foo.ts', 'ItemsApi/Item.cs'];
+    assert.deepEqual(buildScopedGitAddArgs(writtenFilePaths), [
+      'add',
+      '--',
+      ...writtenFilePaths,
+    ]);
+  });
+
+  it('does not use git add -A', () => {
+    const args = buildScopedGitAddArgs(['client/src/foo.ts']);
+    assert.notEqual(args[1], '-A');
+    assert.equal(args[1], '--');
+  });
+});
+
+describe('commitAndPushFixes', () => {
+  it('skips commit when writtenFilePaths is empty', async () => {
+    const result = await commitAndPushFixes(1, []);
+    assert.equal(result.pushed, false);
   });
 });

@@ -911,6 +911,10 @@ async function runTestSuite() {
   return { ok: true };
 }
 
+function buildScopedGitAddArgs(writtenFilePaths) {
+  return ['add', '--', ...writtenFilePaths];
+}
+
 async function commitAndPushFixes(attempt, writtenFilePaths) {
   if (writtenFilePaths.length === 0) {
     warn('No written file paths to stage — skipping commit');
@@ -920,7 +924,7 @@ async function commitAndPushFixes(attempt, writtenFilePaths) {
   log('Configuring git identity for automated commit...');
   await runGit(['config', 'user.email', GIT_USER_EMAIL]);
   await runGit(['config', 'user.name', GIT_USER_NAME]);
-  await runGit(['add', '--', ...writtenFilePaths]);
+  await runGit(buildScopedGitAddArgs(writtenFilePaths));
 
   const status = await runGitOutput(['status', '--porcelain']);
   if (status.trim() === '') {
@@ -1491,6 +1495,8 @@ async function main() {
 
 export {
   backoffMs,
+  buildScopedGitAddArgs,
+  commitAndPushFixes,
   getRetryWaitMs,
   stripJsonWrappers,
   parseFindings,

@@ -12,6 +12,11 @@ describe('isSensitivePath', () => {
     assert.equal(isSensitivePath('.github/workflows/ci.yml'), true);
   });
 
+  it('blocks Husky hooks at repo root and nested paths such as client/.husky/', () => {
+    assert.equal(isSensitivePath('.husky/pre-commit'), true);
+    assert.equal(isSensitivePath('client/.husky/pre-commit'), true);
+  });
+
   it('blocks root package.json only', () => {
     assert.equal(isSensitivePath('package.json'), true);
     assert.equal(isSensitivePath('client/package.json'), false);

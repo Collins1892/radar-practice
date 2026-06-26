@@ -151,7 +151,7 @@ flowchart LR
 | Legacy (.NET 4) | Modern (.NET 8 in this repo) |
 |-----------------|------------------------------|
 | `Global.asax` / `Application_Start` | Top-level `Program.cs`: `WebApplication.CreateBuilder`, DI, `app.Map*` — see [IncidentsApi/Program.cs](../../../IncidentsApi/Program.cs) |
-| `Web.config` (`connectionStrings`, `appSettings`) | `appsettings.json` + `builder.Configuration` for logging and host config only; SQLite DB path follows Incidents precedent — hardcoded in `Program.cs` (`DataSource=audits.db`), not in `appsettings.json` |
+| `Web.config` (`connectionStrings`, `appSettings`) | `appsettings.json` + `builder.Configuration` — connection strings under `ConnectionStrings:DefaultConnection`, CORS under `Cors:AllowedOrigins`; `Program.cs` reads both via `GetConnectionString` / `GetSection` and fails fast if missing (see [IncidentsApi/appsettings.json](../../../IncidentsApi/appsettings.json), [IncidentsApi/Program.cs](../../../IncidentsApi/Program.cs)) |
 | `System.Web` / `HttpContext` | `Microsoft.AspNetCore.*`; minimal API delegates |
 | Web API controllers + `HttpResponseMessage` | `Results.Ok` / `Results.Created` / `Results.BadRequest` / `Results.NotFound` |
 | EF6 / ADO in controllers | Dedicated `DbContext` in `Data/`, `Ef*Repository` implementing `I*Repository`, **scoped** DI |
