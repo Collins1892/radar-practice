@@ -73,7 +73,7 @@ API, separate AuditsDbContext, separate audits.db. Migrated from
 - `client/src/test/setup.ts` — Vitest setup
 - `client/e2e/` — Playwright e2e tests
 - `package.json` (repo root) — scripting-only Node package for repo automation scripts. Scripts: `npm run pr-review` (automated PR review), `npm run nightly-agent` (autonomous backlog agent), `npm test` (runs `pr-review.test.js` + `nightly-agent.test.js` + `sensitive-paths.test.js`). Unrelated to the `client/` workspace — do not confuse the two or add client dependencies here; frontend packages belong in `client/package.json`.
-- `.github/scripts/` — repo automation scripts: `pr-review.js` (automated PR review), `nightly-agent.js` (nightly autonomous agent), `pr-review.test.js`, `nightly-agent.test.js`
+- `.github/scripts/` — repo automation scripts: `pr-review.js` (automated PR review), `nightly-agent.js` (nightly autonomous agent), `sensitive-paths.js` (shared sensitive-path guard), `pr-review.test.js`, `nightly-agent.test.js`, `sensitive-paths.test.js`
 - `docs/nightly-agent-backlog.md` — open tasks for the nightly agent (authoritative source; T-numbers, difficulty, stack, category, attempts, notes)
 - `docs/nightly-agent-completed.md` — completed tasks log (moved from backlog on merge)
 - `.github/workflows/` — GitHub Actions: `ci.yml` (push/PR), `pr-review.yml`, `nightly-agent.yml`, `nightly-e2e.yml`

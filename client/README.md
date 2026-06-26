@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-Items API must be running on port 5133. Incidents API must be running on port 5134. Audits API must be running on port 5135. The Items API is required for the `/` demo route and e2e smoke tests; it is not a finished production module.
+Items API must be running on port 5133. Incidents API must be running on port 5134. Audits API must be running on port 5135. The Items API is required for `/items` and the items e2e journey (`/` redirects to `/components` and does not need Items API); it is not a finished production module.
 
 ## Test
 
