@@ -74,9 +74,10 @@ Use paths to choose which rule sections apply:
 
 ```
 ItemsApi/
-  Program.cs                  — minimal API endpoints and middleware; registers CORS,
-                                AddDbContext<AppDbContext> (SQLite "app.db"),
-                                AddScoped<IItemsRepository, EfItemsRepository>, Database.Migrate()
+  Program.cs                  — minimal API endpoints and middleware; registers CORS from
+                                appsettings.json, AddDbContext<AppDbContext> (connection string from
+                                appsettings.json), AddScoped<IItemsRepository, EfItemsRepository>,
+                                Database.Migrate()
   IItemsRepository.cs         — repository interface
   Item.cs, ItemRequest.cs     — models / DTOs
   Data/AppDbContext.cs        — EF Core DbContext (DbSet<Item>, model config)
@@ -89,7 +90,8 @@ ItemsApi.Tests/
 
 IncidentsApi/
   Program.cs                  — minimal API endpoints and middleware (including DELETE /incidents/{id});
-                                registers CORS, AddDbContext<IncidentsDbContext> (SQLite "incidents.db"),
+                                registers CORS from appsettings.json, AddDbContext<IncidentsDbContext>
+                                (connection string from appsettings.json),
                                 AddScoped<IIncidentRepository, EfIncidentRepository>, Database.Migrate()
   IIncidentRepository.cs      — repository interface
   IncidentRequest.cs, PutIncidentRequest.cs — wire DTOs (no RecordStatus)
@@ -106,9 +108,10 @@ IncidentsApi.Tests/
   TestWebApplicationFactory.cs  — custom factory; per-class in-memory SQLite DB
 
 AuditsApi/
-  Program.cs                  — minimal API endpoints and middleware; registers CORS,
-                                AddDbContext<AuditsDbContext> (SQLite "audits.db"),
-                                AddScoped<IAuditRepository, EfAuditRepository>, Database.Migrate()
+  Program.cs                  — minimal API endpoints and middleware; registers CORS from
+                                appsettings.json, AddDbContext<AuditsDbContext> (connection string from
+                                appsettings.json), AddScoped<IAuditRepository, EfAuditRepository>,
+                                Database.Migrate()
   IAuditRepository.cs         — repository interface (in Repositories/)
   AuditRequest.cs, PutAuditRequest.cs — wire DTOs (no RecordStatus)
   Audit.cs, Status.cs, RecordStatus.cs — models / enums (in Models/)

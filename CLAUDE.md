@@ -179,8 +179,9 @@ changed library API.
 - **Soft delete (`RecordStatus`)** — used in IncidentsApi and AuditsApi; reuse this
   pattern when adding soft delete elsewhere:
   - `RecordStatus` enum (`Active`, `Deleted`) on the entity; stored as int
-  - Wire DTOs (`AuditRequest` for POST, `PutAuditRequest` for PUT) exclude
-    `RecordStatus` — not bindable from POST/PUT JSON; repository `Add` always sets `Active`
+  - Wire DTOs (`AuditRequest` / `PutAuditRequest` for AuditsApi;
+    `IncidentRequest` / `PutIncidentRequest` / `IncidentResponse` for IncidentsApi)
+    exclude `RecordStatus` — not bindable from POST/PUT JSON; repository `Add` always sets `Active`
   - `Update` never modifies `RecordStatus`; only updates rows where
     `RecordStatus == Active`
   - All read paths (`GetAll`, `GetById`) unconditionally exclude

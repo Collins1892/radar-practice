@@ -97,7 +97,7 @@ IncidentsApi/
   IncidentListQuery.cs        — record IncidentListQuery(IncidentSeverity? Severity,
                                 IncidentStatus? Status, string SortBy, bool SortDescending,
                                 int Page, int PageSize)
-  PagedIncidentsResult.cs     — record PagedIncidentsResult(IReadOnlyList<Incident> Items,
+  PagedIncidentsResult.cs     — record PagedIncidentsResult(IReadOnlyList<IncidentResponse> Items,
                                 int Page, int PageSize, int TotalCount, int TotalPages)
   Data/IncidentsDbContext.cs  — dedicated DbContext for incidents.db; enums and RecordStatus stored as int
   Repositories/EfIncidentRepository.cs — EF Core implementation; SoftDelete sets RecordStatus Deleted
