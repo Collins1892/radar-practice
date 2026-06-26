@@ -19,6 +19,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { isSensitivePath } from './sensitive-paths.js';
 
 const USER_AGENT = 'radar-practice-pr-review';
 // The code-reviewer skill defines four severities (Blocker, Major, Minor, Suggestion),
@@ -34,15 +35,6 @@ const GIT_USER_NAME = 'github-actions[bot]';
 const GIT_USER_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com';
 const BACKTICK_PATH_RE = /`(\.?[\w.-]+(?:\/[\w.-]+)+\.[\w]+)`/;
 const UNQUOTED_PATH_RE = /(?:^|[\s`'"(])(\.?[\w.-]+(?:\/[\w.-]+)+\.[\w]+)/;
-const SENSITIVE_PATH_PREFIXES = ['.github/', '.husky/'];
-const SENSITIVE_PATH_EXACT = new Set(['package.json']);
-
-function isSensitivePath(filePath) {
-  if (SENSITIVE_PATH_EXACT.has(filePath)) {
-    return true;
-  }
-  return SENSITIVE_PATH_PREFIXES.some((prefix) => filePath.startsWith(prefix));
-}
 
 const execFileAsync = promisify(execFile);
 
@@ -573,7 +565,7 @@ function splitActionableFindings(findings, changedFiles) {
       continue;
     }
 
-    if (isSensitivePath(filePath)) {
+    if (isSensitivePath(filePath, repoRoot)) {
       warn('Rejected sensitive path — treating as advisory for this run');
       log(`Demoted finding: [${finding.severity}] ${finding.description}`);
       advisory.push(finding);
@@ -764,6 +756,7 @@ async function applyBlockerMajorFixes(
     `Applying fixes for ${groups.size} file(s) (${actionable.length} finding(s))...`,
   );
   const demotedFindings = [];
+  const writtenFilePaths = new Set();
 
   for (const [filePath, items] of groups) {
     const fetchResult = await fetchFileContent(
@@ -822,11 +815,15 @@ async function applyBlockerMajorFixes(
       }
       fileContent = fixResult.content;
       await writeFile(absolutePath, fixResult.content, 'utf8');
+      writtenFilePaths.add(filePath);
       log(`Wrote corrected file to ${filePath}`);
     }
   }
 
-  return demotedFindings;
+  return {
+    demotedFindings,
+    writtenFilePaths: [...writtenFilePaths].sort(),
+  };
 }
 
 async function runGit(args) {
@@ -914,11 +911,20 @@ async function runTestSuite() {
   return { ok: true };
 }
 
-async function commitAndPushFixes(attempt) {
+function buildScopedGitAddArgs(writtenFilePaths) {
+  return ['add', '--', ...writtenFilePaths];
+}
+
+async function commitAndPushFixes(attempt, writtenFilePaths) {
+  if (writtenFilePaths.length === 0) {
+    warn('No written file paths to stage — skipping commit');
+    return { pushed: false };
+  }
+
   log('Configuring git identity for automated commit...');
   await runGit(['config', 'user.email', GIT_USER_EMAIL]);
   await runGit(['config', 'user.name', GIT_USER_NAME]);
-  await runGit(['add', '-A']);
+  await runGit(buildScopedGitAddArgs(writtenFilePaths));
 
   const status = await runGitOutput(['status', '--porcelain']);
   if (status.trim() === '') {
@@ -1215,15 +1221,16 @@ async function runFixLoop({
       `Found ${actionable.length} actionable finding(s), ${advisory.length} advisory finding(s) this attempt`,
     );
     const untrackedBeforeFixAttempt = await getUntrackedPaths();
-    const demotedDuringFix = await applyBlockerMajorFixes(
-      actionable,
-      owner,
-      repo,
-      branchName,
-      token,
-      apiKey,
-      apiCallCounter,
-    );
+    const { demotedFindings: demotedDuringFix, writtenFilePaths } =
+      await applyBlockerMajorFixes(
+        actionable,
+        owner,
+        repo,
+        branchName,
+        token,
+        apiKey,
+        apiCallCounter,
+      );
     if (demotedDuringFix.length > 0) {
       accumulatedAdvisory = mergeAdvisory(accumulatedAdvisory, demotedDuringFix);
       const demotedKeys = new Set(
@@ -1279,7 +1286,7 @@ async function runFixLoop({
     log('Committing and pushing fixes...');
     let pushed;
     try {
-      ({ pushed } = await commitAndPushFixes(attempt));
+      ({ pushed } = await commitAndPushFixes(attempt, writtenFilePaths));
     } catch (commitError) {
       const commitMessage =
         commitError instanceof Error ? commitError.message : String(commitError);
@@ -1488,6 +1495,8 @@ async function main() {
 
 export {
   backoffMs,
+  buildScopedGitAddArgs,
+  commitAndPushFixes,
   getRetryWaitMs,
   stripJsonWrappers,
   parseFindings,

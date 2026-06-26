@@ -8,7 +8,7 @@
   "scripts": {
     "pr-review": "node .github/scripts/pr-review.js",
     "nightly-agent": "node .github/scripts/nightly-agent.js",
-    "test": "node --test .github/scripts/pr-review.test.js .github/scripts/nightly-agent.test.js"
+    "test": "node --test .github/scripts/pr-review.test.js .github/scripts/nightly-agent.test.js .github/scripts/sensitive-paths.test.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7"
