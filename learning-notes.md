@@ -2697,6 +2697,7 @@ Like that when setting up Claude it will never delete important code like tables
 Two issues came up during the build:
 
 1. **Mangled output path** — `dotnet new` was called via the Bash tool with `-o C:\Users\jamie\code\radar-practice\ItemsApi`, but the Windows path got corrupted into a single token, so the project landed in a folder named `Usersjamiecoderadar-practiceItemsApi` instead of `ItemsApi`. Fixed by renaming the folder with `Rename-Item`.
+
 2. **Locked binary blocking the test build** — when tests were first run, `ItemsApi.exe` was still held open by a `dotnet run` process (PID 37776) from an earlier session. MSBuild could not overwrite it and failed after 10 retries. Fixed by killing that process with `Stop-Process` before re-running tests.
 
 The code itself compiled and all tests passed on the first attempt — both issues were environment/tooling problems rather than code errors, and both were resolved by the agent without manual intervention.
