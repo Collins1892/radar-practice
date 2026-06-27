@@ -1,137 +1,25 @@
 ---
-description: Core project conventions (condensed from CLAUDE.md)
+description: Pointer to the canonical project guide (CLAUDE.md)
 alwaysApply: true
 ---
 
 # Project conventions (radar-practice)
 
-## Project overview
+The canonical project guide is [`CLAUDE.md`](../../CLAUDE.md) at the repo root.
+**Read it first** — it is the single source of truth for the repo map, tech
+stack, conventions, skills/commands, automation, and boundaries. This file is a
+thin pointer only; do not duplicate project facts here (a second copy just
+drifts out of sync).
 
-Full-stack learning project demonstrating agentic AI development — not production.
-Domain: Items catalogue — the Week 1 scaffolding domain (`ItemsApi/` .NET 8 minimal API + `client/` React/TS/Vite client). No patient data, no production dependencies.
-Items module: demo learning scaffold — included for agentic-workflow practice only, not intended for production use. Incidents and Audits are the reference feature modules. The `/items` route displays a warning banner with the same message.
+## Non-negotiable guardrails
 
-## Repo layout
+These apply even before you open `CLAUDE.md`:
 
-- `ItemsApi/` — .NET 8 minimal API; demo learning scaffold (not a production feature module)
-- `IncidentsApi/` — standalone .NET 8 minimal API for incident reporting (reference feature module)
-- `IncidentsApi/Data/IncidentsDbContext.cs` — dedicated DbContext (`incidents.db`); no shared context with ItemsApi
-- `IncidentsApi/Repositories/EfIncidentRepository.cs` — EF Core repository
-- `IncidentsApi/Migrations/` — EF Core migrations
-- `IncidentsApi.Tests/` — xUnit integration tests
-- `IncidentsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
-- `AuditsApi/` — standalone .NET 8 minimal API for clinical quality audits (reference feature module)
-- `AuditsApi/Data/AuditsDbContext.cs` — dedicated DbContext (`audits.db`); no shared context with ItemsApi
-- `AuditsApi/Repositories/EfAuditRepository.cs` — EF Core repository
-- `AuditsApi/Migrations/` — EF Core migrations
-- `AuditsApi.Tests/` — xUnit integration tests
-- `AuditsApi.Tests/TestWebApplicationFactory.cs` — SQLite in-memory test factory
-- `client/src/pageTitle.ts` — per-route document.title helper (SITE_TITLE, formatPageTitle)
-- `client/e2e/` — Playwright e2e tests
-- `.github/workflows/` — GitHub Actions: `ci.yml` (push/PR), `pr-review.yml`, `nightly-agent.yml`, `nightly-e2e.yml`
-- `private/seven-week-plan.md` — master plan, decisions log, daily structure (private file: agent-readable, not committed)
-- `private/phase-1-foundation.md` — Weeks 1–2 complete (private file: agent-readable, not committed)
-- `private/phase-2-build.md` — Weeks 3–5 complete (private file: agent-readable, not committed)
-- `private/phase-3-articulate.md` — Weeks 6–7, Week 6 active (private file: agent-readable, not committed)
-- `private/job-advert.md` — live job advert (June 2026), (private file: agent-readable, not committed)
+- **No PII or patient data** — no NHS numbers, patient IDs, real names, or realistic personal fixtures in prompts, code, tests, or sample data. Synthetic/redacted only.
+- **Never commit or push, and never `gh pr create` / `gh pr review`, unless explicitly asked** — show changes only; the developer commits. Never force-push without instruction.
+- **No stack traces or internal errors to clients** — the global exception handler returns a generic `{ error: "..." }` shape.
+- **Reference-module rule** — Incidents/Audits are the structural template; Items is a demo scaffold (never a template); `legacy/` is a behaviour reference (what, not how).
+- **No `any`, non-null assertions, or ESLint-rule disables** — except the documented exception in `client/src/componentRegistry.tsx`.
 
-## Tech stack — Backend
-
-- .NET 8.0 minimal API; repository pattern + built-in DI.
-- Entity Framework Core 8.0.27 with SQLite (`Microsoft.EntityFrameworkCore.Sqlite`).
-- `AppDbContext` — ItemsApi only (`DbSet<Item>`). IncidentsApi and AuditsApi each have their own DbContext. ItemsApi is a demo learning scaffold; use IncidentsApi/AuditsApi as reference for new backend patterns.
-- `EfItemsRepository` implements `IItemsRepository` — scoped lifetime, `AsNoTracking()` for reads (ItemsApi demo scaffold only).
-- `Price` stored as TEXT via `HasConversion<string>()` for exact decimal precision.
-- `Name` has `HasMaxLength(100)` in `OnModelCreating`.
-- Database file `app.db` — local only, never committed.
-- IncidentsApi: `incidents.db` (local only). `Severity` and `Status` enums stored as int for correct sort order.
-- AuditsApi: `audits.db` (local only). Dev port 5135 (Items=5133, Incidents=5134). `Status` and `RecordStatus` enums stored as int. DELETE soft-deletes via `RecordStatus`.
-- xUnit 2.5.3 with `TestWebApplicationFactory`; NSubstitute 5.1.0; Microsoft.AspNetCore.Mvc.Testing 8.0.0.
-- Node.js 24 (LTS).
-
-## Tech stack — Frontend
-
-- React 19.2.7, TypeScript 6.0.3, Vite 8.1.0.
-- `react-router-dom` 7.18.0 — client-side routing (`BrowserRouter` in `main.tsx`, `NavLink` and `Routes` in `App.tsx`).
-- Tailwind CSS 4.3.1 via `@tailwindcss/vite` 4.3.1.
-- shadcn/ui (Nova preset) with Radix: `radix-ui` 1.6.0, `@radix-ui/react-slot` 1.3.0.
-- `class-variance-authority` 0.7.1, `clsx` 2.1.1, `tailwind-merge` 3.6.0, `lucide-react` 1.21.0.
-- `date-fns` 4.4.0 — date formatting utilities.
-- `react-day-picker` 10.0.1 — calendar component used by shadcn Calendar.
-- `sonner` 2.0.7 — toast notifications; mount `<Toaster />` from `@/components/ui/sonner` at app shell level.
-- ESLint 10.5.0 (typescript-eslint); Prettier 3.8.4 (semicolons, single quotes, trailing commas).
-- Vitest 4.1.9 with @testing-library/react 16.3.2, @testing-library/jest-dom 6.9.1, @testing-library/user-event 14.6.1, jsdom 29.1.1; Playwright 1.61.1 (Chromium only, e2e/; 8 tests (3 smoke + items + components + 2 incidents + 1 audit journey); nightly suite via `nightly-e2e.yml`).
-- CSS: OKLCH theme tokens in `src/index.css` under `@theme inline`; compose classes with `cn()`; no new legacy CSS. As a demo scaffold, Items catalogue components (`App.tsx`, `ItemsList`) retain legacy `ItemsList.css` / `App.css` — expected, not a backlog gap to close unprompted.
-- Dark mode: `@custom-variant dark` uses the Tailwind v4 block form responding to both `.dark` class and `prefers-color-scheme: dark`. All three sync points (`.dark` class, media query, `@custom-variant`) must be kept in sync when tokens change.
-
-## Component file locations
-
-- `client/src/components/ui/` — shadcn-generated vendor components only (ESLint-ignored). Do not place hand-authored components here.
-- `client/src/components/` — all hand-authored app components (Badge, LoadingState, EmptyState, ErrorState, FormField, SelectField, DatePickerField, DataTable, Pagination, ComponentsView, IncidentsView, IncidentForm, IncidentCreateView, IncidentDetailView, IncidentEditView, IncidentPageChrome, AuditsView, AuditForm, AuditCreateView, AuditDetailView, AuditEditView, AuditPageChrome, InlineAlert, Modal).
-- `client/src/api/audits.ts` — typed fetch layer for AuditsApi (fetchAudits, createAudit, getAudit, updateAudit, deleteAudit, auditUserMessage, parseAuditId).
-- `client/src/componentRegistry.tsx` — registry of all components for the components view. Has a file-level `eslint-disable react-refresh/only-export-components` — documented exception pending Week 7 architectural fix.
-- `client/src/components/formFieldUtils.ts` — shared utility (`formFieldErrorId`). Pure module, no JSX.
-- `client/src/components/incidentDisplay.ts` — shared incident display helpers — badge variants, status label, reported-date formatter, severity/status/filter option lists.
-- `client/src/components/auditDisplay.ts` — shared audit display helpers — badge variants, status label, audit-date formatter, status/filter option lists.
-- `client/src/components/auditPageCopy.ts` — shared audit page headings, subtitles, and success messages.
-- `client/src/hooks/useAudits.ts` — list hook for AuditsView (filters, sort, pagination, fetch state).
-- `client/src/hooks/useAudit.ts` — single-audit hook for detail/edit views (load by id, reload).
-
-## TypeScript conventions
-
-- No explicit `any`; no unused imports or variables.
-- Explicit function return types required.
-- No non-null assertion operator (`!`).
-- Semicolons on, single quotes, trailing commas.
-- `tsconfig.json` has `"ignoreDeprecations": "6.0"` — silences the TypeScript 6 `baseUrl` deprecation until the proper migration is done.
-
-## React conventions
-
-- React hooks rules — no conditional hooks; exhaustive `useEffect` dependencies.
-- No `console.log` in committed code; no `debugger` statements.
-
-### Vendor files exempt from lint rules
-
-`client/src/components/ui/**` (shadcn generated components) and `client/src/lib/utils.ts` (the `cn()` helper) are vendor-generated and ESLint-ignored. Do NOT apply the strict TypeScript/React conventions above to these files. Treat them as vendored — review their usage, not their internal style.
-
-## C# conventions
-
-- Repository pattern — controllers depend on interfaces, not concrete classes.
-- Dependency injection via the built-in .NET DI container.
-- Global exception handler covers unhandled exceptions — do not add per-endpoint try/catch; it returns a consistent `{ error: "..." }` shape and never exposes stack traces.
-- **Soft delete (`RecordStatus`)** — AuditsApi pattern: `Active`/`Deleted` enum on entity; excluded from wire DTO; `Add` sets `Active`; `Update` never touches it; all reads exclude `Deleted`; DELETE calls `SoftDelete`.
-
-## Testing approach
-
-- Backend: `dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj`; `dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj`; `dotnet test AuditsApi.Tests/AuditsApi.Tests.csproj`. Frontend: `npm test` in `client/`.
-- Generate one test per prompt; integration tests preferred for endpoints.
-- Test behaviour, not implementation details; do not edit or remove existing tests without instruction.
-- Gotchas: Vitest requires `pool: 'threads'` on Windows; `TestWebApplicationFactory` gives each test class its own in-memory SQLite database.
-- Vitest setup: `client/src/test/setup.ts` includes global `Element.prototype.scrollIntoView = vi.fn()`
-- Vitest scoping: Vitest only runs files under `src/` — `e2e/` excluded via `include` config
-- Playwright: run e2e from `client/` with `npx playwright test` — Playwright `webServer` boots all three APIs plus Vite automatically; nightly suite via `nightly-e2e.yml` (not on PR builds)
-
-## Workflow
-
-Do:
-- Use Plan mode for any non-trivial agent task — show the plan before touching files.
-- Include `use context7` in prompts upfront when working with library APIs.
-- Make small, focused changes; run tests after every change and confirm they pass.
-- Match existing patterns; use the repository pattern for all new data access.
-- Add tests for any new endpoint or business logic; verify the build before declaring done.
-- Ask for clarification when ambiguous; check `.claude/skills/` for relevant skills — available skills: `dotnet-test-writer`, `react-test-writer`, `playwright-test-writer`, `code-reviewer`, `wcag`, `component-builder`, `modernisation`.
-- All changes via feature branch and PR.
-
-Don't:
-- Commit or push without being explicitly asked — show changes only; the developer commits.
-- Force push (`git push --force` or `--force-with-lease`) without explicit instruction.
-- Raise pull requests via `gh pr create` or post PR comments via `gh pr review`.
-- Run destructive operations (delete files, drop tables) without confirmation.
-- Make large unsupervised refactors; generate multiple tests in one prompt; skip the test run.
-- Expose stack traces or internal errors to the client; use `any`, non-null assertions, or disable ESLint rules (except documented exceptions in `componentRegistry.tsx` and `FormField.tsx`).
-- Over-engineer; translate AngularJS patterns directly — rewrite idiomatically in React (legacy is a reference for *what*, not *how*). For structural templates, use Incidents or Audits — not Items.
-- Place hand-authored components in `src/components/ui/` — that directory is for shadcn vendor files only.
-
-## Data protection
-
-No real patient data, PII, or NHS numbers in prompts, code, tests, or fixtures — use synthetic or redacted data only. No production database access. Strip identifiers from logs and stack traces before sharing. If in doubt, leave it out.
+Everything else — repo layout, versions, testing approach, automation, data
+protection detail — is in [`CLAUDE.md`](../../CLAUDE.md).
