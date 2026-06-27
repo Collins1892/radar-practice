@@ -1,3 +1,55 @@
+## Week 6 Day 6 — Saturday 27 June 2026
+
+**T26 manual fix — nightly agent payload size failure**
+T26 (restore blank line in learning-notes.md) failed twice on the nightly
+agent with a silent network drop. Root cause: `learning-notes.md` at 167KB
+is sent as the full file content in `buildImplementPrompt`. The GitHub
+Actions runner drops the Anthropic API connection before the implement call
+completes. This is not a transient network error — it is reproducible because
+the payload is consistently too large. The plan call (lighter payload)
+succeeded both times; only the implement call failed.
+
+T26 resolved manually: blank line restored between numbered list items 1 and
+2 in the Week 1 Day 1 section. PR #135 merged.
+
+**T73 logged — file size guard in implementPlanChanges**
+No file size guard exists before the implement call. Any file exceeding a
+threshold causes the same silent failure — the agent doesn't fail-closed, it
+just drops the connection. T73 added to `docs/nightly-agent-backlog.md`:
+add a size check in `implementPlanChanges`; if the file exceeds a safe
+threshold, abort with a clean `NightlyAgentFatalError` rather than a network
+drop. This is the right failure mode — fail closed with a clear message, not
+silently.
+
+**Documentation rewrite — CLAUDE.md, README.md, project.mdc**
+Both files had grown incrementally from Week 1 and were still anchored on
+the items catalogue scaffold. Reviewed with fresh eyes using Opus 4.8, then
+rewritten from scratch knowing the full current state.
+
+Key decisions:
+- CLAUDE.md is now the single source of truth — canonical agent boot guide.
+  Pattern-based repo map replaces the 60-line file inventory. Reference-module
+  rule promoted near the top: Incidents/Audits for structure, Items demo only,
+  legacy/ for behaviour reference. Consolidated automation section. Skills and
+  command index with activation guidance. Framework-major versions only —
+  exact pins deferred to manifests.
+- README.md restructured around the agentic SDLC story — outcomes not
+  chronology, module names not week numbers, mermaid workflow diagram, links
+  to docs rather than inlined essays.
+- project.mdc collapsed to a thin pointer. It had already drifted (stale
+  Playwright count: 8 tests / 2 incidents — reality is 9 / 3). Removing the
+  duplicate copy removes the drift surface.
+- Observation essays relocated to `docs/ai-workflow-observations.md`.
+
+**Two-gate review caught a real accuracy bug**
+Cursor review (gate 1) flagged the project.mdc guardrails as drift-prone.
+Claude Code `/review` (gate 2) caught a Major the first review missed:
+`client/src/components/FormField.tsx` was listed as a documented ESLint
+exception in both CLAUDE.md and project.mdc. The file contains no disable
+directive — `componentRegistry.tsx` is the only genuine exception. The false
+entry was removed. This confirms the two-gate review pattern — Cursor and
+Claude Code consistently catch different classes of issue.
+
 ## Week 6 Day 5 — Friday 26 June 2026
 
 **PR #133 merged — T25 nightly agent task**
