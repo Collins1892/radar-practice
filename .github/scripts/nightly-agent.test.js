@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   allTasksBlockedByPr,
+  applyOversizedTaskSkip,
   buildAttemptedTaskIdSet,
   buildImplementPrompt,
   buildPlanPrompt,
@@ -9,6 +10,9 @@ import {
   fetchAttemptedTaskIds,
   formatPrBody,
   formatPrNumberCell,
+  implementPlanChanges,
+  isImplementFileTooLarge,
+  MAX_IMPLEMENT_FILE_BYTES,
   moveToCompleted,
   parseBacklog,
   pickTask,
@@ -821,6 +825,107 @@ describe('stripCodeFences', () => {
   it('handles content with fences and leading/trailing whitespace', () => {
     const wrapped = '  ```js\nexport {};\n```  ';
     assert.equal(stripCodeFences(wrapped), 'export {};');
+  });
+});
+
+describe('isImplementFileTooLarge', () => {
+  it('triggers when file content exceeds 100KB', () => {
+    const content = 'x'.repeat(MAX_IMPLEMENT_FILE_BYTES + 1);
+    assert.equal(isImplementFileTooLarge(content), true);
+  });
+
+  it('does not trigger at exactly 100KB', () => {
+    const content = 'x'.repeat(MAX_IMPLEMENT_FILE_BYTES);
+    assert.equal(isImplementFileTooLarge(content), false);
+  });
+
+  it('does not trigger for empty content', () => {
+    assert.equal(isImplementFileTooLarge(''), false);
+  });
+});
+
+describe('implementPlanChanges', () => {
+  const oversizedTask = {
+    id: 'T99',
+    description: 'Touch oversized file',
+  };
+
+  const oversizedPlan = {
+    filesToRead: [],
+    changes: [
+      {
+        filePath: 'big.md',
+        description: 'Add trailing newline',
+        isNewFile: false,
+      },
+    ],
+  };
+
+  it('returns { ok: false, reason: file_too_large } without throwing', async () => {
+    const apiCallCounter = { total: 0 };
+    const oversizedContent = 'x'.repeat(MAX_IMPLEMENT_FILE_BYTES + 1);
+
+    const result = await implementPlanChanges(
+      oversizedTask,
+      oversizedPlan,
+      'test-key',
+      apiCallCounter,
+      false,
+      {
+        readFile: async () => oversizedContent,
+      },
+    );
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'file_too_large');
+    assert.equal(result.filePath, 'big.md');
+    assert.equal(apiCallCounter.total, 0);
+  });
+
+  it('returns { ok: false, reason: file_too_large } for oversize content in filesToRead with empty changes, without calling the API', async () => {
+    const apiCallCounter = { total: 0 };
+    const oversizedContent = 'x'.repeat(MAX_IMPLEMENT_FILE_BYTES + 1);
+
+    const result = await implementPlanChanges(
+      { id: 'T99', description: 'Read oversized file' },
+      { filesToRead: ['big.md'], changes: [] },
+      'test-key',
+      apiCallCounter,
+      false,
+      {
+        readFile: async () => oversizedContent,
+      },
+    );
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'file_too_large');
+    assert.equal(result.filePath, 'big.md');
+    assert.equal(apiCallCounter.total, 0);
+  });
+});
+
+describe('applyOversizedTaskSkip', () => {
+  it('increments attempts and appends skip note to backlog', () => {
+    const task = parseBacklog(SAMPLE_BACKLOG).find((entry) => entry.id === 'T02');
+    assert.ok(task);
+
+    const oversizeBytes = MAX_IMPLEMENT_FILE_BYTES + 1;
+    const updated = applyOversizedTaskSkip(
+      SAMPLE_BACKLOG,
+      task,
+      'learning-notes.md',
+      oversizeBytes,
+    );
+    const row = parseBacklog(updated).find((entry) => entry.id === 'T02');
+    const unchanged = parseBacklog(updated).find((entry) => entry.id === 'T05');
+
+    assert.ok(row);
+    assert.equal(row.attempts, 1);
+    assert.match(row.updated, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(row.notes.includes('learning-notes.md'));
+    assert.ok(row.notes.includes(String(oversizeBytes)));
+    assert.ok(row.notes.includes(String(MAX_IMPLEMENT_FILE_BYTES)));
+    assert.deepEqual(unchanged, parseBacklog(SAMPLE_BACKLOG).find((entry) => entry.id === 'T05'));
   });
 });
 

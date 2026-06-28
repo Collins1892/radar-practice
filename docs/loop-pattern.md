@@ -4,6 +4,11 @@ The shared loop used by automated PR review, the nightly autonomous agent,
 and manual in-session work in this repository. Same logic, different wrappers
 depending on context.
 
+The **nightly agent** uses a related but separate orchestration (plan-then-act,
+backlog task selection, file-size skip-and-retry) documented in
+[`CLAUDE.md`](../CLAUDE.md) Automation — it is not identical to the PR-review
+fix loop described here.
+
 Related: [code-reviewer skill](../.claude/skills/code-reviewer/SKILL.md)
 (advisory review only), [`/review` command](../.claude/commands/review.md)
 (single-pass review, no fixes), [CI workflow](../.github/workflows/ci.yml)

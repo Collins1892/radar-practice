@@ -92,7 +92,7 @@ flowchart TD
 - **Skills + commands** narrow agent output toward repo conventions (one test per prompt, repository pattern, accessibility built in).
 - **CI** ([`ci.yml`](.github/workflows/ci.yml)) runs backend + frontend tests on every push/PR.
 - **PR-review bot** ([`pr-review.yml`](.github/workflows/pr-review.yml)) reviews each diff against the `code-reviewer` skill, auto-fixes Blockers/Majors (up to 3 attempts, full test suite before each commit), and comments findings.
-- **Nightly agent** ([`nightly-agent.yml`](.github/workflows/nightly-agent.yml)) plans-then-acts on the lowest-ID open backlog task under a 10-call budget, and raises a PR.
+- **Nightly agent** ([`nightly-agent.yml`](.github/workflows/nightly-agent.yml)) plan-then-act on the lowest-ID open backlog task under a 10-call budget; skips tasks whose implement payload exceeds 100 KiB and tries the next eligible task in the same run; raises a PR on success or a draft PR on implement/test failure.
 - **Nightly e2e** ([`nightly-e2e.yml`](.github/workflows/nightly-e2e.yml)) runs the Playwright suite against all three APIs + Vite.
 
 For the longer-form lessons behind this — what agents do well, where they stall,
