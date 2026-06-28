@@ -126,7 +126,7 @@ describe('DataTable', () => {
     ).toBeInTheDocument();
   });
 
-  it('does not add a tab stop on the scroll wrapper region', (): void => {
+  it('scroll container has tabIndex={0} for keyboard focusability (SC 2.1.1)', (): void => {
     // Arrange — defaults via renderDataTable
 
     // Act
@@ -136,7 +136,7 @@ describe('DataTable', () => {
     const region = screen.getByRole('region', {
       name: 'Data table, scrollable',
     });
-    expect(region).not.toHaveAttribute('tabindex', '0');
+    expect(region).toHaveAttribute('tabindex', '0');
   });
 
   it('shows default empty message when data is empty', (): void => {
