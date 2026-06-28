@@ -90,7 +90,12 @@ export const DataTable = <T extends Record<string, unknown>>({
   };
 
   return (
-    <div className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" role="region" aria-label={ariaLabel} tabIndex={0}>
+    <div
+      className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+      role="region"
+      aria-label={ariaLabel}
+      tabIndex={0}
+    >
       <table className="min-w-full divide-y divide-border text-left text-sm">
         <thead className="bg-muted/30">
           <tr>
