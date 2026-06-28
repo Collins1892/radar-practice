@@ -881,6 +881,27 @@ describe('implementPlanChanges', () => {
     assert.equal(result.filePath, 'big.md');
     assert.equal(apiCallCounter.total, 0);
   });
+
+  it('returns { ok: false, reason: file_too_large } for oversize content in filesToRead with empty changes, without calling the API', async () => {
+    const apiCallCounter = { total: 0 };
+    const oversizedContent = 'x'.repeat(MAX_IMPLEMENT_FILE_BYTES + 1);
+
+    const result = await implementPlanChanges(
+      { id: 'T99', description: 'Read oversized file' },
+      { filesToRead: ['big.md'], changes: [] },
+      'test-key',
+      apiCallCounter,
+      false,
+      {
+        readFile: async () => oversizedContent,
+      },
+    );
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'file_too_large');
+    assert.equal(result.filePath, 'big.md');
+    assert.equal(apiCallCounter.total, 0);
+  });
 });
 
 describe('applyOversizedTaskSkip', () => {
