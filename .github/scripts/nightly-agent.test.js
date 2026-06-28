@@ -209,7 +209,6 @@ describe('pickTask', () => {
 
     assert.ok(picked);
     assert.equal(picked.id, 'T05');
-    assert.notEqual(picked.id, 'T03');
   });
 
   it('returns T02 before T05 when both are open and easy (correct ID ordering)', () => {
