@@ -1,7 +1,7 @@
 ## Week 6 Day 7 — Sunday 28 June 2026
 
 Travel day — Porongurups to Thornlie (Perth). Did not get online until
-7:30pm after a five-hour drive. Despite the late start, two PRs shipped.
+7:30pm after a five-hour drive. Despite the late start, three PRs shipped.
 
 **PR #138 merged — T29 DataTable scroll container tab stop**
 `tabIndex={0}` added to the DataTable scroll container with `role="region"`
@@ -46,8 +46,9 @@ Key design decisions:
 
 **Nightly agent unblocked**
 The agent will now run cleanly tonight. T27 remains `blocked` —
-`learning-notes.md` is still ~167KB and the guard will skip it each run.
-T27 is human-only until the file is under 100KB or re-scoped.
+`learning-notes.md` is still ~167KB and `pickTask` will never select it —
+blocked status means `openTasksForMode` filters it out before the guard runs.
+T27 is human-only until the file is under 100 KiB or re-scoped.
 
 ## Week 6 Day 6 — Saturday 27 June 2026
 
