@@ -1690,6 +1690,15 @@ async function main() {
 
     const planResult = await requestPlan(task, context, apiKey, apiCallCounter);
     if (!planResult.ok) {
+      if (backlogDirty && isGitHubActions) {
+        await commitBacklogSkipsOnly({
+          backlogContent,
+          skippedThisRun,
+          owner,
+          repo,
+          token,
+        });
+      }
       if (planResult.reason === 'api_limit') {
         fail(`API call limit reached before planning (${MAX_API_CALLS} calls)`);
       }
@@ -1698,6 +1707,15 @@ async function main() {
 
     const parsedPlan = parsePlanResponse(planResult.text);
     if (!parsedPlan.ok) {
+      if (backlogDirty && isGitHubActions) {
+        await commitBacklogSkipsOnly({
+          backlogContent,
+          skippedThisRun,
+          owner,
+          repo,
+          token,
+        });
+      }
       // eslint-disable-next-line no-console
       console.error('[nightly-agent] Raw plan response:');
       // eslint-disable-next-line no-console
