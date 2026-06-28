@@ -420,8 +420,8 @@ function isImplementFileTooLarge(content) {
 }
 
 function implementFileSizeCheck(filePath, content, writtenPaths) {
-  const byteLength = Buffer.byteLength(content, 'utf8');
-  if (byteLength > MAX_IMPLEMENT_FILE_BYTES) {
+  if (isImplementFileTooLarge(content)) {
+    const byteLength = Buffer.byteLength(content, 'utf8');
     warn(
       `File exceeds implement payload limit: ${filePath} (${byteLength} bytes > ${MAX_IMPLEMENT_FILE_BYTES})`,
     );
@@ -433,7 +433,7 @@ function implementFileSizeCheck(filePath, content, writtenPaths) {
       writtenPaths,
     };
   }
-  return null;
+  return { ok: true };
 }
 
 function buildOversizedSkipNote(filePath, byteLength) {
@@ -1200,9 +1200,9 @@ async function implementPlanChanges(
   for (const readPath of plan.filesToRead) {
     if (!fileContentCache.has(readPath)) {
       const content = await readFile(readPath);
-      const sizeFailure = implementFileSizeCheck(readPath, content, writtenPaths);
-      if (sizeFailure) {
-        return sizeFailure;
+      const sizeResult = implementFileSizeCheck(readPath, content, writtenPaths);
+      if (sizeResult.ok === false) {
+        return sizeResult;
       }
       fileContentCache.set(readPath, content);
     }
@@ -1217,13 +1217,13 @@ async function implementPlanChanges(
       fileContentCache.set(change.filePath, currentContent);
     }
 
-    const sizeFailure = implementFileSizeCheck(
+    const sizeResult = implementFileSizeCheck(
       change.filePath,
       currentContent,
       writtenPaths,
     );
-    if (sizeFailure) {
-      return sizeFailure;
+    if (sizeResult.ok === false) {
+      return sizeResult;
     }
 
     const prompt = buildImplementPrompt({

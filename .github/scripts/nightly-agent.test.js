@@ -909,11 +909,12 @@ describe('applyOversizedTaskSkip', () => {
     const task = parseBacklog(SAMPLE_BACKLOG).find((entry) => entry.id === 'T02');
     assert.ok(task);
 
+    const oversizeBytes = MAX_IMPLEMENT_FILE_BYTES + 1;
     const updated = applyOversizedTaskSkip(
       SAMPLE_BACKLOG,
       task,
       'learning-notes.md',
-      171008,
+      oversizeBytes,
     );
     const row = parseBacklog(updated).find((entry) => entry.id === 'T02');
     const unchanged = parseBacklog(updated).find((entry) => entry.id === 'T05');
@@ -922,7 +923,7 @@ describe('applyOversizedTaskSkip', () => {
     assert.equal(row.attempts, 1);
     assert.match(row.updated, /^\d{4}-\d{2}-\d{2}$/);
     assert.ok(row.notes.includes('learning-notes.md'));
-    assert.ok(row.notes.includes('171008'));
+    assert.ok(row.notes.includes(String(oversizeBytes)));
     assert.ok(row.notes.includes(String(MAX_IMPLEMENT_FILE_BYTES)));
     assert.deepEqual(unchanged, parseBacklog(SAMPLE_BACKLOG).find((entry) => entry.id === 'T05'));
   });
