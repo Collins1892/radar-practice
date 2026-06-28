@@ -200,6 +200,17 @@ describe('pickTask', () => {
     );
   });
 
+  it('returns T05 when T03 is blocked and T05 is open', () => {
+    const blockedEasyBacklog = `${BACKLOG_TABLE_HEADER}
+| T03 | blocked  | easy       | docs     | docs         | 0 | | 2026-06-14 | | Blocked task | Blocked: learning-notes.md (167KB) exceeds agent payload limit — defer until T73 (file size guard) is implemented and merged. |
+| T05 | open     | easy       | backend  | code-quality | 0 | | 2026-06-14 | | Open task | |`;
+    const tasks = parseBacklog(blockedEasyBacklog);
+    const picked = pickTask(tasks, 'easy', '');
+
+    assert.ok(picked);
+    assert.equal(picked.id, 'T05');
+  });
+
   it('returns T02 before T05 when both are open and easy (correct ID ordering)', () => {
     const tasks = parseBacklog(SAMPLE_BACKLOG);
     const picked = pickTask(tasks, 'easy', '');
