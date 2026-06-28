@@ -200,7 +200,7 @@ describe('pickTask', () => {
     );
   });
 
-  it("skips tasks with status 'blocked'", () => {
+  it('returns T05 when T03 is blocked and T05 is open', () => {
     const blockedEasyBacklog = `${BACKLOG_TABLE_HEADER}
 | T03 | blocked  | easy       | docs     | docs         | 0 | | 2026-06-14 | | Blocked task | Blocked: learning-notes.md (167KB) exceeds agent payload limit — defer until T73 (file size guard) is implemented and merged. |
 | T05 | open     | easy       | backend  | code-quality | 0 | | 2026-06-14 | | Open task | |`;
