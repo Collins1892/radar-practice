@@ -1,3 +1,54 @@
+## Week 6 Day 7 — Sunday 28 June 2026
+
+Travel day — Porongurups to Thornlie (Perth). Did not get online until
+7:30pm after a five-hour drive. Despite the late start, two PRs shipped.
+
+**PR #138 merged — T29 DataTable scroll container tab stop**
+`tabIndex={0}` added to the DataTable scroll container with `role="region"`
+and an accessible name, satisfying SC 2.1.1. Focus classes aligned to
+`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground`
+— matching the sort button and Pagination convention. EOF newline restored
+(agent whole-file rewrite artefact).
+
+**T27 blocked — status change enforced in task selection**
+T27 (trailing newline, `learning-notes.md`) was open and being picked by the
+nightly agent. A notes field entry is not sufficient — the agent selects by
+`status === 'open'` only. T27 status changed to `blocked`. Test added to
+`nightly-agent.test.js` confirming `pickTask` skips tasks with `blocked`
+status. PR #137 merged. Nightly agent will now skip T27 and pick the next
+eligible task.
+
+**PR #139 merged — T73 file size guard and skip-and-retry**
+Root cause of T26/T27 silent failures resolved. `learning-notes.md` at ~167KB
+was sent as a full file payload to the Anthropic implement API, causing GitHub
+Actions to drop the connection silently with no error.
+
+Key design decisions:
+- **Structured return, not fatal throw** — `implementFileSizeCheck` returns
+  `{ ok: false, reason: 'file_too_large' }` rather than throwing
+  `NightlyAgentFatalError`. This routes through the skip path, not the fatal
+  exit, so the run continues.
+- **Skip-and-retry in the same run** — the main loop now excludes oversized
+  tasks via `skippedThisRun` and picks the next eligible task. The night is
+  no longer wasted on a single blocked file.
+- **All-skip draft PR** — if every eligible task is oversized,
+  `commitBacklogSkipsOnly` opens a draft PR so skip notes and attempt
+  increments reach `main`. Branchless push was rejected — updates would never
+  merge and the agent would re-plan the same tasks every night.
+- **Flush before fatal** — skip notes are flushed to a draft PR before any
+  `fail()` call in the plan stage, so accumulated updates are not lost if
+  `api_limit` fires mid-run.
+- `MAX_IMPLEMENT_FILE_BYTES = 102400` (100 KiB — empirical GHA threshold,
+  not an official Anthropic limit). The Anthropic Messages API limit is 32MB;
+  the failure was a GHA runner connection drop, not a 413.
+- 132 tests passing (was 126). New exports: `implementPlanChanges`,
+  `isImplementFileTooLarge`, `MAX_IMPLEMENT_FILE_BYTES`, `applyOversizedTaskSkip`.
+
+**Nightly agent unblocked**
+The agent will now run cleanly tonight. T27 remains `blocked` —
+`learning-notes.md` is still ~167KB and the guard will skip it each run.
+T27 is human-only until the file is under 100KB or re-scoped.
+
 ## Week 6 Day 6 — Saturday 27 June 2026
 
 **T26 manual fix — nightly agent payload size failure**
