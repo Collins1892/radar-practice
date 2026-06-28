@@ -28,6 +28,7 @@ const PLAN_MAX_TOKENS = 4096;
 const IMPLEMENT_MAX_TOKENS = 16384;
 const FIX_OUTPUT_TRUNCATE = 2000;
 const OVERSIZE_MIN_CHARS = 10000;
+const MAX_IMPLEMENT_FILE_BYTES = 100 * 1024; // 102_400 — empirical GHA threshold
 const GIT_USER_NAME = 'github-actions[bot]';
 const GIT_USER_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com';
 const TASK_MODES = new Set(['easy', 'medium', 'hard']);
@@ -412,6 +413,39 @@ function updateBacklogRow(markdownContent, taskId, updates) {
 
   tasks[index] = task;
   return rebuildBacklogTable(markdownContent, tasks);
+}
+
+function isImplementFileTooLarge(content) {
+  return Buffer.byteLength(content, 'utf8') > MAX_IMPLEMENT_FILE_BYTES;
+}
+
+function implementFileSizeCheck(filePath, content, writtenPaths) {
+  const byteLength = Buffer.byteLength(content, 'utf8');
+  if (byteLength > MAX_IMPLEMENT_FILE_BYTES) {
+    warn(
+      `File exceeds implement payload limit: ${filePath} (${byteLength} bytes > ${MAX_IMPLEMENT_FILE_BYTES})`,
+    );
+    return {
+      ok: false,
+      reason: 'file_too_large',
+      filePath,
+      byteLength,
+      writtenPaths,
+    };
+  }
+  return null;
+}
+
+function buildOversizedSkipNote(filePath, byteLength) {
+  return `Skipped: file exceeds implement payload limit (${filePath}, ${byteLength} bytes > ${MAX_IMPLEMENT_FILE_BYTES})`;
+}
+
+function applyOversizedTaskSkip(backlogContent, task, filePath, byteLength) {
+  return updateBacklogRow(backlogContent, task.id, {
+    attempts: task.attempts + 1,
+    updated: todayIsoDate(),
+    notes: buildOversizedSkipNote(filePath, byteLength),
+  });
 }
 
 function parseCompleted(markdownContent) {
@@ -1151,21 +1185,45 @@ async function requestPlan(task, context, apiKey, apiCallCounter) {
   return callAnthropic(apiKey, prompt, PLAN_MAX_TOKENS, apiCallCounter, 'plan');
 }
 
-async function implementPlanChanges(task, plan, apiKey, apiCallCounter, writeFiles) {
+async function implementPlanChanges(
+  task,
+  plan,
+  apiKey,
+  apiCallCounter,
+  writeFiles,
+  deps = {},
+) {
+  const readFile = deps.readFile ?? readRepoFile;
   const writtenPaths = new Set();
   const fileContentCache = new Map();
 
   for (const readPath of plan.filesToRead) {
     if (!fileContentCache.has(readPath)) {
-      fileContentCache.set(readPath, await readRepoFile(readPath));
+      const content = await readFile(readPath);
+      const sizeFailure = implementFileSizeCheck(readPath, content, writtenPaths);
+      if (sizeFailure) {
+        return sizeFailure;
+      }
+      fileContentCache.set(readPath, content);
     }
   }
 
   for (const change of plan.changes) {
-    const currentContent = fileContentCache.has(change.filePath)
-      ? fileContentCache.get(change.filePath)
-      : await readRepoFile(change.filePath);
-    fileContentCache.set(change.filePath, currentContent);
+    let currentContent;
+    if (fileContentCache.has(change.filePath)) {
+      currentContent = fileContentCache.get(change.filePath);
+    } else {
+      currentContent = await readFile(change.filePath);
+      const sizeFailure = implementFileSizeCheck(
+        change.filePath,
+        currentContent,
+        writtenPaths,
+      );
+      if (sizeFailure) {
+        return sizeFailure;
+      }
+      fileContentCache.set(change.filePath, currentContent);
+    }
 
     const prompt = buildImplementPrompt({
       taskDescription: task.description,
@@ -1369,6 +1427,30 @@ async function createPullRequest({
   return data;
 }
 
+async function resetAgentBranchAfterSkip(branchName, untrackedBeforeImplementation) {
+  await discardWorkingTreeChanges(untrackedBeforeImplementation);
+  await runGit(['checkout', 'main']);
+  await runGit(['branch', '-D', branchName]);
+}
+
+async function commitBacklogSkipsOnly(backlogContent, skippedThisRun) {
+  await runGit(['checkout', 'main']);
+  const runId = process.env.GITHUB_RUN_ID ?? todayIsoDate().replace(/-/g, '');
+  const branchName = `nightly-agent/backlog-skips-${runId}`;
+  await runGit(['checkout', '-b', branchName]);
+  await writeRepoFile(BACKLOG_PATH, backlogContent);
+  await configureGitIdentity();
+  const committed = await commitScopedPaths(
+    'chore: nightly agent — record skipped oversized tasks',
+    [BACKLOG_PATH],
+  );
+  if (committed) {
+    await runGit(['push', 'origin', 'HEAD']);
+  }
+  const skippedIds = [...skippedThisRun].sort((left, right) => left - right);
+  log(`Backlog updated for skipped task(s): ${skippedIds.join(', ')}`);
+}
+
 async function handleFailurePath({
   task,
   plan,
@@ -1517,7 +1599,7 @@ async function main() {
     log('Running locally — planning and dry-run logging only');
   }
 
-  const backlogContent = await readRepoFile(BACKLOG_PATH);
+  let backlogContent = await readRepoFile(BACKLOG_PATH);
   const tasks = parseBacklog(backlogContent);
 
   // Fail-closed: fetchAttemptedTaskIds calls fail() on gh/JSON errors — never falls back to empty set.
@@ -1526,194 +1608,185 @@ async function main() {
     : new Set();
 
   const openForMode = openTasksForMode(tasks, taskMode, taskCategory);
-  const task = pickTask(tasks, taskMode, taskCategory, attemptedNumericIds);
-
-  if (task === null) {
-    const allBlockedByPr = allTasksBlockedByPr(
-      openForMode,
-      attemptedNumericIds,
-    );
-
-    if (allBlockedByPr) {
-      log(
-        `No eligible task: ${openForMode.length} open tasks all have existing PRs — awaiting review/merge`,
-      );
-    } else {
-      log(
-        `No open task found for mode "${taskMode}"${taskCategory ? ` and category "${taskCategory}"` : ''}`,
-      );
-    }
-    // Deliberate no-PR exit: raises nothing when nothing is eligible (exhausted/holiday case).
-    return;
-  }
-
-  log(`Selected task ${task.id}: ${task.description}`);
-
-  const context = await gatherRepoContext(task);
+  const skippedThisRun = new Set();
+  let backlogDirty = false;
   const apiCallCounter = { total: 0 };
 
-  const planResult = await requestPlan(task, context, apiKey, apiCallCounter);
-  if (!planResult.ok) {
-    if (planResult.reason === 'api_limit') {
-      fail(`API call limit reached before planning (${MAX_API_CALLS} calls)`);
+  while (skippedThisRun.size < openForMode.length) {
+    const excludedIds = new Set([...attemptedNumericIds, ...skippedThisRun]);
+    const task = pickTask(tasks, taskMode, taskCategory, excludedIds);
+
+    if (task === null) {
+      if (skippedThisRun.size > 0) {
+        log(
+          `No more eligible tasks after skipping ${skippedThisRun.size} oversized task(s) this run`,
+        );
+      } else if (allTasksBlockedByPr(openForMode, attemptedNumericIds)) {
+        log(
+          `No eligible task: ${openForMode.length} open tasks all have existing PRs — awaiting review/merge`,
+        );
+      } else {
+        log(
+          `No open task found for mode "${taskMode}"${taskCategory ? ` and category "${taskCategory}"` : ''}`,
+        );
+      }
+      if (backlogDirty && isGitHubActions) {
+        await commitBacklogSkipsOnly(backlogContent, skippedThisRun);
+      }
+      return;
     }
-    fail(`Planning call failed: ${planResult.reason}`);
-  }
 
-  const parsedPlan = parsePlanResponse(planResult.text);
-  if (!parsedPlan.ok) {
-    // eslint-disable-next-line no-console
-    console.error('[nightly-agent] Raw plan response:');
-    // eslint-disable-next-line no-console
-    console.error(planResult.text);
-    fail(`Invalid plan JSON: ${parsedPlan.reason}`);
-  }
+    log(`Selected task ${task.id}: ${task.description}`);
 
-  const plan = parsedPlan.plan;
-  demoteSensitivePlanChanges(plan);
-  log(`Plan validated — ${plan.changes.length} change(s), reasoning: ${plan.reasoning}`);
+    const context = await gatherRepoContext(task);
 
-  if (!isGitHubActions) {
+    const planResult = await requestPlan(task, context, apiKey, apiCallCounter);
+    if (!planResult.ok) {
+      if (planResult.reason === 'api_limit') {
+        fail(`API call limit reached before planning (${MAX_API_CALLS} calls)`);
+      }
+      fail(`Planning call failed: ${planResult.reason}`);
+    }
+
+    const parsedPlan = parsePlanResponse(planResult.text);
+    if (!parsedPlan.ok) {
+      // eslint-disable-next-line no-console
+      console.error('[nightly-agent] Raw plan response:');
+      // eslint-disable-next-line no-console
+      console.error(planResult.text);
+      fail(`Invalid plan JSON: ${parsedPlan.reason}`);
+    }
+
+    const plan = parsedPlan.plan;
+    demoteSensitivePlanChanges(plan);
+    log(`Plan validated — ${plan.changes.length} change(s), reasoning: ${plan.reasoning}`);
+
+    if (!isGitHubActions) {
+      if (plan.changes.length === 0) {
+        warn('All planned changes targeted sensitive paths — nothing to implement');
+        return;
+      }
+      log('--- PLAN (dry-run) ---');
+      // eslint-disable-next-line no-console
+      console.log(JSON.stringify(plan, null, 2));
+      for (const change of plan.changes) {
+        log(
+          `[dry-run] Would change ${change.filePath}${change.isNewFile ? ' (new)' : ''}: ${change.description}`,
+        );
+      }
+      log('Local dry-run complete — no files written');
+      return;
+    }
+
+    const branchName = await createAgentBranch(task.id, task.description);
+    log(`Agent branch: ${branchName}`);
+
+    const untrackedBeforeImplementation = await getUntrackedPaths();
+
     if (plan.changes.length === 0) {
-      warn('All planned changes targeted sensitive paths — nothing to implement');
-      return;
-    }
-    log('--- PLAN (dry-run) ---');
-    // eslint-disable-next-line no-console
-    console.log(JSON.stringify(plan, null, 2));
-    for (const change of plan.changes) {
-      log(
-        `[dry-run] Would change ${change.filePath}${change.isNewFile ? ' (new)' : ''}: ${change.description}`,
-      );
-    }
-    log('Local dry-run complete — no files written');
-    return;
-  }
-
-  const branchName = await createAgentBranch(task.id, task.description);
-  log(`Agent branch: ${branchName}`);
-
-  const untrackedBeforeImplementation = await getUntrackedPaths();
-
-  if (plan.changes.length === 0) {
-    await handleFailurePath({
-      task,
-      plan,
-      writtenPaths: new Set(),
-      backlogContent,
-      owner,
-      repo,
-      token,
-      branchName,
-      failureNote: 'All planned changes targeted sensitive paths',
-      failedCommand: null,
-      apiCallCounter,
-      untrackedBeforeImplementation,
-    });
-    return;
-  }
-
-  let completedContent = await readRepoFile(COMPLETED_PATH);
-  let writtenPaths = new Set();
-  let fileContentCache = new Map();
-
-  const implementResult = await implementPlanChanges(
-    task,
-    plan,
-    apiKey,
-    apiCallCounter,
-    true,
-  );
-
-  if (!implementResult.ok) {
-    const failureNote =
-      implementResult.reason === 'api_limit'
-        ? `API call limit reached after ${apiCallCounter.total} calls`
-        : `Failed during implementation — ${implementResult.reason}`;
-    await handleFailurePath({
-      task,
-      plan,
-      writtenPaths: implementResult.writtenPaths ?? new Set(),
-      backlogContent,
-      owner,
-      repo,
-      token,
-      branchName,
-      failureNote,
-      failedCommand: null,
-      apiCallCounter,
-      untrackedBeforeImplementation,
-    });
-    return;
-  }
-
-  writtenPaths = implementResult.writtenPaths;
-  fileContentCache = implementResult.fileContentCache;
-
-  let lastTestFailure = null;
-
-  for (let attempt = 1; attempt <= MAX_IMPLEMENTATION_ATTEMPTS; attempt += 1) {
-    log(`Implementation attempt ${attempt}/${MAX_IMPLEMENTATION_ATTEMPTS}`);
-
-    const testResult = await runTestSuite();
-    if (testResult.ok) {
-      await handleSuccessPath({
-        task,
-        plan,
-        writtenPaths,
-        backlogContent,
-        completedContent,
-        owner,
-        repo,
-        token,
-        branchName,
-      });
-      return;
-    }
-
-    lastTestFailure = testResult;
-
-    if (attempt >= MAX_IMPLEMENTATION_ATTEMPTS) {
-      break;
-    }
-
-    log(`Tests failed on attempt ${attempt} — requesting fix from Anthropic API`);
-    if (testResult.output) {
-      log(`Failure output (truncated): ${testResult.output.slice(0, 200)}...`);
-    }
-
-    await discardWorkingTreeChanges(untrackedBeforeImplementation);
-
-    if (apiCallCounter.total >= MAX_API_CALLS) {
       await handleFailurePath({
         task,
         plan,
-        writtenPaths,
+        writtenPaths: new Set(),
         backlogContent,
         owner,
         repo,
         token,
         branchName,
-        failureNote: `API call limit reached after ${apiCallCounter.total} calls`,
-        failedCommand: testResult.failedCommand,
+        failureNote: 'All planned changes targeted sensitive paths',
+        failedCommand: null,
         apiCallCounter,
         untrackedBeforeImplementation,
       });
       return;
     }
 
-    const fixResult = await applyFixFromTestFailure({
+    const completedContent = await readRepoFile(COMPLETED_PATH);
+    let writtenPaths = new Set();
+    let fileContentCache = new Map();
+
+    const implementResult = await implementPlanChanges(
       task,
       plan,
-      testFailure: testResult,
-      fileContentCache,
       apiKey,
       apiCallCounter,
-      writtenPaths,
-    });
+      true,
+    );
 
-    if (!fixResult.ok) {
-      if (fixResult.reason === 'api_limit') {
+    if (!implementResult.ok && implementResult.reason === 'file_too_large') {
+      backlogContent = applyOversizedTaskSkip(
+        backlogContent,
+        task,
+        implementResult.filePath,
+        implementResult.byteLength,
+      );
+      skippedThisRun.add(taskIdNumber(task.id));
+      backlogDirty = true;
+      log(`Skipping ${task.id} — oversized file ${implementResult.filePath}`);
+      await resetAgentBranchAfterSkip(branchName, untrackedBeforeImplementation);
+      continue;
+    }
+
+    if (!implementResult.ok) {
+      const failureNote =
+        implementResult.reason === 'api_limit'
+          ? `API call limit reached after ${apiCallCounter.total} calls`
+          : `Failed during implementation — ${implementResult.reason}`;
+      await handleFailurePath({
+        task,
+        plan,
+        writtenPaths: implementResult.writtenPaths ?? new Set(),
+        backlogContent,
+        owner,
+        repo,
+        token,
+        branchName,
+        failureNote,
+        failedCommand: null,
+        apiCallCounter,
+        untrackedBeforeImplementation,
+      });
+      return;
+    }
+
+    writtenPaths = implementResult.writtenPaths;
+    fileContentCache = implementResult.fileContentCache;
+
+    let lastTestFailure = null;
+
+    for (let attempt = 1; attempt <= MAX_IMPLEMENTATION_ATTEMPTS; attempt += 1) {
+      log(`Implementation attempt ${attempt}/${MAX_IMPLEMENTATION_ATTEMPTS}`);
+
+      const testResult = await runTestSuite();
+      if (testResult.ok) {
+        await handleSuccessPath({
+          task,
+          plan,
+          writtenPaths,
+          backlogContent,
+          completedContent,
+          owner,
+          repo,
+          token,
+          branchName,
+        });
+        return;
+      }
+
+      lastTestFailure = testResult;
+
+      if (attempt >= MAX_IMPLEMENTATION_ATTEMPTS) {
+        break;
+      }
+
+      log(`Tests failed on attempt ${attempt} — requesting fix from Anthropic API`);
+      if (testResult.output) {
+        log(`Failure output (truncated): ${testResult.output.slice(0, 200)}...`);
+      }
+
+      await discardWorkingTreeChanges(untrackedBeforeImplementation);
+
+      if (apiCallCounter.total >= MAX_API_CALLS) {
         await handleFailurePath({
           task,
           plan,
@@ -1730,50 +1803,85 @@ async function main() {
         });
         return;
       }
-      log(`Fix call failed (${fixResult.reason}) — re-implementing from plan`);
-      const reimplement = await implementPlanChanges(
+
+      const fixResult = await applyFixFromTestFailure({
         task,
         plan,
+        testFailure: testResult,
+        fileContentCache,
         apiKey,
         apiCallCounter,
-        true,
-      );
-      if (!reimplement.ok) {
-        await handleFailurePath({
+        writtenPaths,
+      });
+
+      if (!fixResult.ok) {
+        if (fixResult.reason === 'api_limit') {
+          await handleFailurePath({
+            task,
+            plan,
+            writtenPaths,
+            backlogContent,
+            owner,
+            repo,
+            token,
+            branchName,
+            failureNote: `API call limit reached after ${apiCallCounter.total} calls`,
+            failedCommand: testResult.failedCommand,
+            apiCallCounter,
+            untrackedBeforeImplementation,
+          });
+          return;
+        }
+        log(`Fix call failed (${fixResult.reason}) — re-implementing from plan`);
+        const reimplement = await implementPlanChanges(
           task,
           plan,
-          writtenPaths,
-          backlogContent,
-          owner,
-          repo,
-          token,
-          branchName,
-          failureNote: `Fix call failed (${fixResult.reason}); re-implement failed (${reimplement.reason})`,
-          failedCommand: testResult.failedCommand,
+          apiKey,
           apiCallCounter,
-          untrackedBeforeImplementation,
-        });
-        return;
+          true,
+        );
+        if (!reimplement.ok) {
+          await handleFailurePath({
+            task,
+            plan,
+            writtenPaths,
+            backlogContent,
+            owner,
+            repo,
+            token,
+            branchName,
+            failureNote: `Fix call failed (${fixResult.reason}); re-implement failed (${reimplement.reason})`,
+            failedCommand: testResult.failedCommand,
+            apiCallCounter,
+            untrackedBeforeImplementation,
+          });
+          return;
+        }
+        writtenPaths = reimplement.writtenPaths;
+        fileContentCache = reimplement.fileContentCache;
       }
-      writtenPaths = reimplement.writtenPaths;
-      fileContentCache = reimplement.fileContentCache;
     }
+
+    await handleFailurePath({
+      task,
+      plan,
+      writtenPaths,
+      backlogContent,
+      owner,
+      repo,
+      token,
+      branchName,
+      failureNote: `Failed after ${MAX_IMPLEMENTATION_ATTEMPTS} attempts — test failure: ${lastTestFailure?.failedCommand ?? 'unknown'}`,
+      failedCommand: lastTestFailure?.failedCommand ?? null,
+      apiCallCounter,
+      untrackedBeforeImplementation,
+    });
+    return;
   }
 
-  await handleFailurePath({
-    task,
-    plan,
-    writtenPaths,
-    backlogContent,
-    owner,
-    repo,
-    token,
-    branchName,
-    failureNote: `Failed after ${MAX_IMPLEMENTATION_ATTEMPTS} attempts — test failure: ${lastTestFailure?.failedCommand ?? 'unknown'}`,
-    failedCommand: lastTestFailure?.failedCommand ?? null,
-    apiCallCounter,
-    untrackedBeforeImplementation,
-  });
+  if (backlogDirty && isGitHubActions) {
+    await commitBacklogSkipsOnly(backlogContent, skippedThisRun);
+  }
 }
 
 export {
@@ -1790,6 +1898,10 @@ export {
   formatPrBody,
   formatPrNumberCell,
   stripCodeFences,
+  implementPlanChanges,
+  MAX_IMPLEMENT_FILE_BYTES,
+  isImplementFileTooLarge,
+  applyOversizedTaskSkip,
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
