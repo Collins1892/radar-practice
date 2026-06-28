@@ -13,13 +13,25 @@ T26 resolved manually: blank line restored between numbered list items 1 and
 2 in the Week 1 Day 1 section. PR #135 merged.
 
 **T73 logged — file size guard in implementPlanChanges**
-No file size guard exists before the implement call. Any file exceeding a
-threshold causes the same silent failure — the agent doesn't fail-closed, it
-just drops the connection. T73 added to `docs/nightly-agent-backlog.md`:
-add a size check in `implementPlanChanges`; if the file exceeds a safe
-threshold, abort with a clean `NightlyAgentFatalError` rather than a network
-drop. This is the right failure mode — fail closed with a clear message, not
-silently.
+At the time of writing, no file size guard existed before the implement call
+(resolved by T73). Any file exceeding a threshold caused the same silent
+failure — the agent doesn't fail-closed, it just drops the connection. T73
+added to `docs/nightly-agent-backlog.md`: add a size check in
+`implementPlanChanges`; if the file exceeds a safe threshold, abort with a
+structured failure (shipped as file_too_large skip-and-retry, not
+NightlyAgentFatalError) rather than a network drop. This is the right failure
+mode — fail closed with a clear message, not silently.
+
+**T73 shipped — file size guard and skip-and-retry (PR pending merge)**
+Guard in `implementPlanChanges`: `MAX_IMPLEMENT_FILE_BYTES = 102400` (100 KiB
+UTF-8). Returns `{ ok: false, reason: 'file_too_large' }` before the implement
+API call — no silent GHA connection drop. Main loop skips the task, increments
+attempts, appends a backlog note, and picks the next eligible task in the same
+run. If all eligible tasks oversize: backlog-only branch push, no PR.
+Re-implement mid-fix still uses `handleFailurePath` for oversize (edge case).
+T27 remains `blocked`: T73 prevents silent failure but `learning-notes.md` is
+still ~167KB — agent will skip T27 each run until the file is under the limit
+or the task is re-scoped / done manually.
 
 **Documentation rewrite — CLAUDE.md, README.md, project.mdc**
 Both files had grown incrementally from Week 1 and were still anchored on
@@ -364,6 +376,10 @@ set by design. The test suite runs before any commit — implementation
 must be green before anything reaches the branch. 3 attempt limit then
 draft PR. Human merge gate is permanent — agent never merges its own
 work.
+
+- **File size guard (T73):** 100 KiB implement limit; skip-and-retry within
+  the run; `learning-notes.md` still blocks agent tasks that need the full
+  file.
 
 ### Comprehension: automated PR review
 Fix loop runs up to 3 attempts on Blockers and Majors only — Minors are
@@ -769,6 +785,10 @@ nothing to show is a bad start. So the agent always produces something to
 review: a normal PR if confident, a *draft* PR with a note if it
 struggled. Draft status instantly signals "this needs my judgement" vs
 "this is ready." Same mechanism as the PR review's 3-attempts-then-draft.
+
+Exception after T73: if every eligible task is skipped for oversize payload,
+the run may push backlog-only updates without opening a PR; the holiday
+no-eligible-task exit still produces nothing when the backlog is unchanged.
 
 **The tidy-list management answer.** The key management question was how
 to stop the tidy list going stale. The answer is exactly one deliberate

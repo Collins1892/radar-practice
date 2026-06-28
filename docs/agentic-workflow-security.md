@@ -59,6 +59,14 @@ Specific fail points:
   indefinitely.
 - **API call cap** — a hard limit of 10 Anthropic API calls per run
   prevents runaway execution regardless of what the agent encounters.
+- **Implement payload size** — before embedding file content in an implement
+  prompt, `implementPlanChanges` checks UTF-8 byte length against
+  `MAX_IMPLEMENT_FILE_BYTES` (102400). Oversize files return a structured
+  `file_too_large` result rather than sending a payload that causes silent
+  connection drops in GitHub Actions. The task is skipped in-run (backlog
+  updated, next eligible task tried); this is fail-closed with a clear reason,
+  not fail-open and not a fatal abort of the whole workflow unless no tasks
+  remain.
 
 The principle: when in doubt, stop. Do not proceed blind.
 
@@ -94,6 +102,12 @@ comparison, so the guard works identically on Windows and Linux runners.
 Both `pr-review.js` and `nightly-agent.js` import the shared
 `.github/scripts/sensitive-paths.js` module so the blocklist stays
 consistent across automation entry points.
+
+**Implement payload limit** — separate from the sensitive-path blocklist.
+Application code and docs under 100 KiB are fair game; single files whose full
+content would be sent to the implement API above that threshold are rejected
+before the network call. Distinct from `OVERSIZE_MIN_CHARS` (response validation
+after the API returns).
 
 ---
 
