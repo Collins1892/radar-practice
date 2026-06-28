@@ -126,7 +126,7 @@ describe('DataTable', () => {
     ).toBeInTheDocument();
   });
 
-  it('scroll container has tabIndex={0} for keyboard focusability (SC 2.1.1)', (): void => {
+  it('scroll container has tabIndex 0 for keyboard focusability (SC 2.1.1)', (): void => {
     // Arrange — defaults via renderDataTable
 
     // Act
