@@ -205,6 +205,7 @@ it when its trigger applies.
 | `/observations` | Interactive workflow-friction capture; appends a categorised entry to `docs/workflow-friction.md`. |
 | `/tidy` | Status check of today's tasks and the Week 7 tidy list against PRs/branches. |
 | `/review` | Structured code review against the `code-reviewer` skill. |
+| `/add-backlog-item` | Interactive Q&A to append a new task to `docs/nightly-agent-backlog.md`. |
 
 ## Automation
 
