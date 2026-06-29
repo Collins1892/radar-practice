@@ -1,3 +1,40 @@
+## Week 7 Day 1 — Monday 29 June 2026
+
+T30 closed as stale; `/add-backlog-item` slash command shipped; agent model and workflow doc updated.
+
+**T30 diagnosed as stale — closed without merging**
+The nightly agent picked T30 (DataTable ariaLabel default) and failed three
+times across three attempts. Root cause: the task was already resolved by T29
+(PR #138). The agent's plan call read the task description and assumed the
+problem still existed — it had no pre-flight file verification to confirm
+current file state before planning. The same incorrect change was applied
+each attempt; `git reset --hard HEAD` restored the working tree correctly
+each time. Draft PR #141 closed without merging. T30 moved to
+`docs/nightly-agent-completed.md` with PR #138 and date 2026-06-29. T74
+logged as a backlog item: add pre-flight file verification so the agent
+reads the actual files before planning and skips if the problem is already
+resolved.
+
+**PR #142 merged — T30 marked done in backlog and completed log**
+Both `docs/nightly-agent-backlog.md` and `docs/nightly-agent-completed.md`
+updated. T30 row corrected: attempts set to 3 (not 0), PR #141 referenced
+in notes for traceability.
+
+**PR #143 merged — /add-backlog-item slash command**
+New interactive slash command added to `.claude/commands/add-backlog-item.md`.
+Walks through five questions one at a time: difficulty, stack, category,
+description, notes. Auto-increments task ID by reading both backlog and
+completed files. Validates enum fields and normalises to lowercase before
+storing. Rejects pipe characters in description/notes to prevent table
+parser corruption. Date uses ISO-8601 format (`date +%Y-%m-%d` / PowerShell
+`Get-Date -Format yyyy-MM-dd`). First use: T74 (pre-flight file
+verification). README and CLAUDE.md updated to reference the new command.
+
+**Agent model clarified**
+Both `nightly-agent.js` and `pr-review.js` default to `claude-sonnet-4-6`,
+overridable via `ANTHROPIC_MODEL` env var. The nightly e2e workflow uses no
+AI — it is pure Playwright test execution, same as CI running `dotnet test`.
+
 ## Week 6 Day 7 — Sunday 28 June 2026
 
 Travel day — Porongurups to Thornlie (Perth). Did not get online until
