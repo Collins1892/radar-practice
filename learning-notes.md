@@ -28,24 +28,6 @@ parser corruption. Date uses ISO-8601 format (`date +%Y-%m-%d` / PowerShell
 `Get-Date -Format yyyy-MM-dd`). First use: T74 (pre-flight file
 verification). README and CLAUDE.md updated to reference the new command.
 
-**PR workflow document overhauled**
-`docs/pr-workflow.md` updated to reflect actual practice after seven weeks:
-- Three-review discipline documented — Cursor prompt, Claude Code `/review`,
-  and the automated PR review bot; each catches different issues
-- Raising the PR section rewritten as a sequential checklist: git add →
-  git commit → Cursor review → Claude Code review → fix → git push →
-  raise PR → CI → bot review → merge
-- Claude now provides Cursor review prompt and PR title/description
-  automatically after each push
-- `git fetch --prune` added to After merge sequence
-- Stage all modified files (`git status` before committing) added to
-  Agent boundaries
-- Generate a branch added as first step in Before touching anything
-- Evolution section updated through Week 7
-- Skills line updated: seven skills listed with scope
-- Automated PR review model configurability documented (`ANTHROPIC_MODEL`,
-  default Sonnet 4.6; Opus 4.8 recommended for regulated environments)
-
 **Agent model clarified**
 Both `nightly-agent.js` and `pr-review.js` default to `claude-sonnet-4-6`,
 overridable via `ANTHROPIC_MODEL` env var. The nightly e2e workflow uses no
