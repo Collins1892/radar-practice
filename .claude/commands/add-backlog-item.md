@@ -14,7 +14,9 @@ Step 1 — Determine the next task ID:
 Step 2 — Ask the following questions one at a time, waiting for each
 answer before proceeding. Re-prompt only the current question if the
 answer is invalid. Do not include real names, patient data, or
-credentials in description or notes.
+credentials in description or notes. For questions 1–3, normalise the
+answer to lowercase before validating against the allowed values (e.g.
+Medium → medium, EASY → easy, Nightly-Agent → nightly-agent).
 
 1. Difficulty — easy, medium, or hard?
    Valid values: easy, medium, hard
@@ -23,13 +25,17 @@ credentials in description or notes.
 3. Category — a11y, code-quality, docs, nightly-agent, or pr-review?
    Valid values: a11y, code-quality, docs, nightly-agent, pr-review
 4. Description — one sentence describing the task.
-   Reject empty answers after trimming.
+   Reject empty answers after trimming. Reject any answer containing a
+   | character; pipe characters break the table parser.
 5. Notes — any additional context? (press enter to skip)
-   Empty is allowed.
+   Empty is allowed. Reject any answer containing a | character; pipe
+   characters break the table parser.
 
 Step 3 — Resolve today's date:
-- Run: date
-- Format Created as YYYY-MM-DD.
+- On Bash/Linux run: date +%Y-%m-%d
+- On PowerShell run: Get-Date -Format yyyy-MM-dd
+- Use the output for Created. The Created field must always be ISO-8601
+  (YYYY-MM-DD).
 - Leave Updated empty.
 
 Step 4 — Build the new row with these fixed values:
