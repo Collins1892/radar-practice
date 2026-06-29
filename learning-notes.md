@@ -1,5 +1,7 @@
 ## Week 7 Day 1 — Monday 29 June 2026
 
+T30 closed as stale; `/add-backlog-item` slash command shipped; agent model and workflow doc updated.
+
 **T30 diagnosed as stale — closed without merging**
 The nightly agent picked T30 (DataTable ariaLabel default) and failed three
 times across three attempts. Root cause: the task was already resolved by T29
