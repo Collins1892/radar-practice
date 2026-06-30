@@ -1,3 +1,56 @@
+## Week 7 Day 2 — Tuesday 30 June 2026
+
+Day cut short — house move logistics (selling the car ahead of relocation)
+and a sick daughter. No new build work; the day was backlog triage and
+queue hygiene only.
+
+**T32 draft PR #145 — agent loop diagnosed, not a stale-task false alarm**
+Overnight agent picked T32 (DataTable accessible name), failed three times,
+opened a clean draft PR with only a backlog status bump — fail-closed
+working as intended. Verified against live source: T32 is a genuinely open
+task, not a T30-style stale duplicate. Root cause found in the agent's own
+plan text — it referenced a `label` prop on `DataTable` that does not
+exist (the actual prop is `ariaLabel`), so its own generated test assertion
+could never pass. PR #145 closed, branch deleted.
+
+**PR #146 merged — easy queue cleaned for the run-up to Friday**
+Audited the next ten tasks in the open/easy queue by hand against live
+source before letting the agent near any of them. Six moved to `blocked`
+with reasons: T24 (multi-file extraction, prior agent failures), T32
+(broken plan, see above), T34 (`aria-disabled` swap alone would regress
+click/keyboard activation — needs a guard), T39 (needs a border-token
+contrast decision), T57 (deliberately deferred — don't touch the agent's
+own oversize-file guard this close to the demo), T68 (husky pre-commit
+hook is one-time manual setup, not agent-suited).
+
+Three medium tasks reclassified to `easy` after verifying each mirrors an
+already-established pattern with no design judgment required: T06
+(date-format DRY — canonical helper already used everywhere except one
+test), T11 (refetch test coverage — near-identical sibling test already
+exists for the severity filter), T17 (route-title tests — pattern already
+proven twice in the same file, title resolution is pathname-only so no
+mocking needed even for detail routes). T08 was considered and rejected —
+the existing test's loose DOM-walk assertion looks like a prior author
+already hit unreliable focus behaviour; rewriting it risks the same
+three-attempt loop as T32 without manually confirming where focus actually
+lands first. T12 was also rejected — looks easy-shaped but the existing
+test doesn't match the backlog description at all (asserts focus on Title
+in an all-empty submit, not Description in a valid-title/invalid-description
+scenario); the real work is an unwritten test, not a mechanical edit.
+
+Net effect: open/easy queue is now T06, T11, T17, T41, T54, T62 — six
+clean, verified nights with nothing left that could trigger a repeated
+agent failure loop before Friday.
+
+**Review finding worth carrying as a pattern, not just a one-off**
+On PR #146, the automated bot independently flagged that T57's
+date-based block reason ("until 3 July") would silently go stale once
+that date passes, since `blocked` status makes a task permanently
+invisible to `openTasksForMode`. Fixed by rewording the note to require
+explicit revisit rather than relying on a calendar date. General lesson:
+any `blocked` reason tied to a date, not a condition, is a latent bug in
+the backlog itself.
+
 ## Week 7 Day 1 — Monday 29 June 2026
 
 T30 closed as stale; `/add-backlog-item` slash command shipped; agent model and workflow doc updated.
