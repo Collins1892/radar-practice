@@ -1,10 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { format, parseISO } from 'date-fns';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { deleteIncident, getIncident, type Incident } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
 import { INCIDENT_DETAIL_HEADING } from '@/components/incidentPageCopy';
+import { formatReportedDate } from '@/components/incidentDisplay';
 import { toast } from 'sonner';
 import { IncidentDetailView } from './IncidentDetailView';
 
@@ -87,10 +87,7 @@ describe('IncidentDetailView', () => {
 
   it('shows the incident data when getIncident resolves successfully', async (): Promise<void> => {
     // Arrange
-    const formattedReportedDate = format(
-      parseISO(incident.reportedDate.slice(0, 10)),
-      'dd MMM yyyy',
-    );
+    const formattedReportedDate = formatReportedDate(incident.reportedDate);
     vi.mocked(getIncident).mockResolvedValue(incident);
 
     // Act
