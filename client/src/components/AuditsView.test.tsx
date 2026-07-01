@@ -306,4 +306,51 @@ describe('AuditsView', () => {
     expect(alert).toHaveTextContent('Could not load audits');
     expect(alert).toHaveTextContent('Invalid sort field.');
   });
+
+  it('keeps table region mounted and shows refetch overlay when a sort column header is clicked', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchAudits)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockImplementation(() => new Promise(() => {}));
+
+    // Act
+    renderAuditsView();
+    await screen.findByRole('region', { name: 'Audits list, scrollable' });
+    const sortButton = screen.getByRole('button', { name: /audit date/i });
+    fireEvent.click(sortButton);
+
+    // Assert
+    expect(
+      screen.getByRole('region', { name: 'Audits list, scrollable' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Updating audits…');
+    expect(screen.queryByText('Loading audits…')).not.toBeInTheDocument();
+  });
+
+  it('keeps table region mounted and shows refetch overlay when a pagination button is clicked', async (): Promise<void> => {
+    // Arrange
+    const multiPageResult: PagedAuditsResult = {
+      items: [sampleAudit],
+      page: 1,
+      pageSize: 25,
+      totalCount: 75,
+      totalPages: 3,
+    };
+    vi.mocked(fetchAudits)
+      .mockResolvedValueOnce(multiPageResult)
+      .mockImplementation(() => new Promise(() => {}));
+
+    // Act
+    renderAuditsView();
+    await screen.findByRole('region', { name: 'Audits list, scrollable' });
+    const nextButton = screen.getByRole('button', { name: /next/i });
+    fireEvent.click(nextButton);
+
+    // Assert
+    expect(
+      screen.getByRole('region', { name: 'Audits list, scrollable' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Updating audits…');
+    expect(screen.queryByText('Loading audits…')).not.toBeInTheDocument();
+  });
 });
