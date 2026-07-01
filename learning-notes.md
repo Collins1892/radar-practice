@@ -1,3 +1,48 @@
+## Week 7 Day 3 — Wednesday 1 July 2026
+
+A long day, mostly recovering the demo footing after Tuesday's disruption.
+One dry-run completed; the bulk of the day was fixing a real overnight
+failure and hardening the test suite against time-based fragility.
+
+**Overnight agent shipped T06 cleanly — PR #148 held open for the demo**
+The nightly agent picked T06 (incidentDisplay DRY) and produced a clean
+single-file test change: inline date formatting swapped for the canonical
+formatReportedDate helper. Reviewed across all three layers, zero
+Blockers/Majors, merged. Deliberately held open through the day first as
+the live demo artifact.
+
+**Expired hardcoded test dates — 7 failures on main, fixed in PR #149**
+The morning test run surfaced 7 failing tests across three files
+(AuditCreateView, IncidentCreateView, IncidentForm). Root cause: hardcoded
+2026-06-04 fixture dates became unreachable once the real date passed that
+month — the calendar test helper is forward-only with a 24-month cap, so it
+could no longer navigate back to June 2026. This failed on main with no
+code change; the passage of time alone broke it.
+
+Fix: bumped dates to 2030-06-04. Audit tests needed only the date change
+(no future-date validation). Incident tests also required
+vi.useFakeTimers + vi.setSystemTime('2030-06-15T12:00:00Z') because
+IncidentForm rejects future reported dates — freezing the clock to June
+2030 makes the fixture a valid past date. Review caught a real cross-file
+Blocker: auditFormTestUtils.ts was bumped to 2030 but AuditForm.test.tsx
+consumed it without fake timers, so the forward-only helper would have
+exceeded its cap once real time passes June 2030 — fixed by adding the same
+clock freeze there. Also caught a missing 'Z' UTC suffix on setSystemTime
+that could drift by a day on non-UTC CI runners.
+
+Lesson: any hardcoded date in a test is a time bomb. Fixed future dates
+plus a frozen clock is the durable pattern, not chasing the date forward.
+Running the full suite against main first thing each morning is now a
+fixed discipline through Friday — this is exactly the kind of surprise
+that can't happen live on the call.
+
+**Follow-up to log: AuditDetailView.test.tsx has the same T06 gap**
+Both reviewers independently flagged that AuditDetailView.test.tsx still
+inlines date formatting while AuditDetailView.tsx already uses
+formatAuditDate from auditDisplay.ts — the exact duplication T06 just
+closed for Incidents. Create a backlog item to align it (easy, frontend,
+code-quality).
+
 ## Week 7 Day 2 — Tuesday 30 June 2026
 
 Day cut short — house move logistics (selling the car ahead of relocation)
