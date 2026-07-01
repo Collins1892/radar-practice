@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { format, parseISO } from 'date-fns';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createIncident,
   getIncident,
@@ -115,11 +115,17 @@ function renderIncidentFormEdit(): ReturnType<typeof render> {
 
 describe('IncidentForm', () => {
   beforeEach((): void => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2030-06-15T12:00:00Z'));
     vi.mocked(createIncident).mockReset();
     vi.mocked(getIncident).mockReset();
     vi.mocked(updateIncident).mockReset();
     vi.mocked(toast.success).mockReset();
     navigateMock.mockReset();
+  });
+
+  afterEach((): void => {
+    vi.useRealTimers();
   });
 
   async function fillValidIncidentForm(): Promise<void> {
@@ -136,7 +142,7 @@ describe('IncidentForm', () => {
     fireEvent.click(await screen.findByRole('option', { name: 'Medium' }));
     fireEvent.click(screen.getByLabelText(/^Status/));
     fireEvent.click(await screen.findByRole('option', { name: 'Open' }));
-    clickCalendarDay(2026, 5, 4);
+    clickCalendarDay(2030, 5, 4);
   }
 
   it('shows loading state while fetching the incident', (): void => {
@@ -184,7 +190,7 @@ describe('IncidentForm', () => {
       location: 'Building 2',
       severity: 'High',
       status: 'Open',
-      reportedDate: '2026-06-04T00:00:00.000Z',
+      reportedDate: '2030-06-04T00:00:00.000Z',
     };
     vi.mocked(getIncident).mockResolvedValue(incident);
 
@@ -207,7 +213,7 @@ describe('IncidentForm', () => {
       location: 'Building 2',
       severity: 'High',
       status: 'Open',
-      reportedDate: '2026-06-04T00:00:00.000Z',
+      reportedDate: '2030-06-04T00:00:00.000Z',
     };
     const expectedReportedDate = format(
       parseISO(incident.reportedDate.slice(0, 10)),
@@ -245,7 +251,7 @@ describe('IncidentForm', () => {
       location: 'Building 2',
       severity: 'High',
       status: 'Open',
-      reportedDate: '2026-06-04T00:00:00.000Z',
+      reportedDate: '2030-06-04T00:00:00.000Z',
     };
     vi.mocked(getIncident).mockResolvedValue(incident);
     vi.mocked(updateIncident).mockResolvedValue(incident);
@@ -271,7 +277,7 @@ describe('IncidentForm', () => {
       location: 'Building 2',
       severity: 'High',
       status: 'Open',
-      reportedDate: '2026-06-04T00:00:00.000Z',
+      reportedDate: '2030-06-04T00:00:00.000Z',
     };
     vi.mocked(getIncident).mockResolvedValue(incident);
     vi.mocked(updateIncident).mockRejectedValue(
@@ -311,7 +317,7 @@ describe('IncidentForm', () => {
       location: 'Building 2, level 1',
       severity: 'Medium',
       status: 'Open',
-      reportedDate: '2026-06-04T00:00:00.000Z',
+      reportedDate: '2030-06-04T00:00:00.000Z',
     };
     vi.mocked(createIncident).mockResolvedValue(createdIncident);
 

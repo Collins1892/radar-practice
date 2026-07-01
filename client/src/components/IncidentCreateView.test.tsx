@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { format } from 'date-fns';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { createIncident } from '@/api/incidents';
 import type { Incident } from '@/api/incidents';
 import { ApiClientError } from '@/errors';
@@ -86,8 +86,14 @@ function renderIncidentCreateView(): ReturnType<typeof render> {
 
 describe('IncidentCreateView', () => {
   beforeEach((): void => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2030-06-15T12:00:00Z'));
     vi.mocked(createIncident).mockReset();
     navigateMock.mockReset();
+  });
+
+  afterEach((): void => {
+    vi.useRealTimers();
   });
 
   async function fillValidIncidentForm(): Promise<void> {
@@ -104,7 +110,7 @@ describe('IncidentCreateView', () => {
     fireEvent.click(await screen.findByRole('option', { name: 'Medium' }));
     fireEvent.click(screen.getByLabelText(/^Status/));
     fireEvent.click(await screen.findByRole('option', { name: 'Open' }));
-    clickCalendarDay(2026, 5, 4);
+    clickCalendarDay(2030, 5, 4);
   }
 
   it('renders all form fields on the create form', (): void => {
@@ -166,7 +172,7 @@ describe('IncidentCreateView', () => {
 
   it('calls createIncident with correct data when submitting a valid form', async (): Promise<void> => {
     // Arrange
-    const reportedDateLocal = new Date(2026, 5, 4);
+    const reportedDateLocal = new Date(2030, 5, 4);
     const expectedReportedDate = format(reportedDateLocal, 'yyyy-MM-dd');
     const createdIncident: Incident = {
       id: 1,
@@ -208,7 +214,7 @@ describe('IncidentCreateView', () => {
       location: 'Building 2, level 1',
       severity: 'Medium',
       status: 'Open',
-      reportedDate: '2026-06-04T00:00:00.000Z',
+      reportedDate: '2030-06-04T00:00:00.000Z',
     };
     vi.mocked(createIncident).mockResolvedValue(createdIncident);
     renderIncidentCreateView();

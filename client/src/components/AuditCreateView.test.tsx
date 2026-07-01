@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { format } from 'date-fns';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { createAudit } from '@/api/audits';
 import type { Audit } from '@/api/audits';
 import { ApiClientError } from '@/errors';
@@ -37,8 +37,14 @@ function renderAuditCreateView(): ReturnType<typeof render> {
 
 describe('AuditCreateView', () => {
   beforeEach((): void => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2030-06-15T12:00:00Z'));
     vi.mocked(createAudit).mockReset();
     navigateMock.mockReset();
+  });
+
+  afterEach((): void => {
+    vi.useRealTimers();
   });
 
   it('renders all form fields on the create form', (): void => {
@@ -95,7 +101,7 @@ describe('AuditCreateView', () => {
 
   it('calls createAudit with correct data when submitting a valid form', async (): Promise<void> => {
     // Arrange
-    const auditDateLocal = new Date(2026, 5, 4);
+    const auditDateLocal = new Date(2030, 5, 4);
     const expectedAuditDate = format(auditDateLocal, 'yyyy-MM-dd');
     const createdAudit: Audit = {
       id: 1,
@@ -132,7 +138,7 @@ describe('AuditCreateView', () => {
       id: 1,
       title: 'Hand hygiene compliance',
       description: 'Quarterly ward review',
-      auditDate: '2026-06-04T00:00:00.000Z',
+      auditDate: '2030-06-04T00:00:00.000Z',
       status: 'Scheduled',
       createdBy: 'Quality team',
     };
