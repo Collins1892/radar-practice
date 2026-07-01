@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { format, parseISO } from 'date-fns';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAudit, getAudit, updateAudit, type Audit } from '@/api/audits';
 import { ApiClientError } from '@/errors';
 import { toast } from 'sonner';
@@ -61,11 +61,17 @@ function renderAuditFormEdit(): ReturnType<typeof render> {
 
 describe('AuditForm', () => {
   beforeEach((): void => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2030-06-15T12:00:00Z'));
     vi.mocked(createAudit).mockReset();
     vi.mocked(getAudit).mockReset();
     vi.mocked(updateAudit).mockReset();
     vi.mocked(toast.success).mockReset();
     navigateMock.mockReset();
+  });
+
+  afterEach((): void => {
+    vi.useRealTimers();
   });
 
   it('shows loading state while fetching the audit', (): void => {
@@ -110,7 +116,7 @@ describe('AuditForm', () => {
       id: 1,
       title: 'Hand hygiene compliance',
       description: 'Quarterly ward review',
-      auditDate: '2026-06-04T00:00:00.000Z',
+      auditDate: '2030-06-04T00:00:00.000Z',
       status: 'Scheduled',
       createdBy: 'Quality team',
     };
@@ -136,7 +142,7 @@ describe('AuditForm', () => {
       id: 1,
       title: 'Hand hygiene compliance',
       description: 'Quarterly ward review',
-      auditDate: '2026-06-04T00:00:00.000Z',
+      auditDate: '2030-06-04T00:00:00.000Z',
       status: 'Scheduled',
       createdBy: 'Quality team',
     };
@@ -172,7 +178,7 @@ describe('AuditForm', () => {
       id: 1,
       title: 'Hand hygiene compliance',
       description: 'Quarterly ward review',
-      auditDate: '2026-06-04T00:00:00.000Z',
+      auditDate: '2030-06-04T00:00:00.000Z',
       status: 'Scheduled',
       createdBy: 'Quality team',
     };
@@ -197,7 +203,7 @@ describe('AuditForm', () => {
       id: 1,
       title: 'Hand hygiene compliance',
       description: 'Quarterly ward review',
-      auditDate: '2026-06-04T00:00:00.000Z',
+      auditDate: '2030-06-04T00:00:00.000Z',
       status: 'Scheduled',
       createdBy: 'Quality team',
     };
@@ -236,7 +242,7 @@ describe('AuditForm', () => {
       id: 1,
       title: 'Hand hygiene compliance',
       description: 'Quarterly ward review',
-      auditDate: '2026-06-04T00:00:00.000Z',
+      auditDate: '2030-06-04T00:00:00.000Z',
       status: 'Scheduled',
       createdBy: 'Quality team',
     };
