@@ -87,7 +87,7 @@ function renderIncidentCreateView(): ReturnType<typeof render> {
 describe('IncidentCreateView', () => {
   beforeEach((): void => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    vi.setSystemTime(new Date('2030-06-15T12:00:00'));
+    vi.setSystemTime(new Date('2030-06-15T12:00:00Z'));
     vi.mocked(createIncident).mockReset();
     navigateMock.mockReset();
   });
