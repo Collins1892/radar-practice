@@ -1,3 +1,19 @@
+## Week 7 Day 4 — Thursday 2 July 2026
+
+### PR #151 (T11) reviewed and merged
+
+Sort/pagination refetch tests in `AuditsView.test.tsx`. Clean across all three review layers — Cursor, Claude Code `/review`, automated bot. 0 Blockers, 0 Majors. Merged. Branch deleted. T41 is now the lowest open easy task for tomorrow's live pickup.
+
+### Sonnet 5 and Fable 5 — staying current
+
+Sonnet 5 launched 30 June. Fable 5 launched 9 June, briefly suspended by US export controls, restored 1 July. The pace of model releases is a signal to stay close to the tooling.
+
+### /tidy deprecation — deferred
+
+Decision to deprecate `/tidy` rather than delete. Carry to post-interview.
+
+---
+
 ## Week 7 Day 3 — Wednesday 1 July 2026
 
 A long day, mostly recovering the demo footing after Tuesday's disruption.
