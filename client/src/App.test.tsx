@@ -3,11 +3,19 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { createAudit, fetchAudits, getAudit, updateAudit } from '@/api/audits';
+import { fetchIncidents, getIncident } from '@/api/incidents';
 import { createItem, fetchItems } from './api';
-import { INCIDENT_CREATE_HEADING } from '@/components/incidentPageCopy';
+import {
+  INCIDENT_CREATE_HEADING,
+  INCIDENT_DETAIL_HEADING,
+  INCIDENT_EDIT_HEADING,
+} from '@/components/incidentPageCopy';
 import { ApiClientError } from './errors';
 import { formatPageTitle } from '@/pageTitle';
 import type { Item } from './types';
+
+// Keeps the view pending so the sync title assertion runs before any resolve triggers a re-render
+const pending = <T,>(): Promise<T> => new Promise<T>(() => {});
 
 vi.mock('./api', () => ({
   fetchItems: vi.fn(),
@@ -22,6 +30,15 @@ vi.mock('@/api/audits', async (importOriginal) => {
     createAudit: vi.fn(),
     getAudit: vi.fn(),
     updateAudit: vi.fn(),
+  };
+});
+
+vi.mock('@/api/incidents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/incidents')>();
+  return {
+    ...actual,
+    fetchIncidents: vi.fn(),
+    getIncident: vi.fn(),
   };
 });
 
@@ -42,6 +59,8 @@ describe('App', () => {
     vi.mocked(createAudit).mockReset();
     vi.mocked(getAudit).mockReset();
     vi.mocked(updateAudit).mockReset();
+    vi.mocked(fetchIncidents).mockReset();
+    vi.mocked(getIncident).mockReset();
   });
 
   it('renders skip link targeting main content', (): void => {
@@ -111,6 +130,50 @@ describe('App', () => {
 
     // Assert
     expect(document.title).toBe(formatPageTitle(INCIDENT_CREATE_HEADING));
+  });
+
+  it('sets document title to Components | Radar Practice at /components', (): void => {
+    // Arrange
+    // (none)
+
+    // Act
+    renderApp(['/components']);
+
+    // Assert
+    expect(document.title).toBe(formatPageTitle('Components'));
+  });
+
+  it('sets document title to Incidents | Radar Practice at /incidents', (): void => {
+    // Arrange
+    vi.mocked(fetchIncidents).mockImplementation(pending);
+
+    // Act
+    renderApp(['/incidents']);
+
+    // Assert
+    expect(document.title).toBe(formatPageTitle('Incidents'));
+  });
+
+  it('sets document title to Incident detail | Radar Practice at /incidents/:id', (): void => {
+    // Arrange
+    vi.mocked(getIncident).mockImplementation(pending);
+
+    // Act
+    renderApp(['/incidents/42']);
+
+    // Assert
+    expect(document.title).toBe(formatPageTitle(INCIDENT_DETAIL_HEADING));
+  });
+
+  it('sets document title to Edit incident | Radar Practice at /incidents/:id/edit', (): void => {
+    // Arrange
+    vi.mocked(getIncident).mockImplementation(pending);
+
+    // Act
+    renderApp(['/incidents/42/edit']);
+
+    // Assert
+    expect(document.title).toBe(formatPageTitle(INCIDENT_EDIT_HEADING));
   });
 
   it('loads and displays items after mount', async (): Promise<void> => {
