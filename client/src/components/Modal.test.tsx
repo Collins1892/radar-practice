@@ -118,6 +118,26 @@ describe('Modal', () => {
     expect(dialog).not.toHaveAttribute('aria-describedby');
   });
 
+  it('points aria-describedby at the element containing the description text', async (): Promise<void> => {
+    // Arrange
+    const description = 'This is the modal description';
+    renderModal({ open: true, description });
+    await screen.findByRole('dialog');
+
+    // Act
+    const dialog = screen.getByRole('dialog');
+    const describedById = dialog.getAttribute('aria-describedby');
+
+    // Assert
+    expect(describedById).not.toBeNull();
+    if (describedById === null) {
+      throw new Error('Expected aria-describedby to be present');
+    }
+    const describedElement = document.getElementById(describedById);
+    expect(describedElement).not.toBeNull();
+    expect(describedElement).toHaveTextContent(description);
+  });
+
   it('shows the dialog when open is true without clicking the trigger', async (): Promise<void> => {
     // Arrange — defaults via renderModal
 
