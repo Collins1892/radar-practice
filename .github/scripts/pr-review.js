@@ -90,7 +90,7 @@ const POST_PUSH_TEST_COMMANDS = [
 
 config({ path: envPath });
 
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-4-8';
 
 function log(message) {
   // eslint-disable-next-line no-console
