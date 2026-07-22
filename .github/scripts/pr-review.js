@@ -1448,6 +1448,7 @@ async function main() {
   const branchName = isGitHubActions ? requireEnv('PR_HEAD_REF') : null;
 
   log(`Reviewing PR #${prNumber} on ${owner}/${repo}`);
+  log(`Model: ${ANTHROPIC_MODEL}`);
   if (isGitHubActions) {
     log(`Running in GitHub Actions on branch "${branchName}"`);
   } else {
