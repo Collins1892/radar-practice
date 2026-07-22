@@ -1,5 +1,4 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { format, parseISO } from 'date-fns';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { deleteAudit, getAudit, type Audit } from '@/api/audits';
@@ -7,6 +6,7 @@ import { ApiClientError } from '@/errors';
 import { AUDIT_DETAIL_HEADING } from '@/components/auditPageCopy';
 import { toast } from 'sonner';
 import { AuditDetailView } from './AuditDetailView';
+import { formatAuditDate } from './auditDisplay';
 
 const navigateMock = vi.hoisted(() => vi.fn());
 
@@ -86,10 +86,7 @@ describe('AuditDetailView', () => {
 
   it('shows the audit data when getAudit resolves successfully', async (): Promise<void> => {
     // Arrange
-    const formattedAuditDate = format(
-      parseISO(audit.auditDate.slice(0, 10)),
-      'dd MMM yyyy',
-    );
+    const formattedAuditDate = formatAuditDate(audit.auditDate);
     vi.mocked(getAudit).mockResolvedValue(audit);
 
     // Act
