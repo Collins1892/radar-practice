@@ -1625,6 +1625,7 @@ async function main() {
 
   log(`Repository: ${owner}/${repo}`);
   log(`TASK_MODE: ${taskMode}`);
+  log(`Model: ${ANTHROPIC_MODEL}`);
   if (taskCategory) {
     log(`TASK_CATEGORY filter: ${taskCategory}`);
   }
