@@ -34,7 +34,7 @@ Runs the Vitest suite — component, integration, and unit tests.
 npx playwright test
 ```
 
-Runs Playwright e2e tests from `e2e/`. Nine Playwright tests: 3 smoke (`app.spec.ts`) plus items, components, 3 incidents, and 1 audit journey specs under `e2e/journeys/`. Playwright's `webServer` config boots all four servers automatically — ItemsApi (5133), IncidentsApi (5134), AuditsApi (5135), and Vite (5173). In CI, the [nightly e2e workflow](../.github/workflows/nightly-e2e.yml) runs the same suite on a 3 AM Perth cron (`workflow_dispatch` + schedule), with explicit `dotnet restore`/`build` before `dotnet run --no-build` for cold-start hardening; `dorny/test-reporter` publishes JUnit results.
+Runs Playwright e2e tests from `e2e/`. Nine Playwright tests: 3 smoke (`app.spec.ts`) plus items, components, 3 incidents, and 1 audit journey specs under `e2e/journeys/`. Playwright's `webServer` config boots all four servers automatically — ItemsApi (5133), IncidentsApi (5134), AuditsApi (5135), and Vite (5173). In CI, the [nightly e2e workflow](../.github/workflows/nightly-e2e.yml) runs the same suite on a 3 AM UK (BST) cron (`workflow_dispatch` + schedule), with explicit `dotnet restore`/`build` before `dotnet run --no-build` for cold-start hardening; `dorny/test-reporter` publishes JUnit results.
 
 ## Documentation
 
