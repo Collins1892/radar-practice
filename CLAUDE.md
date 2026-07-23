@@ -40,7 +40,7 @@ Don't:
 - Raise PRs via `gh pr create` or post reviews via `gh pr review` unless the task says so.
 - Run destructive operations (delete files, drop tables) without confirmation.
 - Expose stack traces or internal errors to clients.
-- Use `any`, non-null assertions (`!`), or disable ESLint rules — the only documented exception is the file-level disable in `client/src/componentRegistry.tsx`.
+- Use `any`, non-null assertions (`!`), or disable ESLint rules — the only documented exceptions are the file-level disables in `client/src/componentRegistry.tsx` and `client/src/components/FormField.tsx`.
 - Put PII, patient data, or NHS numbers anywhere (see [Data protection](#data-protection)).
 - Over-engineer or make large unsupervised multi-file refactors.
 

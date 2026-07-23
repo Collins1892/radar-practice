@@ -19,7 +19,7 @@ These apply even before you open `CLAUDE.md`:
 - **Never commit or push, and never `gh pr create` / `gh pr review`, unless explicitly asked** — show changes only; the developer commits. Never force-push without instruction.
 - **No stack traces or internal errors to clients** — the global exception handler returns a generic `{ error: "..." }` shape.
 - **Reference-module rule** — Incidents/Audits are the structural template; Items is a demo scaffold (never a template); `legacy/` is a behaviour reference (what, not how).
-- **No `any`, non-null assertions, or ESLint-rule disables** — except the documented exception in `client/src/componentRegistry.tsx`.
+- **No `any`, non-null assertions, or ESLint-rule disables** — see `CLAUDE.md` for the authoritative list of documented exceptions.
 
 Everything else — repo layout, versions, testing approach, automation, data
 protection detail — is in [`CLAUDE.md`](../../CLAUDE.md).
