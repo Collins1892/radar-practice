@@ -90,7 +90,7 @@ const POST_PUSH_TEST_COMMANDS = [
 
 config({ path: envPath });
 
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-4-8';
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5';
 
 function log(message) {
   // eslint-disable-next-line no-console
@@ -113,6 +113,18 @@ function fail(message) {
   // eslint-disable-next-line no-console
   console.error(`[pr-review] ERROR: ${message}`);
   throw new PrReviewFatalError(message);
+}
+
+// A declined request returns HTTP 200 with stop_reason 'refusal', not an error
+// status. Returns null for every other stop reason. `stop_details` is populated
+// only on refusals, so it must be optional-chained.
+function describeRefusal(data) {
+  if (data?.stop_reason !== 'refusal') {
+    return null;
+  }
+  return `Anthropic API declined the request (category: ${
+    data.stop_details?.category ?? 'unspecified'
+  })`;
 }
 
 function requireEnv(name) {
@@ -313,7 +325,9 @@ async function requestReview(skillContent, diff, apiKey) {
       },
       body: JSON.stringify({
         model: ANTHROPIC_MODEL,
-        max_tokens: 4096,
+        // 8192, not 4096: Opus 5 runs adaptive thinking when `thinking` is
+        // omitted, and max_tokens caps thinking plus visible output together.
+        max_tokens: 8192,
         messages: [
           {
             role: 'user',
@@ -326,6 +340,11 @@ async function requestReview(skillContent, diff, apiKey) {
   );
 
   const data = await response.json();
+
+  const refusal = describeRefusal(data);
+  if (refusal) {
+    fail(refusal);
+  }
 
   if (data.stop_reason === 'max_tokens') {
     fail('review truncated — raise max_tokens or reduce diff size');
@@ -721,6 +740,12 @@ async function requestFileFix(
 
   const data = await response.json();
 
+  const refusal = describeRefusal(data);
+  if (refusal) {
+    warn(refusal);
+    return { content: null, reason: 'refusal' };
+  }
+
   if (data.stop_reason === 'max_tokens') {
     return { content: null, reason: 'truncated' };
   }
@@ -808,6 +833,10 @@ async function applyBlockerMajorFixes(
         } else if (fixResult.reason === 'empty_response') {
           warn(
             `Fix response missing text content — skipping fix for ${filePath}, treating finding as advisory`,
+          );
+        } else if (fixResult.reason === 'refusal') {
+          warn(
+            `Fix request declined by the API — skipping fix for ${filePath}, treating finding as advisory`,
           );
         }
         demotedFindings.push(finding);
@@ -1498,6 +1527,7 @@ export {
   backoffMs,
   buildScopedGitAddArgs,
   commitAndPushFixes,
+  describeRefusal,
   getRetryWaitMs,
   stripJsonWrappers,
   parseFindings,

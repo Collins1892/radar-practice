@@ -24,7 +24,9 @@ const MAX_API_CALLS = 10;
 const MAX_IMPLEMENTATION_ATTEMPTS = 3;
 const BACKLOG_PATH = 'docs/nightly-agent-backlog.md';
 const COMPLETED_PATH = 'docs/nightly-agent-completed.md';
-const PLAN_MAX_TOKENS = 4096;
+// 8192, not 4096: Opus 5 runs adaptive thinking when `thinking` is omitted, and
+// max_tokens caps thinking plus visible output together.
+const PLAN_MAX_TOKENS = 8192;
 const IMPLEMENT_MAX_TOKENS = 16384;
 const FIX_OUTPUT_TRUNCATE = 2000;
 const OVERSIZE_MIN_CHARS = 10000;
@@ -89,7 +91,7 @@ const TEST_COMMANDS = [
 
 config({ path: envPath });
 
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-4-8';
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5';
 
 function log(message) {
   // eslint-disable-next-line no-console
@@ -112,6 +114,18 @@ function fail(message) {
   // eslint-disable-next-line no-console
   console.error(`[nightly-agent] ERROR: ${message}`);
   throw new NightlyAgentFatalError(message);
+}
+
+// A declined request returns HTTP 200 with stop_reason 'refusal', not an error
+// status. Returns null for every other stop reason. `stop_details` is populated
+// only on refusals, so it must be optional-chained.
+function describeRefusal(data) {
+  if (data?.stop_reason !== 'refusal') {
+    return null;
+  }
+  return `Anthropic API declined the request (category: ${
+    data.stop_details?.category ?? 'unspecified'
+  })`;
 }
 
 function requireEnv(name) {
@@ -882,6 +896,12 @@ async function callAnthropic(apiKey, prompt, maxTokens, apiCallCounter, label) {
   );
 
   const data = await response.json();
+
+  const refusal = describeRefusal(data);
+  if (refusal) {
+    log(refusal);
+    return { ok: false, reason: 'refusal' };
+  }
 
   if (data.stop_reason === 'max_tokens') {
     return { ok: false, reason: 'truncated' };
@@ -1971,6 +1991,7 @@ export {
   formatPrBody,
   formatPrNumberCell,
   stripCodeFences,
+  describeRefusal,
   implementPlanChanges,
   MAX_IMPLEMENT_FILE_BYTES,
   isImplementFileTooLarge,

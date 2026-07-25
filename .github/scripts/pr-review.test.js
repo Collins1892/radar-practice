@@ -4,6 +4,7 @@ import {
   backoffMs,
   buildScopedGitAddArgs,
   commitAndPushFixes,
+  describeRefusal,
   extractFilePath,
   formatComment,
   getRetryWaitMs,
@@ -551,5 +552,28 @@ describe('commitAndPushFixes', () => {
   it('skips commit when writtenFilePaths is empty', async () => {
     const result = await commitAndPushFixes(1, []);
     assert.equal(result.pushed, false);
+  });
+});
+
+describe('describeRefusal', () => {
+  it('returns null for a normal response, and a category-naming message for a refusal', () => {
+    assert.equal(describeRefusal({ stop_reason: 'end_turn' }), null);
+    assert.equal(describeRefusal({ stop_reason: 'max_tokens' }), null);
+
+    assert.equal(
+      describeRefusal({ stop_reason: 'refusal', stop_details: { category: 'cyber' } }),
+      'Anthropic API declined the request (category: cyber)',
+    );
+
+    // stop_details is null on every non-refusal stop reason, and may be absent
+    // or category-less on a refusal — none of those may throw.
+    assert.equal(
+      describeRefusal({ stop_reason: 'refusal', stop_details: null }),
+      'Anthropic API declined the request (category: unspecified)',
+    );
+    assert.equal(
+      describeRefusal({ stop_reason: 'refusal' }),
+      'Anthropic API declined the request (category: unspecified)',
+    );
   });
 });

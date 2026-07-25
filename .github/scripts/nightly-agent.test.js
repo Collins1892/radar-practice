@@ -6,6 +6,7 @@ import {
   buildAttemptedTaskIdSet,
   buildImplementPrompt,
   buildPlanPrompt,
+  describeRefusal,
   extractTaskIdsFromPrTitle,
   fetchAttemptedTaskIds,
   formatPrBody,
@@ -971,5 +972,28 @@ describe('formatPrNumberCell', () => {
   it('missing owner or repo returns the raw prNumber unchanged', () => {
     assert.equal(formatPrNumberCell('42', '', repo), '42');
     assert.equal(formatPrNumberCell('42', owner, ''), '42');
+  });
+});
+
+describe('describeRefusal', () => {
+  it('returns null for a normal response, and a category-naming message for a refusal', () => {
+    assert.equal(describeRefusal({ stop_reason: 'end_turn' }), null);
+    assert.equal(describeRefusal({ stop_reason: 'max_tokens' }), null);
+
+    assert.equal(
+      describeRefusal({ stop_reason: 'refusal', stop_details: { category: 'cyber' } }),
+      'Anthropic API declined the request (category: cyber)',
+    );
+
+    // stop_details is null on every non-refusal stop reason, and may be absent
+    // or category-less on a refusal — none of those may throw.
+    assert.equal(
+      describeRefusal({ stop_reason: 'refusal', stop_details: null }),
+      'Anthropic API declined the request (category: unspecified)',
+    );
+    assert.equal(
+      describeRefusal({ stop_reason: 'refusal' }),
+      'Anthropic API declined the request (category: unspecified)',
+    );
   });
 });
