@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { DatePickerField } from './DatePickerField';
@@ -79,16 +79,14 @@ describe('DatePickerField', () => {
 
     // Act
     fireEvent.click(getTrigger());
-    const previousMonthButton = await screen.findByRole('button', {
+    await screen.findByRole('button', {
       name: /previous month/i,
     });
 
     // Assert
-    const calendarRoot =
-      previousMonthButton.closest('[data-slot="calendar"]') ??
-      previousMonthButton.closest('.rdp-root');
-    expect(calendarRoot).not.toBeNull();
-    expect(calendarRoot).toContain(document.activeElement);
+    const grid = await screen.findByRole('grid');
+    expect(grid).toContainElement(document.activeElement);
+    expect(within(grid).getAllByRole('gridcell').length).toBeGreaterThan(0);
   });
 
   it('sets aria-invalid and aria-describedby on the trigger when error is provided', (): void => {
