@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchIncidents } from '@/api/incidents';
@@ -39,6 +39,79 @@ const populatedPagedResult: PagedIncidentsResult = {
   totalCount: 1,
   totalPages: 1,
 };
+
+const staleIncident: Incident = {
+  id: 2,
+  title: 'Stale incident',
+  description: 'Result of an outdated request',
+  location: 'Building 3, level 2',
+  severity: 'High',
+  status: 'Open',
+  reportedDate: '2026-02-01T00:00:00.000Z',
+};
+
+const stalePagedResult: PagedIncidentsResult = {
+  items: [staleIncident],
+  page: 1,
+  pageSize: 25,
+  totalCount: 1,
+  totalPages: 1,
+};
+
+const latestIncident: Incident = {
+  id: 3,
+  title: 'Latest incident',
+  description: 'Result of the most recent request',
+  location: 'Building 4, level 3',
+  severity: 'Medium',
+  status: 'Open',
+  reportedDate: '2026-02-02T00:00:00.000Z',
+};
+
+const latestPagedResult: PagedIncidentsResult = {
+  items: [latestIncident],
+  page: 1,
+  pageSize: 25,
+  totalCount: 1,
+  totalPages: 1,
+};
+
+interface Deferred<T> {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: unknown) => void;
+}
+
+function createDeferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+function getRequestSignal(callIndex: number): AbortSignal {
+  const args = vi.mocked(fetchIncidents).mock.calls[callIndex] as
+    | unknown[]
+    | undefined;
+  if (args === undefined) {
+    throw new Error(`fetchIncidents was not called ${callIndex + 1} time(s)`);
+  }
+  for (const arg of args) {
+    if (arg instanceof AbortSignal) {
+      return arg;
+    }
+    if (typeof arg === 'object' && arg !== null && 'signal' in arg) {
+      const { signal } = arg as { signal: unknown };
+      if (signal instanceof AbortSignal) {
+        return signal;
+      }
+    }
+  }
+  throw new Error('fetchIncidents was not called with an AbortSignal');
+}
 
 function renderIncidentsView(): ReturnType<typeof render> {
   return render(
@@ -123,14 +196,16 @@ describe('IncidentsView', () => {
     expect(screen.getByText('Medium')).toBeInTheDocument();
     expect(screen.getByText('Open')).toBeInTheDocument();
     expect(screen.getByText('15 Jan 2026')).toBeInTheDocument();
-    expect(fetchIncidents).toHaveBeenCalledWith({
-      severity: undefined,
-      status: undefined,
-      sortBy: 'reportedDate',
-      sortDirection: 'desc',
-      page: 1,
-      pageSize: 25,
-    });
+    expect(vi.mocked(fetchIncidents).mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        severity: undefined,
+        status: undefined,
+        sortBy: 'reportedDate',
+        sortDirection: 'desc',
+        page: 1,
+        pageSize: 25,
+      }),
+    );
     expect(screen.queryByText('Loading incidents…')).not.toBeInTheDocument();
     expect(screen.queryByText('No incidents found')).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -247,14 +322,16 @@ describe('IncidentsView', () => {
 
     // Assert
     await waitFor(() => {
-      expect(fetchIncidents).toHaveBeenLastCalledWith({
-        severity: 'High',
-        status: undefined,
-        sortBy: 'reportedDate',
-        sortDirection: 'desc',
-        page: 1,
-        pageSize: 25,
-      });
+      expect(vi.mocked(fetchIncidents).mock.lastCall?.[0]).toEqual(
+        expect.objectContaining({
+          severity: 'High',
+          status: undefined,
+          sortBy: 'reportedDate',
+          sortDirection: 'desc',
+          page: 1,
+          pageSize: 25,
+        }),
+      );
     });
   });
 
@@ -312,5 +389,97 @@ describe('IncidentsView', () => {
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('Could not load incidents');
     expect(alert).toHaveTextContent('Invalid sort field.');
+  });
+
+  it('shows the latest result and never renders a stale earlier response', async (): Promise<void> => {
+    // Arrange
+    const staleRequest = createDeferred<PagedIncidentsResult>();
+    const latestRequest = createDeferred<PagedIncidentsResult>();
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockReturnValueOnce(staleRequest.promise)
+      .mockReturnValueOnce(latestRequest.promise);
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Incidents list, scrollable' });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+    await waitFor(() => {
+      expect(fetchIncidents).toHaveBeenCalledTimes(2);
+    });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(
+      await screen.findByRole('option', { name: 'All severities' }),
+    );
+    await waitFor(() => {
+      expect(fetchIncidents).toHaveBeenCalledTimes(3);
+    });
+    await act(async () => {
+      latestRequest.resolve(latestPagedResult);
+      await latestRequest.promise;
+    });
+    await screen.findByText('Latest incident');
+    await act(async () => {
+      staleRequest.resolve(stalePagedResult);
+      await staleRequest.promise;
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText('Latest incident')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Stale incident')).not.toBeInTheDocument();
+  });
+
+  it('aborts the in-flight request signal when the query changes and when the component unmounts', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockImplementation(() => new Promise(() => {}));
+
+    // Act
+    const { unmount } = renderIncidentsView();
+    await screen.findByRole('region', { name: 'Incidents list, scrollable' });
+    const firstSignal = getRequestSignal(0);
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+    await waitFor(() => {
+      expect(fetchIncidents).toHaveBeenCalledTimes(2);
+    });
+
+    // Assert
+    expect(firstSignal).toBeInstanceOf(AbortSignal);
+    await waitFor(() => {
+      expect(firstSignal.aborted).toBe(true);
+    });
+    const secondSignal = getRequestSignal(1);
+    expect(secondSignal).toBeInstanceOf(AbortSignal);
+    expect(secondSignal.aborted).toBe(false);
+    unmount();
+    await waitFor(() => {
+      expect(secondSignal.aborted).toBe(true);
+    });
+  });
+
+  it('does not render an error state when the request is aborted', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents).mockRejectedValue(
+      new DOMException('Aborted', 'AbortError'),
+    );
+
+    // Act
+    renderIncidentsView();
+    await waitFor(() => {
+      expect(fetchIncidents).toHaveBeenCalledTimes(1);
+    });
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+    expect(
+      screen.queryByText('Could not load incidents'),
+    ).not.toBeInTheDocument();
   });
 });

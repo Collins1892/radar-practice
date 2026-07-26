@@ -58,6 +58,15 @@ export type FetchIncidentsParams = {
   sortDirection?: 'asc' | 'desc';
   page?: number;
   pageSize?: number;
+  /**
+   * Optional cancellation signal. Forwarded to fetch so callers can abort a
+   * superseded in-flight request (see IncidentsView's fetch effect).
+   */
+  signal?: AbortSignal;
+};
+
+export type FetchIncidentsOptions = {
+  signal?: AbortSignal;
 };
 
 export type PagedIncidentsResult = {
@@ -135,10 +144,28 @@ function isPagedIncidentsResult(value: unknown): value is PagedIncidentsResult {
   );
 }
 
+/**
+ * Abort rejections are not always same-realm `Error` instances (jsdom/browser
+ * `DOMException`), so detection is name-based rather than instanceof-based.
+ */
+function isAbortError(error: unknown): boolean {
+  if (error instanceof Error) {
+    return error.name === 'AbortError';
+  }
+  if (typeof error === 'object' && error !== null && 'name' in error) {
+    const { name } = error as { name?: unknown };
+    return name === 'AbortError';
+  }
+  return false;
+}
+
 async function request(path: string, init?: RequestInit): Promise<Response> {
   try {
     return await fetch(`${base}${path}`, init);
-  } catch {
+  } catch (err) {
+    // Aborts are caller-initiated cancellations, not network failures:
+    // rethrow as-is so `err.name === 'AbortError'` stays identifiable.
+    if (isAbortError(err)) throw err;
     throw new ApiClientError('Network request failed', 'network');
   }
 }
@@ -156,14 +183,24 @@ async function parseErrorMessage(response: Response): Promise<string> {
 async function parseJson(response: Response): Promise<unknown> {
   try {
     return await response.json();
-  } catch {
+  } catch (err) {
+    if (isAbortError(err)) throw err;
     throw new ApiClientError('Invalid response from server', 'parse');
   }
 }
 
 export async function fetchIncidents(
-  params: FetchIncidentsParams = {},
+  paramsOrSignal: FetchIncidentsParams | AbortSignal = {},
+  options: FetchIncidentsOptions = {},
 ): Promise<PagedIncidentsResult> {
+  // Callers may pass the cancellation signal three ways: as the sole argument,
+  // inside the params object, or via the options argument.
+  const signalFirstArg = paramsOrSignal instanceof AbortSignal;
+  const params: FetchIncidentsParams = signalFirstArg ? {} : paramsOrSignal;
+  const signal: AbortSignal | undefined = signalFirstArg
+    ? paramsOrSignal
+    : (params.signal ?? options.signal);
+
   const searchParams = new URLSearchParams();
 
   if (params.severity !== undefined) {
@@ -186,7 +223,10 @@ export async function fetchIncidents(
   const query = searchParams.toString();
   const path = query ? `/incidents?${query}` : '/incidents';
 
-  const response = await request(path);
+  const response =
+    signal !== undefined
+      ? await request(path, { signal })
+      : await request(path);
 
   if (!response.ok) {
     throw new ApiClientError(

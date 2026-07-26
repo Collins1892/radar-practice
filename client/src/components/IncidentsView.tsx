@@ -34,6 +34,28 @@ type IncidentRow = Incident & Record<string, unknown>;
 
 const PAGE_SIZE = 25;
 
+/**
+ * Reads the `name` of an unknown thrown value.
+ *
+ * Abort rejections are not always plain `Error` instances: jsdom/browser
+ * `DOMException` objects can come from a different realm, so `instanceof Error`
+ * is unreliable. Name-based detection works for every implementation.
+ */
+function errorName(error: unknown): string | undefined {
+  if (error instanceof Error) {
+    return error.name;
+  }
+  if (typeof error === 'object' && error !== null && 'name' in error) {
+    const { name } = error as { name?: unknown };
+    return typeof name === 'string' ? name : undefined;
+  }
+  return undefined;
+}
+
+function isAbortError(error: unknown): boolean {
+  return errorName(error) === 'AbortError';
+}
+
 export function IncidentsView(): JSX.Element {
   const [severityFilter, setSeverityFilter] =
     useState<string>(INCIDENT_ALL_FILTER);
@@ -45,37 +67,51 @@ export function IncidentsView(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadIncidents = useCallback(async (): Promise<void> => {
-    setError(null);
-    setLoading(true);
-    try {
-      const data = await fetchIncidents({
-        severity:
-          severityFilter === INCIDENT_ALL_FILTER
-            ? undefined
-            : (severityFilter as IncidentSeverity),
-        status:
-          statusFilter === INCIDENT_ALL_FILTER
-            ? undefined
-            : (statusFilter as IncidentStatus),
-        sortBy: sortKey,
-        sortDirection,
-        page,
-        pageSize: PAGE_SIZE,
-      });
-      setResult(data);
-    } catch (err) {
-      setError(incidentUserMessage(err, 'loading'));
-    } finally {
+  const loadIncidents = useCallback(
+    async (signal?: AbortSignal): Promise<void> => {
+      setError(null);
+      setLoading(true);
+      try {
+        const data = await fetchIncidents({
+          severity:
+            severityFilter === INCIDENT_ALL_FILTER
+              ? undefined
+              : (severityFilter as IncidentSeverity),
+          status:
+            statusFilter === INCIDENT_ALL_FILTER
+              ? undefined
+              : (statusFilter as IncidentStatus),
+          sortBy: sortKey,
+          sortDirection,
+          page,
+          pageSize: PAGE_SIZE,
+          signal,
+        });
+        // A superseded request must never overwrite fresher state.
+        if (signal?.aborted === true) {
+          return;
+        }
+        setResult(data);
+      } catch (err) {
+        // Aborted requests are expected cancellations, not user-facing errors.
+        if (isAbortError(err) || signal?.aborted === true) {
+          return;
+        }
+        setError(incidentUserMessage(err, 'loading'));
+      }
       setLoading(false);
-    }
-  }, [severityFilter, statusFilter, sortKey, sortDirection, page]);
+    },
+    [severityFilter, statusFilter, sortKey, sortDirection, page],
+  );
 
-  // Known: no stale-response guard — rapid filter/sort changes can
-  // cause earlier responses to overwrite later ones. Low impact for
-  // a single-user app; fix in Week 7 with an active flag or AbortController.
+  // AbortController prevents stale responses: each query change aborts the
+  // previous in-flight request during cleanup.
   useEffect(() => {
-    void loadIncidents();
+    const controller = new AbortController();
+    void loadIncidents(controller.signal);
+    return () => {
+      controller.abort();
+    };
   }, [loadIncidents]);
 
   const handleSeverityChange = (value: string): void => {

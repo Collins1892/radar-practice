@@ -35,6 +35,51 @@ describe('fetchIncidents', () => {
       return error instanceof ApiClientError && error.kind === 'parse';
     });
   });
+
+  it('forwards a provided AbortSignal to fetch', async (): Promise<void> => {
+    // Arrange
+    const fetchMock = vi.fn(
+      (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> =>
+        Promise.resolve(
+          new Response(JSON.stringify({ invalid: true }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const controller = new AbortController();
+
+    // Act
+    await fetchIncidents(controller.signal).catch((): undefined => undefined);
+
+    // Assert
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const init: RequestInit | undefined = fetchMock.mock.calls[0]?.[1];
+    expect(init?.signal).toBe(controller.signal);
+  });
+
+  it('calls fetch without a signal when none is provided', async (): Promise<void> => {
+    // Arrange
+    const fetchMock = vi.fn(
+      (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> =>
+        Promise.resolve(
+          new Response(JSON.stringify({ invalid: true }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    // Act
+    await fetchIncidents().catch((): undefined => undefined);
+
+    // Assert
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const init: RequestInit | undefined = fetchMock.mock.calls[0]?.[1];
+    expect(init?.signal).toBeUndefined();
+  });
 });
 
 describe('parseIncidentId', () => {
