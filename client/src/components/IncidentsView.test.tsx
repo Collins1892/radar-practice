@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchIncidents } from '@/api/incidents';
@@ -32,8 +33,26 @@ const sampleIncident: Incident = {
   reportedDate: '2026-01-15T00:00:00.000Z',
 };
 
+const refreshedIncident: Incident = {
+  id: 2,
+  title: 'Leak in corridor C',
+  description: 'Ceiling leak near stairwell',
+  location: 'Building 3, level 2',
+  severity: 'High',
+  status: 'Open',
+  reportedDate: '2026-01-16T00:00:00.000Z',
+};
+
 const populatedPagedResult: PagedIncidentsResult = {
   items: [sampleIncident],
+  page: 1,
+  pageSize: 25,
+  totalCount: 1,
+  totalPages: 1,
+};
+
+const refreshedPagedResult: PagedIncidentsResult = {
+  items: [refreshedIncident],
   page: 1,
   pageSize: 25,
   totalCount: 1,
@@ -179,6 +198,65 @@ describe('IncidentsView', () => {
       'Cannot reach the server. Start IncidentsApi with dotnet run in IncidentsApi, then try again.',
     );
     expect(alert).not.toHaveTextContent('Could not load incidents');
+  });
+
+  it('shows a Try again button inside the inline error alert while previous rows stay visible', async (): Promise<void> => {
+    // Arrange
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockRejectedValueOnce(
+        new ApiClientError('Network request failed', 'network'),
+      );
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Incidents list, scrollable' });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+
+    // Assert
+    const alert = await screen.findByRole('alert');
+    expect(
+      within(alert).getByRole('button', { name: /try again/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: 'Incidents list, scrollable' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Spill in corridor B')).toBeInTheDocument();
+  });
+
+  it('refetches incidents and clears the inline error alert when Try again is clicked', async (): Promise<void> => {
+    // Arrange
+    const user = userEvent.setup();
+    vi.mocked(fetchIncidents)
+      .mockResolvedValueOnce(populatedPagedResult)
+      .mockRejectedValueOnce(
+        new ApiClientError('Network request failed', 'network'),
+      )
+      .mockResolvedValueOnce(refreshedPagedResult);
+
+    // Act
+    renderIncidentsView();
+    await screen.findByRole('region', { name: 'Incidents list, scrollable' });
+    fireEvent.click(screen.getByLabelText('Severity'));
+    fireEvent.click(await screen.findByRole('option', { name: 'High' }));
+    const alert = await screen.findByRole('alert');
+    const callCountBeforeRetry = vi.mocked(fetchIncidents).mock.calls.length;
+    await user.click(within(alert).getByRole('button', { name: /try again/i }));
+
+    // Assert
+    await waitFor(() => {
+      expect(vi.mocked(fetchIncidents).mock.calls.length).toBeGreaterThan(
+        callCountBeforeRetry,
+      );
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+    expect(await screen.findByText('Leak in corridor C')).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: 'Incidents list, scrollable' }),
+    ).toBeInTheDocument();
   });
 
   it('shows inline error alert instead of EmptyState when refetch rejects after an empty page result', async (): Promise<void> => {

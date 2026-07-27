@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -34,6 +34,10 @@ type IncidentRow = Incident & Record<string, unknown>;
 
 const PAGE_SIZE = 25;
 
+// Same copy as ErrorState's retry action so the affordance is identified
+// consistently across the page (WCAG 3.2.4).
+const INCIDENT_RETRY_LABEL = 'Try again';
+
 export function IncidentsView(): JSX.Element {
   const [severityFilter, setSeverityFilter] =
     useState<string>(INCIDENT_ALL_FILTER);
@@ -44,6 +48,7 @@ export function IncidentsView(): JSX.Element {
   const [result, setResult] = useState<PagedIncidentsResult | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const lastInlineErrorRef = useRef<string | null>(null);
 
   const loadIncidents = useCallback(async (): Promise<void> => {
     setError(null);
@@ -165,6 +170,16 @@ export function IncidentsView(): JSX.Element {
     tableData.length === 0 &&
     (error === null || result === null);
 
+  // Remember the inline error while a retry is in flight so the alert and its
+  // retry button stay mounted and keyboard focus is not lost (WCAG 2.4.11).
+  if (error !== null) {
+    lastInlineErrorRef.current = error;
+  } else if (!loading) {
+    lastInlineErrorRef.current = null;
+  }
+  const inlineError =
+    result !== null ? (error ?? lastInlineErrorRef.current) : null;
+
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -222,10 +237,24 @@ export function IncidentsView(): JSX.Element {
           />
         ) : (
           <div className="relative" aria-busy={isRefetching || undefined}>
-            {error !== null && result !== null ? (
-              <p className="mb-4 text-sm text-destructive" role="alert">
-                {error}
-              </p>
+            {inlineError !== null ? (
+              <div
+                className="mb-4 flex items-start justify-between gap-3"
+                role="alert"
+              >
+                <p className="text-sm text-destructive">{inlineError}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => void loadIncidents()}
+                  disabled={isRefetching}
+                  aria-busy={isRefetching || undefined}
+                >
+                  {INCIDENT_RETRY_LABEL}
+                </Button>
+              </div>
             ) : null}
             {isRefetching ? (
               <LoadingState variant="overlay" message="Updating incidents…" />
