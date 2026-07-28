@@ -308,6 +308,30 @@ describe('IncidentForm', () => {
     expect(screen.getByLabelText(/^Title/)).toHaveFocus();
   });
 
+  it('moves focus to the Description field when the title is valid but the description is not', async (): Promise<void> => {
+    // Arrange
+    renderIncidentFormCreate();
+
+    // Act
+    fireEvent.change(screen.getByLabelText(/^Title/), {
+      target: { value: 'Spill in corridor B' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: INCIDENT_CREATE_HEADING }),
+    );
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Description/)).toHaveFocus();
+    });
+    expect(
+      screen
+        .getAllByRole('alert')
+        .some((alert) => /description/i.test(alert.textContent ?? '')),
+    ).toBe(true);
+    expect(screen.getByLabelText(/^Title/)).not.toHaveFocus();
+  });
+
   it('calls createIncident on valid submit', async (): Promise<void> => {
     // Arrange
     const createdIncident: Incident = {
