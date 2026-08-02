@@ -4,12 +4,14 @@ Final day of the programme and interview day. The 18:00 demo ran on a
 failed overnight agent run — deliberately, once the decision was made not
 to diagnose it beforehand. T17 was rebuilt properly that evening.
 
-**Morning pre-flight — full suite green on main**
+### Morning pre-flight — full suite green on main
+
 267 Vitest, 130 .NET, all passing. The morning run against main has been a
 fixed discipline since Wednesday; nothing about the day's state was
 assumed.
 
-**Overnight agent failed T17 three times — fail-closed worked as designed**
+### Overnight agent failed T17 three times — fail-closed worked as designed
+
 Three attempts, all failing on `npm test (client)`. `git reset --hard`
 after each attempt, so nothing broken ever reached the branch. It raised
 PR #153 carrying only a backlog update — attempts 0→1 and a failure note —
@@ -20,13 +22,15 @@ The self-repair path degraded rather than crashed: two fix calls returned
 original plan. A malformed model response is an expected failure mode, not
 an exception, and the fallback earned its place.
 
-**Decision: go into the demo blind**
+### Decision: go into the demo blind
+
 Chose not to diagnose the failure before the call, and to discover it
 live. That made the failed run the spine of the demo rather than something
 to work around. For a healthcare audience, the human gate catching a bad
 agent run is a stronger story than a clean merge.
 
-**The 18:00 demo — Teams**
+### The 18:00 demo — Teams
+
 Eight-step sequence: opening → GitHub Actions → re-run CI and pr-review as
 the explicit human gate → review findings and merge → standup → pick up a
 task live → what's next → close.
@@ -35,7 +39,8 @@ The live task pickup landed on T17 — the same task the agent had failed
 overnight — because the backlog filter honestly returned it. Diagnosed in
 plan mode on the call.
 
-**Root cause — a collection error, not an assertion failure**
+### Root cause — a collection error, not an assertion failure
+
 `App.test.tsx` reported 0 tests collected, meaning the file failed to load
 entirely. Missing `vi.mock('@/api/incidents')`. The distinction mattered:
 the failure note said "test failure", which sent the diagnosis in the
@@ -47,7 +52,8 @@ close to useless. "npm test (client) failed" and "0 tests collected in
 App.test.tsx" cost the same to write and are worth completely different
 amounts. Failure notes need diagnostic signal, not status.
 
-**Evening — T17 rebuilt properly, PR #157 merged**
+### Evening — T17 rebuilt properly, PR #157 merged
+
 Mock factory using `importOriginal` with a spread, so only the fetch is
 replaced and the rest of the module stays real. A Step 0 gate before
 anything else: confirm the file collects more than 0 tests before adding a
@@ -58,7 +64,8 @@ overwrite `document.title` after load.
 
 271 passing, no `act()` warnings. Reviewed across all three layers, merged.
 
-**Both automations switched to Opus 4.8 — PR #155**
+### Both automations switched to Opus 4.8 — PR #155
+
 Nightly agent and pr-review, same evening.
 
 The day made the case better than a clean run would have. An agent that
