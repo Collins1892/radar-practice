@@ -128,6 +128,171 @@ function describeRefusal(data) {
   })`;
 }
 
+// --- Token and cost accounting (B3) ---------------------------------------
+// List prices in USD per million tokens. Deliberately not exhaustive: an
+// unknown model yields a null cost rather than a wrong one, so a missing entry
+// shows up as "cost: unknown" instead of silently under-reporting.
+const MODEL_PRICING_USD_PER_MTOK = {
+  'claude-haiku-4-5': { input: 1, output: 5 },
+  'claude-sonnet-5': { input: 3, output: 15 },
+  'claude-sonnet-4-6': { input: 3, output: 15 },
+  'claude-opus-5': { input: 5, output: 25 },
+  'claude-opus-4-8': { input: 5, output: 25 },
+  'claude-fable-5': { input: 10, output: 50 },
+};
+
+function createUsageTracker() {
+  return {
+    calls: [],
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+  };
+}
+
+// `usage` is the Anthropic response.usage object; absent fields count as zero
+// so a provider-side shape change degrades to under-reporting, never a throw.
+function recordApiUsage(tracker, label, usage) {
+  const input = Number(usage?.input_tokens) || 0;
+  const output = Number(usage?.output_tokens) || 0;
+  const cacheRead = Number(usage?.cache_read_input_tokens) || 0;
+  const cacheWrite = Number(usage?.cache_creation_input_tokens) || 0;
+
+  tracker.calls.push({ label, input, output, cacheRead, cacheWrite });
+  tracker.inputTokens += input;
+  tracker.outputTokens += output;
+  tracker.cacheReadTokens += cacheRead;
+  tracker.cacheWriteTokens += cacheWrite;
+  return tracker;
+}
+
+// Cache reads bill at ~0.1x input, cache writes at ~1.25x. The agent sends no
+// cache_control today, so those terms are normally zero — included so the
+// figure stays correct if caching is added later.
+function estimateCostUsd(model, tracker) {
+  const price = MODEL_PRICING_USD_PER_MTOK[model];
+  if (!price) {
+    return null;
+  }
+  const perToken = (rate) => rate / 1_000_000;
+  return (
+    tracker.inputTokens * perToken(price.input) +
+    tracker.outputTokens * perToken(price.output) +
+    tracker.cacheReadTokens * perToken(price.input) * 0.1 +
+    tracker.cacheWriteTokens * perToken(price.input) * 1.25
+  );
+}
+
+function formatUsageSummary(model, tracker) {
+  const total = tracker.inputTokens + tracker.outputTokens;
+  const cost = estimateCostUsd(model, tracker);
+  const costText = cost === null ? 'unknown' : `~$${cost.toFixed(4)}`;
+  return `${tracker.calls.length} API call(s), ${tracker.inputTokens} in + ${tracker.outputTokens} out = ${total} tokens, est. cost ${costText} (${model})`;
+}
+
+// --- Test failure signal extraction (B4) ----------------------------------
+// A collection error means the suite never ran — a build, import or syntax
+// failure. That is a different diagnosis from a test that ran and failed an
+// assertion, and it is the distinction worth surfacing in the backlog note.
+const COLLECTION_ERROR_PATTERNS = [
+  /Cannot find module/i,
+  /Failed to resolve import/i,
+  /Failed to load url/i,
+  /Could not resolve/i,
+  /MODULE_NOT_FOUND/,
+  /SyntaxError/,
+  /Transform failed/i,
+  /error TS\d+/,
+  /error CS\d+/,
+  /Build FAILED/i,
+];
+
+const ASSERTION_ERROR_PATTERNS = [
+  /AssertionError/,
+  /Assert\.\w+\(\)\s*Failure/i,
+  /\bexpected\b.*\bto\b/i,
+  /^\s*not ok \d+/m,
+];
+
+function classifyTestFailure(output) {
+  const text = typeof output === 'string' ? output : '';
+  if (text.trim() === '') {
+    return 'unknown';
+  }
+  // Collection wins: if the suite failed to build, any assertion-shaped text
+  // later in the log is noise from a previous run or an unrelated step.
+  if (COLLECTION_ERROR_PATTERNS.some((re) => re.test(text))) {
+    return 'collection';
+  }
+  if (ASSERTION_ERROR_PATTERNS.some((re) => re.test(text))) {
+    return 'assertion';
+  }
+  return 'unknown';
+}
+
+const FAILING_TEST_PATTERNS = [
+  /^\s*(?:×|✕)\s+(.+?)(?:\s+\d+\s*ms)?\s*$/m, // vitest
+  /^\s*FAIL\s+(.+?)\s*$/m, // vitest suite-level
+  /^\s*not ok \d+ - (.+?)\s*$/m, // node:test TAP
+  /^\s*(?:Failed|Error Message)\s+([\w.]+\.[\w]+)/m, // dotnet / xUnit
+];
+
+function extractFailingTest(output) {
+  const text = typeof output === 'string' ? output : '';
+  for (const pattern of FAILING_TEST_PATTERNS) {
+    const match = text.match(pattern);
+    if (match?.[1]) {
+      const name = match[1].trim();
+      if (name !== '') {
+        return name.length > 120 ? `${name.slice(0, 117)}...` : name;
+      }
+    }
+  }
+  return null;
+}
+
+function extractFirstError(output) {
+  const text = typeof output === 'string' ? output : '';
+  const allPatterns = [...COLLECTION_ERROR_PATTERNS, ...ASSERTION_ERROR_PATTERNS];
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (trimmed === '') {
+      continue;
+    }
+    if (allPatterns.some((re) => re.test(trimmed))) {
+      return trimmed.length > 200 ? `${trimmed.slice(0, 197)}...` : trimmed;
+    }
+  }
+  return null;
+}
+
+// Builds the one-line, signal-carrying description used in the backlog note.
+function summariseTestFailure(result) {
+  if (!result || result.ok !== false) {
+    return null;
+  }
+  const classification = classifyTestFailure(result.output);
+  const failingTest = extractFailingTest(result.output);
+  const firstError = extractFirstError(result.output);
+
+  const parts = [result.failedCommand ?? 'unknown command'];
+  parts.push(
+    classification === 'collection'
+      ? 'collection error (suite did not run)'
+      : classification === 'assertion'
+        ? 'assertion failure'
+        : 'failure (unclassified)',
+  );
+  if (failingTest) {
+    parts.push(`in "${failingTest}"`);
+  }
+  if (firstError) {
+    parts.push(`— ${firstError}`);
+  }
+  return { classification, failingTest, firstError, summary: parts.join(' ') };
+}
+
 function requireEnv(name) {
   const value = process.env[name];
   if (!value || value.trim() === '') {
@@ -698,6 +863,7 @@ function formatPrBody({
   testSummary,
   isFailure,
   failureReason,
+  usageSummary,
 }) {
   const filesList =
     modifiedFiles.length > 0
@@ -707,6 +873,8 @@ function formatPrBody({
   const failureSection = isFailure
     ? `\n\n## Failure\n\n${failureReason ?? 'Implementation did not complete successfully.'}`
     : '';
+
+  const usageSection = usageSummary ? `\n\n## Model usage\n\n${usageSummary}` : '';
 
   return `## Nightly agent — ${task.id}
 
@@ -724,7 +892,7 @@ ${filesList}
 
 ## Test results
 
-${testSummary}${failureSection}
+${testSummary}${failureSection}${usageSection}
 
 ---
 *Generated by \`.github/scripts/nightly-agent.js\`*`;
@@ -896,6 +1064,15 @@ async function callAnthropic(apiKey, prompt, maxTokens, apiCallCounter, label) {
   );
 
   const data = await response.json();
+
+  // Record before any early return: a refused or truncated call is still billed,
+  // and a run that spends tokens without producing work is exactly what the
+  // cost logging exists to make visible.
+  if (apiCallCounter?.usage) {
+    recordApiUsage(apiCallCounter.usage, label, data?.usage);
+    const call = apiCallCounter.usage.calls[apiCallCounter.usage.calls.length - 1];
+    log(`Usage (${label}): ${call.input} in + ${call.output} out`);
+  }
 
   const refusal = describeRefusal(data);
   if (refusal) {
@@ -1546,6 +1723,7 @@ async function handleFailurePath({
       : '_Tests not run_',
     isFailure: true,
     failureReason: failureNote,
+    usageSummary: formatUsageSummary(AGENT_MODEL, apiCallCounter.usage),
   });
 
   await createPullRequest({
@@ -1559,7 +1737,7 @@ async function handleFailurePath({
   });
 
   log(
-    `Failure path complete for ${task.id} (${apiCallCounter.total} API call(s) used)`,
+    `Failure path complete for ${task.id} (${apiCallCounter.total} API call(s) used) — ${formatUsageSummary(AGENT_MODEL, apiCallCounter.usage)}`,
   );
 }
 
@@ -1573,6 +1751,7 @@ async function handleSuccessPath({
   repo,
   token,
   branchName,
+  usageSummary,
 }) {
   const { backlog, completed } = moveToCompleted(
     backlogContent,
@@ -1604,6 +1783,7 @@ async function handleSuccessPath({
     modifiedFiles: [...writtenPaths],
     testSummary: 'All 4 test commands passed.',
     isFailure: false,
+    usageSummary,
   });
 
   const pullRequest = await createPullRequest({
@@ -1666,7 +1846,7 @@ async function main() {
   const openForMode = openTasksForMode(tasks, taskMode, taskCategory);
   const skippedThisRun = new Set();
   let backlogDirty = false;
-  const apiCallCounter = { total: 0 };
+  const apiCallCounter = { total: 0, usage: createUsageTracker() };
 
   if (openForMode.length === 0) {
     log(
@@ -1856,7 +2036,9 @@ async function main() {
           repo,
           token,
           branchName,
+          usageSummary: formatUsageSummary(AGENT_MODEL, apiCallCounter.usage),
         });
+        log(`Run usage: ${formatUsageSummary(AGENT_MODEL, apiCallCounter.usage)}`);
         return;
       }
 
@@ -1958,7 +2140,7 @@ async function main() {
       repo,
       token,
       branchName,
-      failureNote: `Failed after ${MAX_IMPLEMENTATION_ATTEMPTS} attempts — test failure: ${lastTestFailure?.failedCommand ?? 'unknown'}`,
+      failureNote: `Failed after ${MAX_IMPLEMENTATION_ATTEMPTS} attempts — ${summariseTestFailure(lastTestFailure)?.summary ?? 'test failure: unknown'}. ${formatUsageSummary(AGENT_MODEL, apiCallCounter.usage)}`,
       failedCommand: lastTestFailure?.failedCommand ?? null,
       apiCallCounter,
       untrackedBeforeImplementation,
@@ -1978,6 +2160,14 @@ async function main() {
 }
 
 export {
+  classifyTestFailure,
+  createUsageTracker,
+  estimateCostUsd,
+  extractFailingTest,
+  extractFirstError,
+  formatUsageSummary,
+  recordApiUsage,
+  summariseTestFailure,
   parseBacklog,
   pickTask,
   extractTaskIdsFromPrTitle,

@@ -2,6 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   allTasksBlockedByPr,
+  classifyTestFailure,
+  createUsageTracker,
+  estimateCostUsd,
+  extractFailingTest,
+  formatUsageSummary,
+  recordApiUsage,
+  summariseTestFailure,
   applyOversizedTaskSkip,
   buildAttemptedTaskIdSet,
   buildImplementPrompt,
@@ -995,5 +1002,148 @@ describe('describeRefusal', () => {
       describeRefusal({ stop_reason: 'refusal' }),
       'Anthropic API declined the request (category: unspecified)',
     );
+  });
+});
+
+describe('classifyTestFailure', () => {
+  it('classifies an unresolved import as a collection error', () => {
+    const output = `FAIL src/components/ComponentsView.tsx
+Error: Failed to resolve import "./componentTypes" from "src/components/ComponentsView.tsx"`;
+
+    assert.equal(classifyTestFailure(output), 'collection');
+  });
+
+  it('classifies a TypeScript compile error as a collection error', () => {
+    assert.equal(
+      classifyTestFailure('src/foo.ts(4,37): error TS2307: Cannot find module'),
+      'collection',
+    );
+  });
+
+  it('classifies a failed expectation as an assertion failure', () => {
+    const output = `× renders the required indicator 12ms
+  AssertionError: expected 'false' to be 'true'`;
+
+    assert.equal(classifyTestFailure(output), 'assertion');
+  });
+
+  it('prefers collection over assertion when both appear', () => {
+    // A build failure means the suite never ran, so assertion-shaped text
+    // later in the log is stale noise.
+    const output = `AssertionError: expected 1 to be 2
+Error: Cannot find module './missing'`;
+
+    assert.equal(classifyTestFailure(output), 'collection');
+  });
+
+  it('returns unknown for empty output', () => {
+    assert.equal(classifyTestFailure(''), 'unknown');
+    assert.equal(classifyTestFailure(undefined), 'unknown');
+  });
+});
+
+describe('extractFailingTest', () => {
+  it('extracts a vitest failing test name', () => {
+    const output = '  × src/components/Badge.test.tsx > renders info variant 4ms';
+
+    assert.equal(
+      extractFailingTest(output),
+      'src/components/Badge.test.tsx > renders info variant',
+    );
+  });
+
+  it('extracts a node:test TAP failure name', () => {
+    assert.equal(
+      extractFailingTest('not ok 3 - pickTask skips blocked tasks'),
+      'pickTask skips blocked tasks',
+    );
+  });
+
+  it('returns null when no test name is present', () => {
+    assert.equal(extractFailingTest('some unrelated output'), null);
+  });
+});
+
+describe('summariseTestFailure', () => {
+  it('summarises a collection error with the failing command and first error', () => {
+    const result = {
+      ok: false,
+      failedCommand: 'npm test (client)',
+      output: 'Error: Cannot find module \'./componentTypes\'',
+    };
+
+    const summary = summariseTestFailure(result);
+
+    assert.equal(summary.classification, 'collection');
+    assert.match(summary.summary, /npm test \(client\)/);
+    assert.match(summary.summary, /collection error \(suite did not run\)/);
+    assert.match(summary.summary, /Cannot find module/);
+  });
+
+  it('returns null for a passing result', () => {
+    assert.equal(summariseTestFailure({ ok: true }), null);
+    assert.equal(summariseTestFailure(null), null);
+  });
+});
+
+describe('recordApiUsage and estimateCostUsd', () => {
+  it('accumulates tokens across calls', () => {
+    const tracker = createUsageTracker();
+
+    recordApiUsage(tracker, 'plan', { input_tokens: 1000, output_tokens: 200 });
+    recordApiUsage(tracker, 'implement', { input_tokens: 500, output_tokens: 100 });
+
+    assert.equal(tracker.calls.length, 2);
+    assert.equal(tracker.inputTokens, 1500);
+    assert.equal(tracker.outputTokens, 300);
+  });
+
+  it('treats missing usage fields as zero rather than throwing', () => {
+    const tracker = createUsageTracker();
+
+    recordApiUsage(tracker, 'plan', undefined);
+
+    assert.equal(tracker.inputTokens, 0);
+    assert.equal(tracker.outputTokens, 0);
+    assert.equal(tracker.calls.length, 1);
+  });
+
+  it('prices Haiku input and output at its list rate', () => {
+    const tracker = createUsageTracker();
+    recordApiUsage(tracker, 'plan', {
+      input_tokens: 1_000_000,
+      output_tokens: 1_000_000,
+    });
+
+    // $1 per MTok in + $5 per MTok out
+    assert.equal(estimateCostUsd('claude-haiku-4-5', tracker), 6);
+  });
+
+  it('returns null for an unknown model rather than a wrong cost', () => {
+    const tracker = createUsageTracker();
+    recordApiUsage(tracker, 'plan', { input_tokens: 100, output_tokens: 10 });
+
+    assert.equal(estimateCostUsd('some-future-model', tracker), null);
+  });
+});
+
+describe('formatUsageSummary', () => {
+  it('reports call count, token split and estimated cost', () => {
+    const tracker = createUsageTracker();
+    recordApiUsage(tracker, 'plan', { input_tokens: 2000, output_tokens: 500 });
+
+    const summary = formatUsageSummary('claude-haiku-4-5', tracker);
+
+    assert.match(summary, /1 API call\(s\)/);
+    assert.match(summary, /2000 in \+ 500 out = 2500 tokens/);
+    assert.match(summary, /est\. cost ~\$/);
+    assert.match(summary, /claude-haiku-4-5/);
+  });
+
+  it('reports unknown cost for an unpriced model', () => {
+    const tracker = createUsageTracker();
+    recordApiUsage(tracker, 'plan', { input_tokens: 10, output_tokens: 1 });
+
+    assert.match(formatUsageSummary('mystery-model', tracker), /est\. cost unknown/);
   });
 });
