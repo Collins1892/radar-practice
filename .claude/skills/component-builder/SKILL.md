@@ -550,8 +550,7 @@ Brief pointers — full testing and audit coverage in [react-test-writer](../rea
 When adding a **reusable primitive or field wrapper**, register it for the `/components` gallery:
 
 1. Add a `*Preview` function component in [`componentRegistry.tsx`](../../../client/src/componentRegistry.tsx) with local state for interactive demos.
-2. Append a `ComponentEntry` to the `componentRegistry` array: `{ name, description, preview }`.
-3. The file has a documented `eslint-disable react-refresh/only-export-components` — do not remove it.
+2. Append a `ComponentEntry` to the `componentRegistry` array: `{ name, description, preview: FooPreview }` where `preview` is a `ComponentType` reference (not pre-instantiated JSX).
 
 Screens and route shells are **not** registered unless explicitly requested.
 

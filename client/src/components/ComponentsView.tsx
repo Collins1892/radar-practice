@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { JSX, ReactNode } from 'react';
+import type { ComponentType, JSX } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface ComponentEntry {
   name: string;
   description: string;
-  preview: ReactNode;
+  preview: ComponentType;
 }
 
 interface ComponentsViewProps {
@@ -41,6 +41,8 @@ export function ComponentsView({
       </>
     );
   }
+
+  const Preview = selected.preview;
 
   return (
     <>
@@ -95,7 +97,7 @@ export function ComponentsView({
             {selected.description}
           </p>
           <div className="mt-4 rounded-lg border border-border p-6">
-            {selected.preview}
+            <Preview />
           </div>
         </section>
       </div>
