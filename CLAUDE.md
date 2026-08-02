@@ -231,7 +231,7 @@ change. Completed tasks move to
 Kept visible deliberately — do not paper over:
 
 - **Backend secret scanning gap** — the client uses `eslint-plugin-no-secrets`; the .NET projects have no equivalent. Flag likely secrets in backend source manually.
-- **Large single-file docs** — `learning-notes.md` (~167KB) exceeds the nightly agent implement limit; docs-only backlog tasks that require sending the full file remain human-only until the file is under 100 KiB or the task is re-scoped.
+- **Large single-file docs** — `learning-notes.md` is well over the nightly agent implement limit (100 KiB); docs-only backlog tasks that require sending the full file remain human-only until the file is split or the task is re-scoped.
 - **T58 — IncidentsApi hooks retrofit** — Incidents screens still use inline `useState`/`useEffect` instead of the `useAudits`/`useAudit`-style hooks. Tracked in the backlog.
 - **Items legacy CSS** — `ItemsList.css` / legacy `App.css` classes remain by design (demo scaffold). Not a gap to close unprompted.
 
