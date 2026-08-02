@@ -97,7 +97,8 @@ client/
       useAudits.ts              — list hook for AuditsView
       useAudit.ts               — single-audit hook for detail/edit views
     errors.ts                   — ApiClientError, toUserMessage
-    componentRegistry.tsx       — gallery entries for reusable primitives
+    componentPreviews.tsx       — gallery preview components (components only)
+    componentRegistry.ts        — gallery entries for reusable primitives
     components/                 — hand-authored app components (build here)
       Badge.tsx                 — primitive: status chip
       LoadingState.tsx          — primitive: loading feedback
@@ -234,7 +235,7 @@ Match patterns already used in this repo:
 | Page chrome | [`IncidentPageChrome.tsx`](../../../client/src/components/IncidentPageChrome.tsx), [`AuditPageChrome.tsx`](../../../client/src/components/AuditPageChrome.tsx) | `h1` + subtitle; `Button asChild` + `Link` |
 | App shell | [`App.tsx`](../../../client/src/App.tsx) | Skip link; `aria-label="Views"` nav; `usePageTitle`; route ordering |
 | Page title | [`pageTitle.ts`](../../../client/src/pageTitle.ts) | `formatPageTitle(pageTitle)` → `"Page | Radar Practice"` |
-| Gallery registry | [`componentRegistry.tsx`](../../../client/src/componentRegistry.tsx) | `ComponentEntry` previews for reusable primitives |
+| Gallery registry | [`componentRegistry.ts`](../../../client/src/componentRegistry.ts) + [`componentPreviews.tsx`](../../../client/src/componentPreviews.tsx) | `ComponentEntry` array; preview components live in the `.tsx` file |
 | API layer | [`api/incidents.ts`](../../../client/src/api/incidents.ts), [`api/audits.ts`](../../../client/src/api/audits.ts) | Typed fetch; `incidentUserMessage` / `auditUserMessage` for user-safe errors |
 
 ## Build patterns by type
@@ -272,7 +273,7 @@ export const LoadingState = ({
 - Accept optional `className` via `cn()` when the primitive may need layout adjustment.
 - Export constants for user-visible copy only when reused across files (see `INCIDENT_CREATE_HEADING` in `incidentPageCopy.ts`).
 
-**Registry:** Add a preview entry in [`componentRegistry.tsx`](../../../client/src/componentRegistry.tsx) when the primitive is gallery-worthy.
+**Registry:** Add a preview component to [`componentPreviews.tsx`](../../../client/src/componentPreviews.tsx) and its entry to [`componentRegistry.ts`](../../../client/src/componentRegistry.ts) when the primitive is gallery-worthy.
 
 ### 2. Form fields (FormField, SelectField, DatePickerField)
 
@@ -549,8 +550,8 @@ Brief pointers — full testing and audit coverage in [react-test-writer](../rea
 
 When adding a **reusable primitive or field wrapper**, register it for the `/components` gallery:
 
-1. Add a `*Preview` function component in [`componentRegistry.tsx`](../../../client/src/componentRegistry.tsx) with local state for interactive demos.
-2. Append a `ComponentEntry` to the `componentRegistry` array: `{ name, description, preview: FooPreview }` where `preview` is a `ComponentType` reference (not pre-instantiated JSX).
+1. Add and export a `*Preview` function component in [`componentPreviews.tsx`](../../../client/src/componentPreviews.tsx) with local state for interactive demos. That module must export **components only** — no types, constants, or helpers, or the `react-refresh/only-export-components` rule fires.
+2. Import it in [`componentRegistry.ts`](../../../client/src/componentRegistry.ts) and append a `ComponentEntry` to the `componentRegistry` array: `{ name, description, preview: FooPreview }` where `preview` is a `ComponentType` reference (not pre-instantiated JSX).
 
 Screens and route shells are **not** registered unless explicitly requested.
 
