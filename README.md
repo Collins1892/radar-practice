@@ -4,7 +4,7 @@
 [![Docs: Context7](https://img.shields.io/badge/docs-Context7-blue)](https://context7.com)
 
 A full-stack project built to demonstrate **agentic AI development** — directing
-AI coding agents (Claude Code and Cursor) to scaffold, extend, test, and maintain
+AI coding agents (Claude Code and Claude.ai) to scaffold, extend, test, and maintain
 a real application under human review. The story here is the *workflow*; the app
 is the evidence that it holds up.
 
@@ -15,7 +15,7 @@ do well, where they stall, and why a human review gate stays essential.
 ## What this project demonstrates
 
 - **Agent-built, human-reviewed software.** Three modules were scaffolded, extended, and refactored by agents under a strict review gate — the agent proposes and implements, the developer reviews, tests, and decides what to commit.
-- **A reusable skill system.** Seven repo-level [agent skills](.claude/skills/) and five [slash commands](.claude/commands/) make agent output consistent across sessions and developers, rather than re-deriving conventions each time.
+- **A reusable skill system.** Seven repo-level [agent skills](.claude/skills/) and four [slash commands](.claude/commands/) make agent output consistent across sessions and developers, rather than re-deriving conventions each time.
 - **Automated quality gates.** A PR-review bot reviews every diff and auto-fixes Blocker/Major findings; a nightly autonomous agent picks a backlog task, implements it under a hard budget, runs the full test suite, and raises a PR.
 - **Legacy-to-modern migration.** The Audits module is a real .NET 4 / AngularJS → .NET 8 / React 19 migration with the before-state preserved, so the diff itself tells the story.
 - **Regulated-context discipline.** Prompt hygiene, no PII, and review-every-diff habits are built into the workflow, not bolted on.
@@ -57,7 +57,7 @@ radar-practice/
 ├── legacy/                 # .NET 4 / AngularJS Audits — before-state, retained
 ├── client/                 # React + TypeScript + Vite (components, hooks, api, e2e)
 ├── .claude/skills/         # 7 agent skills
-├── .claude/commands/       # /review, /standup, /observations, /tidy, /add-backlog-item
+├── .claude/commands/       # /review, /standup, /observations, /add-backlog-item
 ├── .github/workflows/      # ci, pr-review, nightly-agent, nightly-e2e
 ├── .github/scripts/        # pr-review.js, nightly-agent.js, sensitive-paths.js
 └── docs/                   # backlog, friction log, AI observations, security posture
@@ -96,7 +96,7 @@ flowchart TD
 - **Nightly e2e** ([`nightly-e2e.yml`](.github/workflows/nightly-e2e.yml)) runs the Playwright suite against all three APIs + Vite.
 
 For the longer-form lessons behind this — what agents do well, where they stall,
-Cursor vs Claude Code, skill evals, and accessibility — see
+comparing agent tooling, skill evals, and accessibility — see
 [docs/ai-workflow-observations.md](docs/ai-workflow-observations.md).
 
 ## Setup
@@ -150,7 +150,7 @@ audit journey). It runs nightly in CI via
 
 - [CLAUDE.md](CLAUDE.md) — canonical agent boot guide: repo map, conventions, automation, boundaries.
 - [docs/ai-workflow-observations.md](docs/ai-workflow-observations.md) — lessons from building with agents.
-- [learning-notes.md](learning-notes.md) — the full daily log.
+- [learning-notes.md](learning-notes.md) — the full working log.
 - [docs/workflow-friction.md](docs/workflow-friction.md) — running workflow-friction log.
 - [docs/agentic-workflow-security.md](docs/agentic-workflow-security.md) — agentic-workflow security posture.
 - [docs/nightly-agent-backlog.md](docs/nightly-agent-backlog.md) / [docs/nightly-agent-completed.md](docs/nightly-agent-completed.md) — autonomous-agent task log.

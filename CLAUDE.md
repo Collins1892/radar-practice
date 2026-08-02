@@ -12,7 +12,7 @@ the manifests (see [Tech stack](#tech-stack)).
 ## Orientation
 
 This is a full-stack learning project that demonstrates **agentic AI
-development** — using AI coding agents (Claude Code and Cursor) to scaffold,
+development** — using AI coding agents (Claude Code and Claude.ai) to scaffold,
 extend, test, and maintain a real application under human direction. It is **not
 a production system**.
 
@@ -201,11 +201,11 @@ it when its trigger applies.
 
 | Command | Does |
 |---------|------|
-| `/standup` | Daily session start: derives current week/day, summarises yesterday, lists open PRs. |
+| `/standup` | Session start: summarises recent work and lists open PRs. |
 | `/observations` | Interactive workflow-friction capture; appends a categorised entry to `docs/workflow-friction.md`. |
-| `/tidy` | Status check of today's tasks and the Week 7 tidy list against PRs/branches. |
+| `/add-backlog-item` | Interactive capture of a new nightly-agent task; assigns the next T-number and appends a row to `docs/nightly-agent-backlog.md`. |
 | `/review` | Structured code review against the `code-reviewer` skill. |
-| `/add-backlog-item` | Interactive Q&A to append a new task to `docs/nightly-agent-backlog.md`. |
+| `/tidy` | **Deprecated — do not run or suggest.** Task state lives in the backlog files and PRs, not in a phase-file tidy list. Use `/add-backlog-item` to add work. Retained only because older docs still reference it. |
 
 ## Automation
 
@@ -213,7 +213,7 @@ All work flows through feature branches and PRs; CI must pass before merge.
 
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) — on push/PR to `main`, runs `dotnet test` for all three APIs and Vitest in `client/`. No Playwright on PR builds.
 - **PR review bot** ([`.github/workflows/pr-review.yml`](.github/workflows/pr-review.yml) → [`.github/scripts/pr-review.js`](.github/scripts/pr-review.js)) — on every PR, runs its own test job, then reviews the diff against the `code-reviewer` skill. Auto-fixes Blockers and Majors (up to 3 attempts), runs the full test suite before committing each fix, demotes Minors to advisory, and posts findings as a single PR comment. On test failure or unresolved findings it discards changes and marks the PR a draft.
-- **Nightly agent** ([`.github/workflows/nightly-agent.yml`](.github/workflows/nightly-agent.yml) → [`.github/scripts/nightly-agent.js`](.github/scripts/nightly-agent.js)) — cron (3 AM UK, BST/UTC+1) + `workflow_dispatch`. Two-phase plan-then-act: a JSON plan is produced before any file is written. Picks the lowest-ID open backlog task matching `TASK_MODE` (default `easy`; optional `TASK_CATEGORY` filter), both controllable via GitHub repository variables without a commit. **Implement payload guard:** before each implement API call, file content must not exceed `MAX_IMPLEMENT_FILE_BYTES` (102400 bytes / 100 KiB UTF-8); oversize files return `{ ok: false, reason: 'file_too_large' }` — the run skips that task (increments attempts, appends a backlog note), resets the agent branch, and tries the next eligible task in the same run (bounded by open tasks for the mode and the 10-call API budget). On success: moves the task to completed and raises a normal PR (including any skip notes accumulated in backlog). On implement/test failure (non-oversize): discards code, increments the attempt counter, and raises a draft PR. If every eligible task is skipped for oversize in one run: commits backlog updates to a `nightly-agent/backlog-skips-*` branch and pushes — no PR. PR-history exclusion (`gh pr list --state all`) prevents re-picking a task that already has any PR. Hard cap of **10 Anthropic API calls** per run; up to **3** test/fix attempts per task.
+- **Nightly agent** ([`.github/workflows/nightly-agent.yml`](.github/workflows/nightly-agent.yml) → [`.github/scripts/nightly-agent.js`](.github/scripts/nightly-agent.js)) — cron `0 2 * * *` UTC (3 AM UK under BST, 2 AM under GMT) + `workflow_dispatch`. Two-phase plan-then-act: a JSON plan is produced before any file is written. Picks the lowest-ID open backlog task matching `TASK_MODE` (script default `easy`, currently set to `medium` via repository variable; optional `TASK_CATEGORY` filter), both controllable via GitHub repository variables without a commit. Note the `workflow_dispatch` input `task_mode` carries `default: 'easy'`, which wins over the repository variable on manual runs. **Implement payload guard:** before each implement API call, file content must not exceed `MAX_IMPLEMENT_FILE_BYTES` (102400 bytes / 100 KiB UTF-8); oversize files return `{ ok: false, reason: 'file_too_large' }` — the run skips that task (increments attempts, appends a backlog note), resets the agent branch, and tries the next eligible task in the same run (bounded by open tasks for the mode and the 10-call API budget). On success: moves the task to completed and raises a normal PR (including any skip notes accumulated in backlog). On implement/test failure (non-oversize): discards code, increments the attempt counter, and raises a draft PR. If every eligible task is skipped for oversize in one run: commits backlog updates to a `nightly-agent/backlog-skips-*` branch and pushes — no PR. PR-history exclusion (`gh pr list --state all`) prevents re-picking a task that already has any PR. Hard cap of **10 Anthropic API calls** per run; up to **3** test/fix attempts per task.
 - **Nightly e2e** ([`.github/workflows/nightly-e2e.yml`](.github/workflows/nightly-e2e.yml)) — same schedule; restores/builds the three APIs, then runs the Playwright suite via the four-server `webServer`; publishes JUnit results. Not on PR builds.
 - **Sensitive-path guard** ([`.github/scripts/sensitive-paths.js`](.github/scripts/sensitive-paths.js)) — shared by both bots; agentic scripts may not auto-modify: `.github/`, `.husky/`, `package.json`, `package-lock.json`, `*.csproj`, `*.sln`, `tsconfig.json`, `Dockerfile`, `.npmrc`, `.env*`, and any EF `Migrations/` directory. Findings touching these are demoted to advisory.
 
