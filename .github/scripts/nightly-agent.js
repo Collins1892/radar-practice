@@ -91,7 +91,7 @@ const TEST_COMMANDS = [
 
 config({ path: envPath });
 
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5';
+const AGENT_MODEL = process.env.AGENT_MODEL ?? 'claude-haiku-4-5';
 
 function log(message) {
   // eslint-disable-next-line no-console
@@ -887,7 +887,7 @@ async function callAnthropic(apiKey, prompt, maxTokens, apiCallCounter, label) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
+        model: AGENT_MODEL,
         max_tokens: maxTokens,
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -1645,7 +1645,7 @@ async function main() {
 
   log(`Repository: ${owner}/${repo}`);
   log(`TASK_MODE: ${taskMode}`);
-  log(`Model: ${ANTHROPIC_MODEL}`);
+  log(`AGENT_MODEL: ${AGENT_MODEL}`);
   if (taskCategory) {
     log(`TASK_CATEGORY filter: ${taskCategory}`);
   }

@@ -90,7 +90,7 @@ const POST_PUSH_TEST_COMMANDS = [
 
 config({ path: envPath });
 
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5';
+const REVIEW_MODEL = process.env.REVIEW_MODEL ?? 'claude-sonnet-5';
 
 function log(message) {
   // eslint-disable-next-line no-console
@@ -324,9 +324,9 @@ async function requestReview(skillContent, diff, apiKey) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        // 8192, not 4096: Opus 5 runs adaptive thinking when `thinking` is
-        // omitted, and max_tokens caps thinking plus visible output together.
+        model: REVIEW_MODEL,
+        // 8192, not 4096: Claude 5 models run adaptive thinking when `thinking`
+        // is omitted, and max_tokens caps thinking plus visible output together.
         max_tokens: 8192,
         messages: [
           {
@@ -725,7 +725,7 @@ async function requestFileFix(
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
+        model: REVIEW_MODEL,
         max_tokens: FIX_MAX_TOKENS,
         messages: [
           {
@@ -1477,7 +1477,7 @@ async function main() {
   const branchName = isGitHubActions ? requireEnv('PR_HEAD_REF') : null;
 
   log(`Reviewing PR #${prNumber} on ${owner}/${repo}`);
-  log(`Model: ${ANTHROPIC_MODEL}`);
+  log(`REVIEW_MODEL: ${REVIEW_MODEL}`);
   if (isGitHubActions) {
     log(`Running in GitHub Actions on branch "${branchName}"`);
   } else {
