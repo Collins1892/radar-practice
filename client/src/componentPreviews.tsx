@@ -63,7 +63,7 @@ type IncidentPreviewRow = {
 };
 
 export function DataTablePreview(): ReactElement {
-  const [sortKey, setSortKey] = useState<string>('title');
+  const [sortKey, setSortKey] = useState<keyof IncidentPreviewRow>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const incidents: IncidentPreviewRow[] = [
@@ -88,8 +88,8 @@ export function DataTablePreview(): ReactElement {
   ];
 
   const sortedIncidents: IncidentPreviewRow[] = [...incidents].sort((a, b) => {
-    const aValue = String(a[sortKey as keyof IncidentPreviewRow]).toLowerCase();
-    const bValue = String(b[sortKey as keyof IncidentPreviewRow]).toLowerCase();
+    const aValue = String(a[sortKey]).toLowerCase();
+    const bValue = String(b[sortKey]).toLowerCase();
     const order = aValue.localeCompare(bValue);
 
     return sortDirection === 'asc' ? order : -order;
