@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import type { ReactElement } from 'react';
+import { createElement, type ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { toast } from 'sonner';
 import { componentRegistry } from '../componentRegistry';
@@ -13,7 +13,7 @@ function getToastPreview(): ReactElement {
   if (!toastEntry) {
     throw new Error('Toast registry entry not found');
   }
-  return toastEntry.preview;
+  return createElement(toastEntry.preview);
 }
 
 function renderToastPreview(): ReturnType<typeof render> {

@@ -95,7 +95,7 @@ client/
       DataTable.tsx           — generic sortable table
       Pagination.tsx          — nav with aria-label / aria-current
       ui/                     — shadcn vendor (ESLint-ignored; test usage via wrappers)
-    componentRegistry.tsx     — DataTable<RowType> preview example
+    componentPreviews.tsx     — DataTable<RowType> preview example
 ```
 
 ## Positive references
@@ -465,7 +465,7 @@ render(
 );
 ```
 
-See `componentRegistry.tsx` (`DataTable<IncidentPreviewRow>`) for a working example.
+See `componentPreviews.tsx` (`DataTable<IncidentPreviewRow>`) for a working example.
 
 ### Other UI testing notes
 

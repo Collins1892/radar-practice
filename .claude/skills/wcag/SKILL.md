@@ -125,7 +125,7 @@ client/
       AuditPageChrome.tsx
       ItemsList.tsx
       ui/                     — shadcn vendor (ESLint-ignored; review usage only)
-    componentRegistry.tsx     — component gallery previews
+    componentPreviews.tsx     — component gallery previews
 ```
 
 ## Positive references
