@@ -550,7 +550,7 @@ Brief pointers — full testing and audit coverage in [react-test-writer](../rea
 
 When adding a **reusable primitive or field wrapper**, register it for the `/components` gallery:
 
-1. Add and export a `*Preview` function component in [`componentPreviews.tsx`](../../../client/src/componentPreviews.tsx) with local state for interactive demos. That module must export **components only** — no types, constants, or helpers, or the `react-refresh/only-export-components` rule fires.
+1. Add and export a `*Preview` function component in [`componentPreviews.tsx`](../../../client/src/componentPreviews.tsx) with local state for interactive demos. Keep that module to **component exports only** — a helper function, or a `const` holding an array/object, will trip `react-refresh/only-export-components`. (Type exports are exempt, but keeping the module to components is the simpler convention.)
 2. Import it in [`componentRegistry.ts`](../../../client/src/componentRegistry.ts) and append a `ComponentEntry` to the `componentRegistry` array: `{ name, description, preview: FooPreview }` where `preview` is a `ComponentType` reference (not pre-instantiated JSX).
 
 Screens and route shells are **not** registered unless explicitly requested.

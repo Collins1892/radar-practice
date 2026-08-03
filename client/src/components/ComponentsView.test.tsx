@@ -53,4 +53,26 @@ describe('ComponentsView', () => {
     expect(screen.getByText('Beta preview body')).toBeInTheDocument();
     expect(screen.queryByText('Alpha preview body')).not.toBeInTheDocument();
   });
+
+  it('shows an empty message and keeps the page heading when no components are registered', (): void => {
+    // Arrange
+    const noComponents: ComponentEntry[] = [];
+
+    // Act
+    renderComponentsView(noComponents);
+
+    // Assert — empty branch renders its message and still shows the page heading
+    expect(
+      screen.getByText('No components registered yet.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Components' }),
+    ).toBeInTheDocument();
+
+    // Assert — no selection UI or preview is rendered
+    expect(
+      screen.queryByRole('navigation', { name: 'Components' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Alpha preview body')).not.toBeInTheDocument();
+  });
 });
