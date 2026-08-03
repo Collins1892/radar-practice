@@ -174,10 +174,11 @@ checkout, run `npm ci` in `client/` before `npm test`.
 ```bash
 dotnet test ItemsApi.Tests/ItemsApi.Tests.csproj --verbosity normal
 dotnet test IncidentsApi.Tests/IncidentsApi.Tests.csproj --verbosity normal
+dotnet test AuditsApi.Tests/AuditsApi.Tests.csproj --verbosity normal
 cd client && npm test
 ```
 
-Run all three on every loop iteration unless the PR diff is provably scoped
+Run all four on every loop iteration unless the PR diff is provably scoped
 to one area (e.g. frontend-only) — when in doubt, run the full suite. For a
 **markdown-only** diff (no code, tests, config, or build files), skip the suite
 entirely per the Step 0 change-type check in [Full sequence](#3-full-sequence).
