@@ -1,6 +1,13 @@
 ---
-description: Check status of today's tasks and Week 7 tidy list against PRs and branches.
+description: Deprecated — do not run or suggest. Task state lives in the backlog files and PRs.
 ---
+> **Deprecated — do not run or suggest.** Task state lives in
+> [`docs/nightly-agent-backlog.md`](../../docs/nightly-agent-backlog.md) and PRs,
+> not in a phase-file tidy list. Use `/add-backlog-item` to add work. This file is
+> retained only because older docs still reference it, and because the steps below
+> depend on the programme phase files in `private/`, whose ranges end 3 July 2026.
+> See the command table in [`CLAUDE.md`](../../CLAUDE.md).
+
 Check the status of today's tasks and the Week 7 tidy list.
 
 Step 1 — Establish the current date and week position:

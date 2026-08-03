@@ -1,3 +1,93 @@
+## Monday 3 August 2026
+
+T01 merged — open since mid-June, failed twice by the nightly agent. The task
+itself was small. Almost everything worth recording came out of the review
+rather than the change.
+
+**A lint rule pointing at structure, not style**
+`componentRegistry.tsx` carried a file-level `eslint-disable
+react-refresh/only-export-components` — the only documented ESLint exception
+in the repo, named explicitly in CLAUDE.md's golden rules as a standing
+carve-out.
+
+Both agent attempts tried to delete the comment. But the rule was right: the
+file exported the 16 gallery preview components *and* the registry array, and
+the rule fires on modules mixing component and non-component exports. The
+suppression wasn't the problem, it was the label on the problem. Fix was to
+split along the seam the rule was pointing at — `componentPreviews.tsx` for
+the components, `componentRegistry.ts` for the array — plus changing
+`ComponentEntry.preview` from a pre-instantiated `ReactNode` to a
+`ComponentType` rendered as `<Preview />`, which is what let the registry
+become a plain data module with no JSX. No importer changed; the array file
+kept its path.
+
+One detail only visible in the plugin source: the Vite preset sets
+`allowConstantExport`, but that exempts only `Literal`, `UnaryExpression`,
+`TemplateLiteral` and `BinaryExpression`. An array-initialised const still
+fires — which is precisely why the registry had to move rather than stay and
+be exempted. Type exports are exempt unconditionally. Guidance I'd written
+into a skill file had this wrong and has been corrected.
+
+The transferable bit: a suppression that survives long enough to be
+documented has stopped being a decision and become an assumption. Nobody
+re-derives it. And the two failed agent attempts weren't a model failure —
+"remove the last ESLint disable" describes the symptom, so the literal
+reading is to delete the comment. A task description that names the artifact
+to remove rather than the structure to change will get exactly that.
+
+**A green gate that had been doing nothing for months**
+The client type-check aborted on TS5101 — a deprecated `baseUrl` — *before
+checking a single file*. It had always failed, for that trivial reason, so
+its failure carried no information and nobody looked. Forcing past it
+surfaced 9 real type errors invisible to CI, the pre-commit hook and the
+build. This PR fixed 2; the rest are filed as T79.
+
+A check that fails identically every run is indistinguishable from one that
+passes — in both cases you stop reading it. The useful question to ask of any
+gate isn't "is it green" but "if this were broken, what would I see, and
+would it look different from what I see now?" Here the answer was no, and had
+been for months.
+
+**File-scoped review can't see duplication**
+`inputClassName` and `inputClassNameWithError` were defined byte-identically
+in `IncidentForm.tsx` and `AuditForm.tsx`, while `formFieldUtils.ts` already
+existed as the shared home — created for exactly this. Filed as T86.
+
+This is structural, not a lapse. Every review layer reads a diff, and
+duplication isn't a property of a diff — it's a property of the repo. Adding
+more review passes over the same diff cannot find it. It needs a deliberate
+step of a different kind: grep the repo for the pattern before accepting that
+a helper is new. That's the second layer's real job now, and it only works if
+surrounding context gets pasted in rather than the hunks alone.
+
+**The review bot's own limits**
+Its first review posted 32 "minors" that were about 5 distinct findings
+restated, and its Blockers described edits it had made and then reverted —
+describing code not in the diff at all. A later run died with "review
+truncated — raise max_tokens or reduce diff size."
+
+Reading the script: the review call gets `max_tokens: 8192` while the
+per-file fix call gets 16384, and that 8192 covers thinking and output
+together. The review path treats truncation as fatal; the fix path already
+degrades gracefully. Filed as T84.
+
+**Predicted wrong, and the reason is the lesson**
+I expected the check to fail again on the larger diff. It passed — on a diff
+26% bigger — because it produced 5 findings instead of 32. Verbosity drives
+truncation here, not diff size.
+
+I'd been reasoning from the error message's own wording rather than the
+mechanism, and filed a backlog note repeating that mistake before catching
+it. An error message is a hypothesis its author had at write-time, not a
+diagnosis of the run in front of you. "Reduce diff size" was a guess, and I
+adopted it as a finding.
+
+**Outcome**
+Merged. 274 tests across 34 files. ESLint clean with zero disables left
+anywhere in the repo. Type errors down from 9 to 7. Five follow-ups filed:
+T79 (type-check config), T84 (review bot), T85 (test gap), T86 (duplication),
+T87 (preview button).
+
 ## Week 7 Day 5 — Friday 3 July 2026
 
 Final day of the programme and interview day. The 18:00 demo ran on a

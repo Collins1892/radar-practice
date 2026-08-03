@@ -96,14 +96,17 @@ permanently as the before-state for the modernisation migration — not dead cod
 Frontend (`client/`, React + TypeScript + Vite):
 
 ```
-client/src/
-  App.tsx, main.tsx        # routing (BrowserRouter); "/" redirects to "/components"
-  components/              # hand-authored app components (build here)
-  components/ui/           # shadcn/ui vendor components — ESLint-ignored; never hand-author here
-  hooks/                   # useAudits, useAudit (data-fetching hooks)
-  api/                     # typed fetch layers (incidents.ts, audits.ts); api.ts for Items
-  pageTitle.ts, errors.ts, guards.ts, types.ts
-  e2e/                     # Playwright specs (run separately from Vitest)
+client/
+  src/
+    App.tsx, main.tsx      # routing (BrowserRouter); "/" redirects to "/components"
+    components/            # hand-authored app components (build here)
+    components/ui/         # shadcn/ui vendor components — ESLint-ignored; never hand-author here
+    hooks/                 # useAudits, useAudit (data-fetching hooks)
+    api/                   # typed fetch layers (incidents.ts, audits.ts); api.ts for Items
+    componentPreviews.tsx  # gallery preview components (components only)
+    componentRegistry.ts   # gallery entry array (no JSX)
+    pageTitle.ts, errors.ts, guards.ts, types.ts
+  e2e/                     # Playwright specs — sibling of src/, not inside it
 ```
 
 For exhaustive, current file inventories of any area, read the relevant skill in
@@ -230,7 +233,7 @@ change. Completed tasks move to
 
 Kept visible deliberately — do not paper over:
 
-- **Backend secret scanning gap** — the client uses `eslint-plugin-no-secrets`; the .NET projects have no equivalent. Flag likely secrets in backend source manually.
+- **Lint and secret-scanning coverage gap** — ESLint (including `eslint-plugin-no-secrets`) is configured only in `client/eslint.config.js` and matches `**/*.{ts,tsx}`. There is no root ESLint config, so neither the .NET projects nor `.github/scripts/*.js` are linted or secret-scanned at the code level. The `// eslint-disable-next-line no-console` comments in those scripts are inert — no ESLint run ever reaches them. Flag likely secrets in backend and automation-script source manually.
 - **Large single-file docs** — `learning-notes.md` is well over the nightly agent implement limit (100 KiB); docs-only backlog tasks that require sending the full file remain human-only until the file is split or the task is re-scoped.
 - **T58 — IncidentsApi hooks retrofit** — Incidents screens still use inline `useState`/`useEffect` instead of the `useAudits`/`useAudit`-style hooks. Tracked in the backlog.
 - **Items legacy CSS** — `ItemsList.css` / legacy `App.css` classes remain by design (demo scaffold). Not a gap to close unprompted.
