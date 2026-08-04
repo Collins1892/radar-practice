@@ -205,31 +205,29 @@ function App(): JSX.Element {
   usePageTitle();
 
   return (
-    <main className="app relative">
+    <div className="app relative">
       <a href="#main-content" className={skipLinkClassName}>
         Skip to main content
       </a>
-      <header>
-        <nav
-          className="pb-4 flex gap-1 border-b border-border"
-          aria-label="Views"
-        >
-          <NavLink to="/components" className={navLinkClass}>
-            Components
-          </NavLink>
-          <NavLink to="/items" end className={navLinkClass}>
-            Items
-          </NavLink>
-          <NavLink to="/incidents" className={navLinkClass}>
-            Incidents
-          </NavLink>
-          <NavLink to="/audits" className={navLinkClass}>
-            Audits
-          </NavLink>
-        </nav>
-      </header>
+      <nav
+        className="pb-4 flex gap-1 border-b border-border"
+        aria-label="Views"
+      >
+        <NavLink to="/components" className={navLinkClass}>
+          Components
+        </NavLink>
+        <NavLink to="/items" end className={navLinkClass}>
+          Items
+        </NavLink>
+        <NavLink to="/incidents" className={navLinkClass}>
+          Incidents
+        </NavLink>
+        <NavLink to="/audits" className={navLinkClass}>
+          Audits
+        </NavLink>
+      </nav>
 
-      <div id="main-content" tabIndex={-1}>
+      <main id="main-content" tabIndex={-1} role="main">
         <Routes>
           <Route path="/" element={<Navigate to="/components" replace />} />
           <Route path="/items" element={<ItemsView />} />
@@ -247,9 +245,9 @@ function App(): JSX.Element {
           />
           <Route path="*" element={<Navigate to="/components" replace />} />
         </Routes>
-      </div>
+      </main>
       <Toaster />
-    </main>
+    </div>
   );
 }
 
