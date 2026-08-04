@@ -10,6 +10,7 @@ import {
   formatTruncatedComment,
   getRetryWaitMs,
   groupActionableByFilePath,
+  isTruncatedResponse,
   mergeAdvisory,
   parseChangedFilePaths,
   parseFindings,
@@ -619,5 +620,23 @@ describe('describeRefusal', () => {
       describeRefusal({ stop_reason: 'refusal' }),
       'Anthropic API declined the request (category: unspecified)',
     );
+  });
+});
+
+describe('isTruncatedResponse', () => {
+  it('detects max_tokens and treats every other stop reason as complete', () => {
+    assert.equal(isTruncatedResponse({ stop_reason: 'max_tokens' }), true);
+
+    assert.equal(isTruncatedResponse({ stop_reason: 'end_turn' }), false);
+    assert.equal(isTruncatedResponse({ stop_reason: 'stop_sequence' }), false);
+    // A refusal is handled by describeRefusal before this runs, so it must not
+    // also be reported as truncation.
+    assert.equal(isTruncatedResponse({ stop_reason: 'refusal' }), false);
+  });
+
+  it('does not throw on a missing or malformed response object', () => {
+    assert.equal(isTruncatedResponse(undefined), false);
+    assert.equal(isTruncatedResponse(null), false);
+    assert.equal(isTruncatedResponse({}), false);
   });
 });

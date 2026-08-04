@@ -131,6 +131,13 @@ function describeRefusal(data) {
   })`;
 }
 
+// Companion to describeRefusal: both inspect the raw API response so the
+// decision is testable without mocking the network. A truncated review cannot
+// be parsed, so callers degrade to an advisory draft rather than exiting.
+function isTruncatedResponse(data) {
+  return data?.stop_reason === 'max_tokens';
+}
+
 function requireEnv(name) {
   const value = process.env[name];
   if (!value || value.trim() === '') {
@@ -289,6 +296,11 @@ Format: [{"severity": "Blocker"|"Major"|"Minor", "description": "...", "filePath
 
 The review skill and diff follow below.`;
 
+  // The ordering instruction below is a soft guarantee: it relies on the model
+  // complying and nothing validates or re-sorts the array afterwards. There is
+  // no code-level enforcement to add while truncated arrays are discarded
+  // rather than salvaged — if newline-delimited JSON is ever adopted so partial
+  // results survive, ordering would need enforcing at parse time.
   const jsonClosing = `Review the diff above using the code-reviewer skill. Return ONLY a JSON array of findings. Each item must have:
 - severity: "Blocker" | "Major" | "Minor"
 - description: string (include where/rule/issue/fix as appropriate)
@@ -353,7 +365,7 @@ async function requestReview(skillContent, diff, apiKey) {
     fail(refusal);
   }
 
-  const truncated = data.stop_reason === 'max_tokens';
+  const truncated = isTruncatedResponse(data);
 
   const textBlock = Array.isArray(data.content)
     ? data.content.find((block) => block.type === 'text')
@@ -1399,6 +1411,10 @@ async function runFixLoop({
     // The fix commit is already pushed at this point, so bailing out here would
     // leave bot commits on the branch with no comment and no draft mark. Stop
     // the loop instead and hand the unverified fixes to a human.
+    //
+    // markPrDraft is unguarded here, unlike the equivalent branch in main(),
+    // because runFixLoop is CI-only: branchName is null outside GitHub Actions
+    // and main() returns before reaching this function.
     if (reviewTruncated) {
       warn(
         'Re-review truncated after fixes were pushed — marking PR draft, fixes are unverified',
@@ -1616,6 +1632,7 @@ export {
   buildScopedGitAddArgs,
   commitAndPushFixes,
   describeRefusal,
+  isTruncatedResponse,
   getRetryWaitMs,
   stripJsonWrappers,
   parseFindings,
