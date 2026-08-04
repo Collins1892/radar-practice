@@ -76,6 +76,19 @@ describe('App', () => {
     expect(document.getElementById('main-content')).toBeInTheDocument();
   });
 
+  it('renders the navigation landmark outside the main landmark', (): void => {
+    // Arrange
+    vi.mocked(fetchItems).mockResolvedValue([]);
+
+    // Act
+    renderApp();
+
+    // Assert
+    const main = screen.getByRole('main');
+    const nav = screen.getByRole('navigation', { name: 'Views' });
+    expect(main).not.toContainElement(nav);
+  });
+
   it('sets document title to Components | Radar Practice at /', (): void => {
     // Arrange
     vi.mocked(fetchItems).mockResolvedValue([]);
