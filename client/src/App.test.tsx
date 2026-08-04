@@ -73,7 +73,25 @@ describe('App', () => {
     // Assert
     const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
     expect(skipLink).toHaveAttribute('href', '#main-content');
-    expect(document.getElementById('main-content')).toBeInTheDocument();
+    expect(document.getElementById('main-content')).toBe(
+      screen.getByRole('main'),
+    );
+  });
+
+  it('renders banner and navigation landmarks outside the main landmark', (): void => {
+    // Arrange
+    vi.mocked(fetchItems).mockResolvedValue([]);
+
+    // Act
+    renderApp();
+
+    // Assert
+    const main = screen.getByRole('main');
+    const banner = screen.getByRole('banner');
+    const nav = screen.getByRole('navigation', { name: 'Views' });
+    expect(main).not.toContainElement(nav);
+    expect(main).not.toContainElement(banner);
+    expect(banner).toContainElement(nav);
   });
 
   it('sets document title to Components | Radar Practice at /', (): void => {

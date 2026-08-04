@@ -205,7 +205,7 @@ function App(): JSX.Element {
   usePageTitle();
 
   return (
-    <main className="app relative">
+    <div className="app relative">
       <a href="#main-content" className={skipLinkClassName}>
         Skip to main content
       </a>
@@ -229,7 +229,7 @@ function App(): JSX.Element {
         </nav>
       </header>
 
-      <div id="main-content" tabIndex={-1}>
+      <main id="main-content" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<Navigate to="/components" replace />} />
           <Route path="/items" element={<ItemsView />} />
@@ -247,9 +247,9 @@ function App(): JSX.Element {
           />
           <Route path="*" element={<Navigate to="/components" replace />} />
         </Routes>
-      </div>
+      </main>
       <Toaster />
-    </main>
+    </div>
   );
 }
 
