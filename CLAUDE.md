@@ -229,6 +229,38 @@ change. Completed tasks move to
 
 **Agent eligibility:** tasks targeting files over 100 KiB in the implement prompt are not agent-runnable until the file is split or the task scope changes — the guard skips them cleanly rather than failing silently. Use `blocked` status (with a note) for tasks that remain human-only after T73; do not expect the agent to complete them. **Skip notes:** when the guard fires, `attempts` increments and `notes` appends a `Skipped: file exceeds implement payload limit (...)` entry via `applyOversizedTaskSkip` — no draft PR for that skip alone.
 
+**Difficulty labels** describe what the *agent* can execute, not how long a human
+would take. Human-effort framing is what produced the historic mislabelling: a
+doc change is quick for a human and structurally awkward for an agent. Label by
+what the implementer actually sees — one file at a time, statelessly, with no
+`CLAUDE.md` and no plan reasoning (`buildImplementPrompt` sends only the task
+description, the per-file change description, and that file's contents).
+
+- **easy** — exactly **one** file changes. The description plus that file's own
+  contents fully determine the edit; no other file has to be read to get it
+  right. No new exported abstraction. A new file must stay under ~10,000
+  characters (`OVERSIZE_MIN_CHARS`).
+- **medium** — **2–3** already-coupled files, typically a component and its test
+  or a helper and its two call sites. The description states the intended shape,
+  so no design decision is left open and each file can be written correctly in
+  isolation. Verified by the five commands in `TEST_COMMANDS`.
+- **hard** — any one of: a design decision the description cannot settle; a new
+  abstraction that other files must change to consume; **4 or more** changed
+  files (each costs one of the 10 per-run API calls, shared with fix attempts);
+  any [sensitive path](#automation), whose changes are demoted to advisory so
+  the task fails with no code at all; a file over 100 KiB, or a new file over
+  ~10,000 characters; or verification needing anything beyond `TEST_COMMANDS` —
+  **Playwright e2e is not run by the agent**.
+
+**Writing a task description:** put the whole specification in the Description
+column — name the files, give acceptance criteria the test suite can assert, and
+state what is out of scope. The Notes column is *never sent to the model*; it is
+for provenance and cross-references only. Keep the first ~57 characters a
+sensible imperative clause, because `shortDescription` truncates there to build
+the PR title. Never put a T-number in a description: the PR-title exclusion
+scrapes `\bT(\d+)\b` from every PR title and permanently parks any task it
+matches (see T92).
+
 ## Known gaps
 
 Kept visible deliberately — do not paper over:
