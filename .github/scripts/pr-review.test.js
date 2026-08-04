@@ -7,8 +7,10 @@ import {
   describeRefusal,
   extractFilePath,
   formatComment,
+  formatTruncatedComment,
   getRetryWaitMs,
   groupActionableByFilePath,
+  isTruncatedResponse,
   mergeAdvisory,
   parseChangedFilePaths,
   parseFindings,
@@ -162,6 +164,49 @@ describe('formatComment', () => {
 
     assert.ok(comment.includes(BOT_MARKER));
     assert.ok(comment.includes('No findings'));
+  });
+});
+
+describe('formatTruncatedComment', () => {
+  it('never claims the diff is clean, unlike the empty-findings comment', () => {
+    const comment = formatTruncatedComment();
+
+    assert.ok(comment.includes(BOT_MARKER));
+    // The exact wording formatComment([]) uses — it must not leak into a
+    // truncated review, where no finding was ever read.
+    assert.ok(
+      !comment.includes('the diff looks clean'),
+      'truncated comment must not report a clean diff',
+    );
+    assert.ok(comment.includes('**This is not a clean review.**'));
+  });
+
+  it('marks the review as incomplete and needing human review', () => {
+    const comment = formatTruncatedComment();
+
+    assert.ok(comment.includes('needs human review'));
+    assert.ok(comment.includes('**The review did not complete.**'));
+    assert.ok(comment.includes('PR marked as **draft**'));
+  });
+
+  it('reports the pre-fix case as no findings read', () => {
+    const comment = formatTruncatedComment();
+
+    assert.ok(
+      comment.includes('cut short before any finding could be read'),
+      'expected the pre-fix wording',
+    );
+    assert.ok(!comment.includes('unverified'));
+  });
+
+  it('reports the post-fix case as leaving fixes unverified', () => {
+    const comment = formatTruncatedComment({ afterFixes: true });
+
+    assert.ok(
+      comment.includes('are **unverified**'),
+      'expected the post-fix wording',
+    );
+    assert.ok(comment.includes('automated fix commit'));
   });
 });
 
@@ -575,5 +620,23 @@ describe('describeRefusal', () => {
       describeRefusal({ stop_reason: 'refusal' }),
       'Anthropic API declined the request (category: unspecified)',
     );
+  });
+});
+
+describe('isTruncatedResponse', () => {
+  it('detects max_tokens and treats every other stop reason as complete', () => {
+    assert.equal(isTruncatedResponse({ stop_reason: 'max_tokens' }), true);
+
+    assert.equal(isTruncatedResponse({ stop_reason: 'end_turn' }), false);
+    assert.equal(isTruncatedResponse({ stop_reason: 'stop_sequence' }), false);
+    // A refusal is handled by describeRefusal before this runs, so it must not
+    // also be reported as truncation.
+    assert.equal(isTruncatedResponse({ stop_reason: 'refusal' }), false);
+  });
+
+  it('does not throw on a missing or malformed response object', () => {
+    assert.equal(isTruncatedResponse(undefined), false);
+    assert.equal(isTruncatedResponse(null), false);
+    assert.equal(isTruncatedResponse({}), false);
   });
 });
