@@ -515,6 +515,36 @@ describe('fetchAttemptedTaskIds', () => {
     );
   });
 
+  it('throws when stdout contains a PR entry with an unrecognised state', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([
+        { headRefName: 'nightly-agent/T15-x-1', state: 'QUEUED', mergedAt: null },
+      ]),
+    });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assert.match(error.message, /unrecognised state "QUEUED"/);
+        return true;
+      },
+    );
+  });
+
+  it('accepts all three documented gh PR states', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([
+        mergedAgentPr(15, 'merged'),
+        closedAgentPr(16, 'closed'),
+        openAgentPr(17, 'open'),
+      ]),
+    });
+
+    const attempted = await fetchAttemptedTaskIds(owner, repo, token, runCommand);
+
+    assert.deepEqual([...attempted].sort((a, b) => a - b), [15, 17]);
+  });
+
   it('throws when stdout contains a PR entry with a non-string, non-null mergedAt', async () => {
     const runCommand = async () => ({
       stdout: JSON.stringify([

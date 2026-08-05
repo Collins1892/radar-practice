@@ -1203,6 +1203,10 @@ async function runGitOutput(args) {
 
 const PR_LIST_LIMIT = 1000;
 
+// The full gh PR state enum. An unrecognised state would fall through buildAttemptedTaskIdSet
+// as "not attempted" and silently under-exclude, so it is rejected at the boundary instead.
+const PR_STATES = new Set(['OPEN', 'CLOSED', 'MERGED']);
+
 async function fetchAttemptedTaskIds(
   owner,
   repo,
@@ -1269,6 +1273,11 @@ async function fetchAttemptedTaskIds(
       typeof pr.state !== 'string'
     ) {
       fail('gh pr list returned a PR with a missing or non-string headRefName or state');
+    }
+    if (!PR_STATES.has(pr.state)) {
+      fail(
+        `gh pr list returned a PR with an unrecognised state "${pr.state}" — expected one of ${[...PR_STATES].join(', ')}`,
+      );
     }
     // mergedAt is null on unmerged PRs and an ISO timestamp otherwise. Anything else means
     // the gh schema moved under us; fail loudly rather than silently misreading merge state.
