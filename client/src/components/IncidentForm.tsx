@@ -142,7 +142,7 @@ function validateIncidentForm(values: IncidentFormValues): ValidateResult {
       location: values.location,
       severity: values.severity as IncidentSeverity,
       status: values.status as IncidentStatus,
-      reportedDate: values.reportedDate,
+      reportedDate: values.reportedDate as Date,
     },
   };
 }
