@@ -356,7 +356,9 @@ function buildAttemptedTaskIdSet(prs) {
     if (id === null) {
       continue;
     }
-    if (pr.mergedAt !== null && pr.mergedAt !== undefined) {
+    // Positively require a timestamp: gh sets mergedAt to null when unmerged, so anything
+    // falsy-but-defined must not read as merged.
+    if (typeof pr.mergedAt === 'string' && pr.mergedAt !== '') {
       attempted.add(id);
     } else if (pr.state === 'OPEN') {
       attempted.add(id);
@@ -1267,6 +1269,15 @@ async function fetchAttemptedTaskIds(
       typeof pr.state !== 'string'
     ) {
       fail('gh pr list returned a PR with a missing or non-string headRefName or state');
+    }
+    // mergedAt is null on unmerged PRs and an ISO timestamp otherwise. Anything else means
+    // the gh schema moved under us; fail loudly rather than silently misreading merge state.
+    if (
+      pr.mergedAt !== null &&
+      pr.mergedAt !== undefined &&
+      typeof pr.mergedAt !== 'string'
+    ) {
+      fail('gh pr list returned a PR with a non-string, non-null mergedAt');
     }
   }
 

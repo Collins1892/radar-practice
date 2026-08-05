@@ -328,6 +328,13 @@ describe('buildAttemptedTaskIdSet', () => {
     assert.equal(attempted.size, 0);
   });
 
+  it('does NOT treat a falsy-but-defined mergedAt as merged', () => {
+    const pr = closedAgentPr(30, 'empty-merged-at');
+    pr.mergedAt = '';
+
+    assert.equal(buildAttemptedTaskIdSet([pr]).has(30), false);
+  });
+
   it('excludes a task whose agent PR is still open, including a draft', () => {
     const attempted = buildAttemptedTaskIdSet([
       openAgentPr(20, 'in-flight-work'),
@@ -506,6 +513,35 @@ describe('fetchAttemptedTaskIds', () => {
         return true;
       },
     );
+  });
+
+  it('throws when stdout contains a PR entry with a non-string, non-null mergedAt', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([
+        { headRefName: 'nightly-agent/T15-x-1', state: 'MERGED', mergedAt: 12345 },
+      ]),
+    });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned a PR with a non-string, non-null mergedAt',
+        );
+        return true;
+      },
+    );
+  });
+
+  it('accepts a null mergedAt on an unmerged PR without failing', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([closedAgentPr(15, 'focus-indicator')]),
+    });
+
+    const attempted = await fetchAttemptedTaskIds(owner, repo, token, runCommand);
+
+    assert.equal(attempted.size, 0);
   });
 
   it('throws when stdout contains a PR entry with a missing state', async () => {
