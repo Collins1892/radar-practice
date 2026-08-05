@@ -59,6 +59,23 @@ type IncidentFormValues = {
   reportedDate: Date | undefined;
 };
 
+type ValidateResult =
+  | {
+      ok: true;
+      values: {
+        title: string;
+        description: string;
+        location: string;
+        severity: IncidentSeverity;
+        status: IncidentStatus;
+        reportedDate: Date;
+      };
+    }
+  | {
+      ok: false;
+      errors: FieldErrors;
+    };
+
 type IncidentFormProps =
   | { mode: 'create' }
   | { mode: 'edit'; incidentId: number };
@@ -75,7 +92,7 @@ function formatReportedDateForApi(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }
 
-function validateIncidentForm(values: IncidentFormValues): FieldErrors {
+function validateIncidentForm(values: IncidentFormValues): ValidateResult {
   const errors: FieldErrors = {};
 
   if (!values.title.trim()) {
@@ -113,7 +130,21 @@ function validateIncidentForm(values: IncidentFormValues): FieldErrors {
     errors.reportedDate = 'Reported date must not be in the future.';
   }
 
-  return errors;
+  if (hasFieldErrors(errors)) {
+    return { ok: false, errors };
+  }
+
+  return {
+    ok: true,
+    values: {
+      title: values.title,
+      description: values.description,
+      location: values.location,
+      severity: values.severity as IncidentSeverity,
+      status: values.status as IncidentStatus,
+      reportedDate: values.reportedDate as Date,
+    },
+  };
 }
 
 function hasFieldErrors(errors: FieldErrors): boolean {
@@ -215,7 +246,7 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
   ): Promise<void> {
     event.preventDefault();
 
-    const errors = validateIncidentForm({
+    const result = validateIncidentForm({
       title,
       description,
       location,
@@ -224,9 +255,9 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
       reportedDate,
     });
 
-    if (hasFieldErrors(errors)) {
+    if (!result.ok) {
       shouldFocusFirstErrorRef.current = true;
-      setFieldErrors(errors);
+      setFieldErrors(result.errors);
       setSubmitError(null);
       return;
     }
@@ -236,12 +267,12 @@ export function IncidentForm(props: IncidentFormProps): JSX.Element {
     setSubmitting(true);
 
     const payload = {
-      title,
-      description,
-      location,
-      severity: severity as IncidentSeverity,
-      status: status as IncidentStatus,
-      reportedDate: formatReportedDateForApi(reportedDate as Date),
+      title: result.values.title,
+      description: result.values.description,
+      location: result.values.location,
+      severity: result.values.severity,
+      status: result.values.status,
+      reportedDate: formatReportedDateForApi(result.values.reportedDate),
     };
 
     try {
