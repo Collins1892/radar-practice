@@ -112,48 +112,58 @@ jobs:
 
           # Presence is not validity. A well-formed key can belong to an account
           # with no credit — that passes a shape check and then fails the first
-          # real call. Spend one token against the same endpoint the reviewer
-          # uses so the failure surfaces here, named.
+          # real call. Spend one token against the same endpoint and model the
+          # reviewer uses so the failure surfaces here, named.
+          #
+          # The key reaches curl as a config file on stdin: never as an argument
+          # (printf is a bash builtin, so it is not in any process's argv) and
+          # never on disk.
           body_file="$(mktemp)"
+          trap 'rm -f "$body_file"' EXIT
           set +e
           http_code=$(
-            curl --silent --show-error \
+            printf 'header = "x-api-key: %s"\n' "$ANTHROPIC_API_KEY" |
+            curl --config - --silent --show-error \
                  --connect-timeout 10 --max-time 30 \
                  --write-out '%{http_code}' --output "$body_file" \
                  https://api.anthropic.com/v1/messages \
-              -H "x-api-key: $ANTHROPIC_API_KEY" \
               -H 'anthropic-version: 2023-06-01' \
               -H 'content-type: application/json' \
-              -d '{"model":"claude-haiku-4-5","max_tokens":1,"messages":[{"role":"user","content":"ping"}]}'
+              -d "{\"model\":\"${REVIEW_MODEL}\",\"max_tokens\":1,\"messages\":[{\"role\":\"user\",\"content\":\"ping\"}]}"
           )
           curl_status=$?
           set -e
 
           if [[ $curl_status -ne 0 ]]; then
-            rm -f "$body_file"
             echo "::error::Could not reach the Anthropic API (curl exit ${curl_status})."
             echo "This is a network, DNS, or timeout failure — not a credential or billing problem."
             exit 1
           fi
 
-          # jq gives a tidier message, but the diagnosis must not depend on it —
-          # fall back to the raw body so a missing jq degrades the wording, not
-          # the verdict.
-          error_type=$(jq -r '.error.type // empty' "$body_file" 2>/dev/null || true)
-          error_message=$(jq -r '.error.message // empty' "$body_file" 2>/dev/null || true)
-          [[ -n "$error_message" ]] || error_message=$(tr -d '\n' < "$body_file")
-
           if [[ "$http_code" == 2* ]]; then
-            rm -f "$body_file"
-            echo "ANTHROPIC_API_KEY is set and the account accepted a live API call."
+            echo "ANTHROPIC_API_KEY is set and the account accepted a live call to ${REVIEW_MODEL}."
             exit 0
           fi
 
-          # Fail closed from here: anything that is not a 2xx is treated as bad.
-          # Matched against the raw body, so it holds whatever status the API
-          # attaches to a billing refusal.
+          # A 429 or 529 means the request authenticated and the account can
+          # transact — precisely what this step exists to establish. Both are
+          # retried by the reviewer (TRANSIENT_STATUS_CODES), so blocking on them
+          # would fail a review that would otherwise have succeeded.
+          if [[ "$http_code" == "429" || "$http_code" == "529" ]]; then
+            echo "::warning::Anthropic API returned HTTP ${http_code} (rate limited or overloaded)."
+            echo "The key authenticated, so credentials and billing are fine. The reviewer retries these — continuing."
+            exit 0
+          fi
+
+          # Fail closed from here: anything else is treated as bad. jq only makes
+          # the wording tidier, so the credit match runs against the raw body and
+          # a missing jq costs detail, never the verdict.
+          error_type=$(jq -r '.error.type // empty' "$body_file" 2>/dev/null || true)
+          error_message=$(jq -r '.error.message // empty' "$body_file" 2>/dev/null || true)
+
           if grep -qi 'credit balance' "$body_file"; then
-            echo "::error::The Anthropic account cannot transact (HTTP ${http_code}): ${error_message}"
+            echo "::error::The Anthropic account cannot transact (HTTP ${http_code})."
+            if [[ -n "$error_message" ]]; then echo "API said: ${error_message}"; fi
             echo "This is a BILLING problem, not a secrets-configuration problem. The key itself is valid."
             echo "Top up the account balance — reissuing or re-setting ANTHROPIC_API_KEY will not help."
           elif [[ "$http_code" == "401" ]]; then
@@ -165,10 +175,10 @@ jobs:
             cat "$body_file"
             echo
           fi
-          rm -f "$body_file"
           exit 1
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REVIEW_MODEL: ${{ vars.REVIEW_MODEL || 'claude-sonnet-5' }}
 
       - name: Run PR review
         run: npm run pr-review
