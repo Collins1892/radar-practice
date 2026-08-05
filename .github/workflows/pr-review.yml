@@ -105,10 +105,68 @@ jobs:
 
       - name: Validate secrets
         run: |
-          if [[ -z "$ANTHROPIC_API_KEY" || ${#ANTHROPIC_API_KEY} -lt 20 ]]; then
-            echo "ANTHROPIC_API_KEY secret is not set or appears invalid"
+          if [[ -z "$ANTHROPIC_API_KEY" ]]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set"
             exit 1
           fi
+
+          # Presence is not validity. A well-formed key can belong to an account
+          # with no credit — that passes a shape check and then fails the first
+          # real call. Spend one token against the same endpoint the reviewer
+          # uses so the failure surfaces here, named.
+          body_file="$(mktemp)"
+          set +e
+          http_code=$(
+            curl --silent --show-error \
+                 --connect-timeout 10 --max-time 30 \
+                 --write-out '%{http_code}' --output "$body_file" \
+                 https://api.anthropic.com/v1/messages \
+              -H "x-api-key: $ANTHROPIC_API_KEY" \
+              -H 'anthropic-version: 2023-06-01' \
+              -H 'content-type: application/json' \
+              -d '{"model":"claude-haiku-4-5","max_tokens":1,"messages":[{"role":"user","content":"ping"}]}'
+          )
+          curl_status=$?
+          set -e
+
+          if [[ $curl_status -ne 0 ]]; then
+            rm -f "$body_file"
+            echo "::error::Could not reach the Anthropic API (curl exit ${curl_status})."
+            echo "This is a network, DNS, or timeout failure — not a credential or billing problem."
+            exit 1
+          fi
+
+          # jq gives a tidier message, but the diagnosis must not depend on it —
+          # fall back to the raw body so a missing jq degrades the wording, not
+          # the verdict.
+          error_type=$(jq -r '.error.type // empty' "$body_file" 2>/dev/null || true)
+          error_message=$(jq -r '.error.message // empty' "$body_file" 2>/dev/null || true)
+          [[ -n "$error_message" ]] || error_message=$(tr -d '\n' < "$body_file")
+
+          if [[ "$http_code" == 2* ]]; then
+            rm -f "$body_file"
+            echo "ANTHROPIC_API_KEY is set and the account accepted a live API call."
+            exit 0
+          fi
+
+          # Fail closed from here: anything that is not a 2xx is treated as bad.
+          # Matched against the raw body, so it holds whatever status the API
+          # attaches to a billing refusal.
+          if grep -qi 'credit balance' "$body_file"; then
+            echo "::error::The Anthropic account cannot transact (HTTP ${http_code}): ${error_message}"
+            echo "This is a BILLING problem, not a secrets-configuration problem. The key itself is valid."
+            echo "Top up the account balance — reissuing or re-setting ANTHROPIC_API_KEY will not help."
+          elif [[ "$http_code" == "401" ]]; then
+            echo "::error::ANTHROPIC_API_KEY was rejected (HTTP 401${error_type:+, ${error_type}})."
+            echo "The key is wrong, revoked, or belongs to a different account. Reissue it and update the repository secret."
+          else
+            echo "::error::Anthropic API pre-flight failed with HTTP ${http_code}."
+            echo "Response body:"
+            cat "$body_file"
+            echo
+          fi
+          rm -f "$body_file"
+          exit 1
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
