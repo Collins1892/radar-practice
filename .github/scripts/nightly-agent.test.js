@@ -14,7 +14,7 @@ import {
   buildImplementPrompt,
   buildPlanPrompt,
   describeRefusal,
-  extractTaskIdsFromPrTitle,
+  extractTaskIdFromAgentBranch,
   fetchAttemptedTaskIds,
   formatPrBody,
   formatPrNumberCell,
@@ -144,32 +144,60 @@ describe('parseBacklog', () => {
   });
 });
 
-describe('extractTaskIdsFromPrTitle', () => {
-  it('extracts T1 without matching T15 or T16 in other titles', () => {
-    const ids = extractTaskIdsFromPrTitle(
-      'feat(T1): registry fix (nightly agent)',
+// PR shapes as `gh pr list --json headRefName,mergedAt,state` returns them: gh emits
+// mergedAt: null for anything not merged, and state is OPEN | CLOSED | MERGED.
+function agentBranch(id, slug) {
+  return `nightly-agent/T${String(id).padStart(2, '0')}-${slug}-30069468153`;
+}
+
+function mergedAgentPr(id, slug) {
+  return {
+    title: `feat(T${id}): ${slug} (nightly agent)`,
+    headRefName: agentBranch(id, slug),
+    mergedAt: '2026-07-24T02:11:00Z',
+    state: 'MERGED',
+  };
+}
+
+function closedAgentPr(id, slug) {
+  return {
+    title: `feat(T${id}): ${slug} (nightly agent)`,
+    headRefName: agentBranch(id, slug),
+    mergedAt: null,
+    state: 'CLOSED',
+  };
+}
+
+function openAgentPr(id, slug) {
+  return {
+    title: `feat(T${id}): ${slug} (nightly agent)`,
+    headRefName: agentBranch(id, slug),
+    mergedAt: null,
+    state: 'OPEN',
+  };
+}
+
+describe('extractTaskIdFromAgentBranch', () => {
+  it('extracts T15 from an agent branch name', () => {
+    const id = extractTaskIdFromAgentBranch(
+      'nightly-agent/T15-focus-indicator-30069468153',
     );
 
-    assert.deepEqual(ids, [1]);
-    assert.ok(!ids.includes(15));
-    assert.ok(!ids.includes(16));
-  });
-
-  it('extracts exactly T15 from conventional commit title', () => {
-    const ids = extractTaskIdsFromPrTitle(
-      'fix(T15): focus indicator (nightly agent)',
-    );
-
-    assert.deepEqual(ids, [15]);
-    assert.ok(!ids.includes(1));
-    assert.ok(!ids.includes(16));
+    assert.equal(id, 15);
   });
 
   it('extracts T10 without matching T1', () => {
-    const ids = extractTaskIdsFromPrTitle('feat(T10): calendar helper');
+    const id = extractTaskIdFromAgentBranch(
+      'nightly-agent/T10-calendar-helper-30241213116',
+    );
 
-    assert.deepEqual(ids, [10]);
-    assert.ok(!ids.includes(1));
+    assert.equal(id, 10);
+  });
+
+  it('returns null for a human branch that names a task in the branch name', () => {
+    assert.equal(extractTaskIdFromAgentBranch('fix/T17-per-route-title-tests'), null);
+    assert.equal(extractTaskIdFromAgentBranch('chore/backlog-t76-t77'), null);
+    assert.equal(extractTaskIdFromAgentBranch('main'), null);
   });
 });
 
@@ -237,22 +265,19 @@ describe('pickTask', () => {
     assert.equal(picked, null);
   });
 
-  it('skips tasks with attempted numeric IDs from PR titles', () => {
+  it('skips tasks with attempted numeric IDs from merged agent PRs', () => {
     const tasks = parseBacklog(A11Y_EASY_BACKLOG);
-    const attempted = new Set(
-      extractTaskIdsFromPrTitle(
-        'fix(T15): focus indicator (nightly agent)',
-      ),
-    );
+    const attempted = buildAttemptedTaskIdSet([
+      mergedAgentPr(15, 'focus-indicator'),
+    ]);
     const picked = pickTask(tasks, 'easy', '', attempted);
 
     assert.ok(picked);
     assert.equal(picked.id, 'T16');
   });
 
-  it('normalises T01 backlog id with T1 in PR title via numeric comparison', () => {
-    const ids = extractTaskIdsFromPrTitle('feat(T1): registry fix (nightly agent)');
-    const attempted = new Set(ids);
+  it('normalises T01 backlog id with T1 on the agent branch via numeric comparison', () => {
+    const attempted = buildAttemptedTaskIdSet([mergedAgentPr(1, 'registry-fix')]);
     const tasks = parseBacklog(MEDIUM_ONLY_BACKLOG);
     const t01 = tasks.find((entry) => entry.id === 'T01');
 
@@ -267,24 +292,65 @@ describe('pickTask', () => {
 });
 
 describe('buildAttemptedTaskIdSet', () => {
-  it('unions task IDs from multiple PR titles and multiple IDs in one title', () => {
+  it('excludes a task whose agent PR was merged', () => {
     const attempted = buildAttemptedTaskIdSet([
-      'feat(T15): focus indicator (nightly agent)',
-      'fix(T16): nav landmark (nightly agent)',
-      'docs: relates to T15 and T16 in backlog notes',
+      mergedAgentPr(15, 'focus-indicator'),
     ]);
 
     assert.equal(attempted.has(15), true);
-    assert.equal(attempted.has(16), true);
-    assert.equal(attempted.size, 2);
   });
 
-  it('extracts two unique IDs from a single title', () => {
-    const attempted = buildAttemptedTaskIdSet(['chore(T20): also fixes T21']);
+  it('does NOT exclude a task whose agent PR was closed unmerged (T09/T10/T12)', () => {
+    const attempted = buildAttemptedTaskIdSet([
+      closedAgentPr(9, 'incidentsview-stale-response'),
+      closedAgentPr(10, 'retry-affordance'),
+      closedAgentPr(12, 'focus-ordering-test'),
+    ]);
+
+    assert.equal(attempted.has(9), false);
+    assert.equal(attempted.has(10), false);
+    assert.equal(attempted.has(12), false);
+    assert.equal(attempted.size, 0);
+  });
+
+  it('does NOT exclude a task merely named in a merged non-agent PR title (T76)', () => {
+    const attempted = buildAttemptedTaskIdSet([
+      {
+        title: 'docs: add T76 and T77 to the nightly agent backlog',
+        headRefName: 'chore/backlog-t76-t77',
+        mergedAt: '2026-08-02T10:00:00Z',
+        state: 'MERGED',
+      },
+    ]);
+
+    assert.equal(attempted.has(76), false);
+    assert.equal(attempted.has(77), false);
+    assert.equal(attempted.size, 0);
+  });
+
+  it('does NOT treat a falsy-but-defined mergedAt as merged', () => {
+    const pr = closedAgentPr(30, 'empty-merged-at');
+    pr.mergedAt = '';
+
+    assert.equal(buildAttemptedTaskIdSet([pr]).has(30), false);
+  });
+
+  it('excludes a task whose agent PR is still open, including a draft', () => {
+    const attempted = buildAttemptedTaskIdSet([
+      openAgentPr(20, 'in-flight-work'),
+    ]);
 
     assert.equal(attempted.has(20), true);
-    assert.equal(attempted.has(21), true);
-    assert.equal(attempted.size, 2);
+  });
+
+  it('unions across PRs and keeps merged and closed decisions independent', () => {
+    const attempted = buildAttemptedTaskIdSet([
+      mergedAgentPr(15, 'focus-indicator'),
+      closedAgentPr(16, 'nav-landmark'),
+      openAgentPr(17, 'route-titles'),
+    ]);
+
+    assert.deepEqual([...attempted].sort((a, b) => a - b), [15, 17]);
   });
 });
 
@@ -361,11 +427,12 @@ describe('fetchAttemptedTaskIds', () => {
     );
   });
 
-  it('returns attempted task IDs from PR titles on success', async () => {
+  it('returns attempted task IDs from merged agent PRs on success', async () => {
     const runCommand = async () => ({
       stdout: JSON.stringify([
-        { title: 'feat(T15): focus indicator (nightly agent)' },
-        { title: 'fix(T16): nav landmark (nightly agent)' },
+        mergedAgentPr(15, 'focus-indicator'),
+        mergedAgentPr(16, 'nav-landmark'),
+        closedAgentPr(17, 'route-titles'),
       ]),
     });
 
@@ -379,7 +446,23 @@ describe('fetchAttemptedTaskIds', () => {
     assert.equal(attempted instanceof Set, true);
     assert.equal(attempted.has(15), true);
     assert.equal(attempted.has(16), true);
+    assert.equal(attempted.has(17), false);
     assert.equal(attempted.size, 2);
+  });
+
+  it('requests headRefName, mergedAt and state in a single gh call', async () => {
+    let capturedArgs = null;
+    const runCommand = async (_file, args) => {
+      capturedArgs = args;
+      return { stdout: '[]' };
+    };
+
+    await fetchAttemptedTaskIds(owner, repo, token, runCommand);
+
+    assert.ok(capturedArgs);
+    const jsonFields = capturedArgs[capturedArgs.indexOf('--json') + 1];
+    assert.equal(jsonFields, 'headRefName,mergedAt,state');
+    assert.equal(capturedArgs[capturedArgs.indexOf('--state') + 1], 'all');
   });
 
   it('throws when stdout contains a null PR entry', async () => {
@@ -390,7 +473,7 @@ describe('fetchAttemptedTaskIds', () => {
       (error) => {
         assertNightlyAgentFatalError(
           error,
-          'gh pr list returned a PR with a missing or non-string title',
+          'gh pr list returned a PR with a missing or non-string headRefName or state',
         );
         assert.notEqual(error.name, 'TypeError');
         return true;
@@ -398,7 +481,7 @@ describe('fetchAttemptedTaskIds', () => {
     );
   });
 
-  it('throws when stdout contains a PR entry with no title', async () => {
+  it('throws when stdout contains a PR entry with no headRefName', async () => {
     const runCommand = async () => ({ stdout: JSON.stringify([{}]) });
 
     await assert.rejects(
@@ -406,7 +489,7 @@ describe('fetchAttemptedTaskIds', () => {
       (error) => {
         assertNightlyAgentFatalError(
           error,
-          'gh pr list returned a PR with a missing or non-string title',
+          'gh pr list returned a PR with a missing or non-string headRefName or state',
         );
         assert.notEqual(error.name, 'TypeError');
         return true;
@@ -414,9 +497,9 @@ describe('fetchAttemptedTaskIds', () => {
     );
   });
 
-  it('throws when stdout contains a PR entry with null title', async () => {
+  it('throws when stdout contains a PR entry with null headRefName', async () => {
     const runCommand = async () => ({
-      stdout: JSON.stringify([{ title: null }]),
+      stdout: JSON.stringify([{ headRefName: null, state: 'OPEN' }]),
     });
 
     await assert.rejects(
@@ -424,9 +507,85 @@ describe('fetchAttemptedTaskIds', () => {
       (error) => {
         assertNightlyAgentFatalError(
           error,
-          'gh pr list returned a PR with a missing or non-string title',
+          'gh pr list returned a PR with a missing or non-string headRefName or state',
         );
         assert.notEqual(error.name, 'TypeError');
+        return true;
+      },
+    );
+  });
+
+  it('throws when stdout contains a PR entry with an unrecognised state', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([
+        { headRefName: 'nightly-agent/T15-x-1', state: 'QUEUED', mergedAt: null },
+      ]),
+    });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assert.match(error.message, /unrecognised state "QUEUED"/);
+        return true;
+      },
+    );
+  });
+
+  it('accepts all three documented gh PR states', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([
+        mergedAgentPr(15, 'merged'),
+        closedAgentPr(16, 'closed'),
+        openAgentPr(17, 'open'),
+      ]),
+    });
+
+    const attempted = await fetchAttemptedTaskIds(owner, repo, token, runCommand);
+
+    assert.deepEqual([...attempted].sort((a, b) => a - b), [15, 17]);
+  });
+
+  it('throws when stdout contains a PR entry with a non-string, non-null mergedAt', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([
+        { headRefName: 'nightly-agent/T15-x-1', state: 'MERGED', mergedAt: 12345 },
+      ]),
+    });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned a PR with a non-string, non-null mergedAt',
+        );
+        return true;
+      },
+    );
+  });
+
+  it('accepts a null mergedAt on an unmerged PR without failing', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([closedAgentPr(15, 'focus-indicator')]),
+    });
+
+    const attempted = await fetchAttemptedTaskIds(owner, repo, token, runCommand);
+
+    assert.equal(attempted.size, 0);
+  });
+
+  it('throws when stdout contains a PR entry with a missing state', async () => {
+    const runCommand = async () => ({
+      stdout: JSON.stringify([{ headRefName: 'nightly-agent/T15-x-1' }]),
+    });
+
+    await assert.rejects(
+      () => fetchAttemptedTaskIds(owner, repo, token, runCommand),
+      (error) => {
+        assertNightlyAgentFatalError(
+          error,
+          'gh pr list returned a PR with a missing or non-string headRefName or state',
+        );
         return true;
       },
     );

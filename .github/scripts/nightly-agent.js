@@ -337,16 +337,30 @@ function taskIdNumber(taskId) {
   return Number.isNaN(numeric) ? Number.MAX_SAFE_INTEGER : numeric;
 }
 
-function extractTaskIdsFromPrTitle(title) {
-  return [...title.matchAll(/\bT(\d+)\b/g)].map((match) =>
-    Number.parseInt(match[1], 10),
-  );
+// Only the agent's own branches count. createAgentBranch emits
+// `nightly-agent/T{n}-{slug}-{runId}`, so this cannot be tripped by a human PR title
+// that merely mentions a T-number (the docs PR that introduced T76 did exactly that).
+function extractTaskIdFromAgentBranch(headRefName) {
+  const match = /^nightly-agent\/T(\d+)-/.exec(headRefName);
+  return match ? Number.parseInt(match[1], 10) : null;
 }
 
-function buildAttemptedTaskIdSet(prTitles) {
+// A task is excluded when the agent has already delivered it (merged) or still has a
+// PR in flight (open, including the draft raised after a failed run — re-picking that
+// would stack a duplicate PR every night). A closed-unmerged PR means the attempt was
+// rejected or abandoned, which is exactly when the task should be retried.
+function buildAttemptedTaskIdSet(prs) {
   const attempted = new Set();
-  for (const title of prTitles) {
-    for (const id of extractTaskIdsFromPrTitle(title)) {
+  for (const pr of prs) {
+    const id = extractTaskIdFromAgentBranch(pr.headRefName);
+    if (id === null) {
+      continue;
+    }
+    // Positively require a timestamp: gh sets mergedAt to null when unmerged, so anything
+    // falsy-but-defined must not read as merged.
+    if (typeof pr.mergedAt === 'string' && pr.mergedAt !== '') {
+      attempted.add(id);
+    } else if (pr.state === 'OPEN') {
       attempted.add(id);
     }
   }
@@ -1189,6 +1203,10 @@ async function runGitOutput(args) {
 
 const PR_LIST_LIMIT = 1000;
 
+// The full gh PR state enum. An unrecognised state would fall through buildAttemptedTaskIdSet
+// as "not attempted" and silently under-exclude, so it is rejected at the boundary instead.
+const PR_STATES = new Set(['OPEN', 'CLOSED', 'MERGED']);
+
 async function fetchAttemptedTaskIds(
   owner,
   repo,
@@ -1204,17 +1222,17 @@ async function fetchAttemptedTaskIds(
         'list',
         '--repo',
         `${owner}/${repo}`,
-        // --state all is deliberate: any PR state marks a task attempted; retries are via
-        // a NEW task ID, so a closed failure PR intentionally parks the task until reissued.
-        // We do NOT use --state open.
+        // --state all is required: buildAttemptedTaskIdSet must see closed PRs in order to
+        // decide they do NOT exclude. Filtering to open here would lose merged PRs, which
+        // are the ones that legitimately retire a task.
         '--state',
         'all',
         // --limit 1000: repo is not expected to exceed 1000 PRs; gh returns newest-first, so
-        // beyond that older titles would drop off and under-exclude.
+        // beyond that older PRs would drop off and under-exclude.
         '--limit',
         String(PR_LIST_LIMIT),
         '--json',
-        'title',
+        'headRefName,mergedAt,state',
       ],
       {
         cwd: repoRoot,
@@ -1243,20 +1261,36 @@ async function fetchAttemptedTaskIds(
 
   if (prs.length === PR_LIST_LIMIT) {
     warn(
-      `gh pr list returned ${PR_LIST_LIMIT} PRs (at --limit); older PR titles may be omitted from exclusion`,
+      `gh pr list returned ${PR_LIST_LIMIT} PRs (at --limit); older PRs may be omitted from exclusion`,
     );
   }
 
   for (const pr of prs) {
-    if (!pr || typeof pr !== 'object' || typeof pr.title !== 'string') {
-      fail('gh pr list returned a PR with a missing or non-string title');
+    if (
+      !pr ||
+      typeof pr !== 'object' ||
+      typeof pr.headRefName !== 'string' ||
+      typeof pr.state !== 'string'
+    ) {
+      fail('gh pr list returned a PR with a missing or non-string headRefName or state');
+    }
+    if (!PR_STATES.has(pr.state)) {
+      fail(
+        `gh pr list returned a PR with an unrecognised state "${pr.state}" — expected one of ${[...PR_STATES].join(', ')}`,
+      );
+    }
+    // mergedAt is null on unmerged PRs and an ISO timestamp otherwise. Anything else means
+    // the gh schema moved under us; fail loudly rather than silently misreading merge state.
+    if (
+      pr.mergedAt !== null &&
+      pr.mergedAt !== undefined &&
+      typeof pr.mergedAt !== 'string'
+    ) {
+      fail('gh pr list returned a PR with a non-string, non-null mergedAt');
     }
   }
 
-  // Matcher (extractTaskIdsFromPrTitle) blocks any \bT(\d+)\b anywhere in a title, uppercase
-  // only, matching the agent's feat(T{n}): convention; a human title naming a second ID will
-  // park that task too.
-  return buildAttemptedTaskIdSet(prs.map((pr) => pr.title));
+  return buildAttemptedTaskIdSet(prs);
 }
 
 function descriptionToSlug(description) {
@@ -2170,7 +2204,7 @@ export {
   summariseTestFailure,
   parseBacklog,
   pickTask,
-  extractTaskIdsFromPrTitle,
+  extractTaskIdFromAgentBranch,
   buildAttemptedTaskIdSet,
   fetchAttemptedTaskIds,
   allTasksBlockedByPr,
